@@ -41,10 +41,15 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **M2 config/content filters** | Per-game Zod config schemas, categories, difficulty filters | Done |
 | **M2 Taboo engine** | Turn-based clue play, forbidden-word penalties, challenger flow | Done |
 | **Host planning** | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem` | Done |
+| **API Client Contract + Mobile Readiness** | Typed client generation, clearer API/socket contracts, contract tests | Planned |
 
 #### API task list
 
-- Generate or maintain a typed TypeScript client from `/docs/json` for client apps.
+- **API Client Contract + Mobile Readiness**
+  - Generate a typed TypeScript client from `/docs/json`.
+  - Tighten OpenAPI output for per-game configs so mobile can discover valid Trivia / Charades / Taboo config shapes.
+  - Document and type Socket.IO event payloads for client-to-server and server-to-client events.
+  - Add contract/smoke tests to catch accidental API, OpenAPI, client-generation, or socket-payload breakage.
 - Custom games (M3).
 - Operational polish (M4): Sentry/errors provider, CI/CD, OTP login, push notifications.
 
