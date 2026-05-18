@@ -1,0 +1,227 @@
+// Games Night API - Prisma schema
+// Domain model: Users host Parties. Parties have Teams, Teams have Players.
+// Each Party runs Rounds of Games. Each Round generates Scores per Team.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Auth & ownership ----------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  displayName  String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  hostedParties Party[]      @relation("PartyHost")
+  customGames   CustomGame[]
+  partyPlans    PartyPlan[]
+}
+
+// ---------- Party (a games-night session) ----------
+
+enum PartyStatus {
+  LOBBY
+  IN_PROGRESS
+  PAUSED
+  FINISHED
+  CANCELLED
+}
+
+model Party {
+  id          String      @id @default(cuid())
+  joinCode    String      @unique // short code used by players to join
+  name        String
+  status      PartyStatus @default(LOBBY)
+  hostId      String
+  host        User        @relation("PartyHost", fields: [hostId], references: [id])
+  maxTeams    Int         @default(8)
+  maxPerTeam  Int         @default(10)
+  settings    Json        @default("{}") // per-party tunables (timers, point multipliers, etc.)
+  createdAt   DateTime    @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  teams  Team[]
+  rounds Round[]
+
+  @@index([status])
+  @@index([hostId])
+}
+
+// ---------- Teams & Players ----------
+
+model Team {
+  id        String   @id @default(cuid())
+  partyId   String
+  party     Party    @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  name      String
+  color     String   @default("#888888")
+  position  Int      // ordering 1..8 within a party
+  createdAt DateTime @default(now())
+
+  players Player[]
+  scores  Score[]
+
+  @@unique([partyId, position])
+  @@index([partyId])
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  nickname  String
+  // Players may be anonymous (no User) or linked to a registered user.
+  userId    String?
+  socketId  String?  // current connected socket, null if disconnected
+  isCaptain Boolean  @default(false)
+  joinedAt  DateTime @default(now())
+
+  @@index([teamId])
+}
+
+// ---------- Games catalog ----------
+
+enum GameType {
+  TRIVIA
+  CHARADES
+  TABOO
+  CUSTOM
+}
+
+// Built-in game definitions are seeded; custom games are user-created.
+model GameDefinition {
+  id          String   @id @default(cuid())
+  type        GameType
+  slug        String   @unique // e.g. "trivia", "charades-classic"
+  name        String
+  description String
+  // Default scoring / timing config — overrideable per-round.
+  defaultConfig Json    @default("{}")
+  isBuiltIn   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  rounds      Round[]
+  prompts     Prompt[]
+  planItems   PartyPlanItem[]
+}
+
+// A reusable host-authored plan for a games night. Applying a plan to a Party
+// appends its items to that party's persisted Round queue.
+model PartyPlan {
+  id          String   @id @default(cuid())
+  hostId      String
+  host        User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items PartyPlanItem[]
+
+  @@index([hostId])
+}
+
+model PartyPlanItem {
+  id               String         @id @default(cuid())
+  planId           String
+  plan             PartyPlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  gameDefinitionId String
+  gameDefinition   GameDefinition @relation(fields: [gameDefinitionId], references: [id])
+  order            Int
+  config           Json           @default("{}")
+  notes            String?
+
+  @@unique([planId, order])
+  @@index([planId])
+  @@index([gameDefinitionId])
+}
+
+// A user-defined game extension (e.g. custom trivia pack, custom taboo deck).
+model CustomGame {
+  id            String         @id @default(cuid())
+  ownerId       String
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  type          GameType
+  name          String
+  description   String?
+  config        Json           @default("{}")
+  isPublic      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+
+  prompts Prompt[]
+
+  @@index([ownerId])
+}
+
+// A single question / clue / charade prompt.
+model Prompt {
+  id              String   @id @default(cuid())
+  gameDefinitionId String?
+  gameDefinition  GameDefinition? @relation(fields: [gameDefinitionId], references: [id])
+  customGameId    String?
+  customGame      CustomGame? @relation(fields: [customGameId], references: [id], onDelete: Cascade)
+  // Free-form payload — shape varies per GameType. Validated at app layer.
+  // e.g. trivia: { question, choices[], answer, difficulty }
+  //      taboo:  { word, forbidden[] }
+  //      charades: { phrase, category }
+  payload         Json
+  difficulty      Int      @default(1) // 1..5 — drives point weighting
+  tags            String[] @default([])
+  createdAt       DateTime @default(now())
+
+  @@index([gameDefinitionId])
+  @@index([customGameId])
+}
+
+// ---------- Rounds & scoring ----------
+
+enum RoundStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  SKIPPED
+}
+
+model Round {
+  id               String         @id @default(cuid())
+  partyId          String
+  party            Party          @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  gameDefinitionId String
+  gameDefinition   GameDefinition @relation(fields: [gameDefinitionId], references: [id])
+  order            Int            // 1, 2, 3 ... within a party
+  status           RoundStatus    @default(PENDING)
+  config           Json           @default("{}") // resolved config (defaults merged w/ host overrides)
+  startedAt        DateTime?
+  endedAt          DateTime?
+
+  scores Score[]
+
+  @@unique([partyId, order])
+  @@index([partyId])
+}
+
+model Score {
+  id          String   @id @default(cuid())
+  roundId     String
+  round       Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  // Raw points scored in this round; final standings sum across rounds.
+  points      Int      @default(0)
+  // Breakdown for transparency (correct answers, time bonus, streaks, penalties).
+  breakdown   Json     @default("{}")
+  recordedAt  DateTime @default(now())
+
+  @@unique([roundId, teamId])
+  @@index([teamId])
+}
