@@ -37,6 +37,7 @@ export function makeMockPrisma(): {
     },
     gameDefinition: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     partyPlan: {
       findMany: vi.fn(),

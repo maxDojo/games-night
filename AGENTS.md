@@ -213,8 +213,8 @@ No active in-repo feature work is assumed from this file. The next direction sho
 - **Never work directly on `main`**. Documentation, code, tests, and generated files should all be changed from a task branch.
 - **Start every task by syncing from origin**: switch to `main`, pull updates from origin, then create the task branch.
 - **One agreed task = one branch / PR by default**. A milestone can produce multiple PRs if its task list is split that way.
-- **Branch naming**: use `codex/` for Codex-created branches unless the user asks otherwise. Historical branches also used `feat/m{N}-<slug>`, `chore/<slug>`, and `fix/<slug>`.
-- **Branch names should describe the task**, not just the milestone. Example: `codex/api-typed-client-generation`.
+- **Branch naming**: use `staging/` for agent-created branches unless the user asks otherwise. Historical branches also used `codex/`, `feat/m{N}-<slug>`, `chore/<slug>`, and `fix/<slug>`.
+- **Branch names should describe the task**, not just the milestone. Example: `staging/api-typed-client-generation`.
 - **Create PRs only after user approval**. Complete the work, run relevant checks, summarize the result, then wait for approval before opening the PR.
 - **PR body** should use structured sections: Summary, What's new, Tests, Live-verified, Reviewer notes, Test plan.
 - **Co-author trailer** on every commit: include a `Co-Authored-By:` trailer identifying the agent that produced the commit.
