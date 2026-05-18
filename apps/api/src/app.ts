@@ -27,6 +27,7 @@ import teamsRoutes from './modules/teams/teams.routes.js';
 import playersRoutes from './modules/players/players.routes.js';
 import roundsRoutes from './modules/rounds/rounds.routes.js';
 import plansRoutes from './modules/plans/plans.routes.js';
+import gamesRoutes from './modules/games/games.routes.js';
 import leaderboardRoutes from './modules/leaderboard/leaderboard.routes.js';
 
 export interface BuildAppOptions {
@@ -78,6 +79,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
           { name: 'parties', description: 'Party (games-night session) lifecycle' },
           { name: 'teams', description: 'Teams within a party' },
           { name: 'players', description: 'Players within a team' },
+          { name: 'games', description: 'Available game definitions and defaults' },
           { name: 'rounds', description: 'Round lifecycle and manual scoring' },
           { name: 'plans', description: 'Saved host plans and round-queue templates' },
           { name: 'leaderboard', description: 'Aggregate standings across rounds' },
@@ -125,6 +127,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
       await api.register(partiesRoutes);
       await api.register(teamsRoutes);
       await api.register(playersRoutes);
+      await api.register(gamesRoutes);
       await api.register(roundsRoutes);
       await api.register(plansRoutes);
       await api.register(leaderboardRoutes);
