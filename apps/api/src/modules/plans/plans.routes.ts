@@ -3,6 +3,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { canCreateRound, mergeRoundConfig } from '../../lib/round-state.js';
+import { PlanRoundInputSchema, type PlanRoundInput } from '../../games/config-contracts.js';
 
 const Dateish = z.string().or(z.date());
 
@@ -16,16 +17,10 @@ const PlanIdParam = z.object({ planId: z.string().min(1) });
 
 const ApplyPlanParam = JoinCodeParam.merge(PlanIdParam);
 
-const PlanRoundInput = z.object({
-  gameSlug: z.string().min(1),
-  config: z.record(z.string(), z.unknown()).optional(),
-  notes: z.string().max(500).optional(),
-});
-
 const SavePlanBody = z.object({
   name: z.string().min(1).max(120),
   description: z.string().max(1000).optional(),
-  rounds: z.array(PlanRoundInput).min(1).max(50),
+  rounds: z.array(PlanRoundInputSchema).min(1).max(50),
 });
 
 const GameDefinitionSummarySchema = z.object({
@@ -233,7 +228,7 @@ const planInclude = {
 
 async function buildPlanItems(
   app: FastifyInstance,
-  rounds: Array<z.infer<typeof PlanRoundInput>>,
+  rounds: PlanRoundInput[],
 ) {
   const items = [];
   for (const [index, round] of rounds.entries()) {
@@ -244,7 +239,7 @@ async function buildPlanItems(
 
     const merged = mergeRoundConfig(
       (game.defaultConfig as Record<string, unknown>) ?? {},
-      round.config,
+      round.config as Record<string, unknown> | undefined,
     );
     const config = parseGameConfig(app, round.gameSlug, merged);
     items.push({
