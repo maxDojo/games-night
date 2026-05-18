@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.12.1",
-  "description": "Monorepo for the Games Night API, web frontend, and mobile app.",
+  "description": "Monorepo for the Games Night API and future client apps.",
   "scripts": {
     "dev:api": "pnpm --filter @games-night/api dev",
-    "dev:mobile": "pnpm --filter @games-night/mobile start",
     "build": "pnpm -r --if-present build",
     "build:api": "pnpm --filter @games-night/api build",
     "start:api": "pnpm --filter @games-night/api start",
