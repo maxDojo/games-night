@@ -1,0 +1,36 @@
+{
+  "name": "games-night",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.12.1",
+  "description": "Monorepo for the Games Night API, web frontend, and mobile app.",
+  "scripts": {
+    "dev:api": "pnpm --filter @games-night/api dev",
+    "dev:mobile": "pnpm --filter @games-night/mobile start",
+    "build": "pnpm -r --if-present build",
+    "build:api": "pnpm --filter @games-night/api build",
+    "start:api": "pnpm --filter @games-night/api start",
+    "lint": "pnpm -r --if-present lint",
+    "lint:api": "pnpm --filter @games-night/api lint",
+    "format": "pnpm -r --if-present format",
+    "format:api": "pnpm --filter @games-night/api format",
+    "test": "pnpm -r --if-present test",
+    "test:api": "pnpm --filter @games-night/api test",
+    "prisma:generate": "pnpm --filter @games-night/api prisma:generate",
+    "prisma:migrate": "pnpm --filter @games-night/api prisma:migrate",
+    "db:seed:offline": "pnpm --filter @games-night/api db:seed:offline",
+    "smoke:docs": "pnpm --filter @games-night/api smoke:docs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "argon2",
+      "esbuild",
+      "prisma"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

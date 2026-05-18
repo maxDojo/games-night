@@ -1,0 +1,42 @@
+[
+  { "phrase": "Brushing your teeth", "category": "everyday", "difficulty": 1 },
+  { "phrase": "Tying your shoelaces", "category": "everyday", "difficulty": 1 },
+  { "phrase": "Eating spaghetti", "category": "everyday", "difficulty": 1 },
+  { "phrase": "Driving a car", "category": "everyday", "difficulty": 1 },
+  { "phrase": "Riding a bicycle", "category": "everyday", "difficulty": 1 },
+  { "phrase": "Walking a dog", "category": "everyday", "difficulty": 1 },
+  { "phrase": "Taking a selfie", "category": "everyday", "difficulty": 1 },
+
+  { "phrase": "Climbing a mountain", "category": "actions", "difficulty": 2 },
+  { "phrase": "Surfing a wave", "category": "actions", "difficulty": 2 },
+  { "phrase": "Painting a portrait", "category": "actions", "difficulty": 2 },
+  { "phrase": "Playing the violin", "category": "actions", "difficulty": 2 },
+  { "phrase": "Conducting an orchestra", "category": "actions", "difficulty": 3 },
+  { "phrase": "Wrestling a bear", "category": "actions", "difficulty": 3 },
+  { "phrase": "Bungee jumping", "category": "actions", "difficulty": 2 },
+
+  { "phrase": "Kangaroo", "category": "animals", "difficulty": 2 },
+  { "phrase": "Octopus", "category": "animals", "difficulty": 2 },
+  { "phrase": "Sloth", "category": "animals", "difficulty": 2 },
+  { "phrase": "Flamingo", "category": "animals", "difficulty": 2 },
+  { "phrase": "Penguin", "category": "animals", "difficulty": 1 },
+  { "phrase": "Praying mantis", "category": "animals", "difficulty": 3 },
+
+  { "phrase": "The Lion King", "category": "movies", "difficulty": 2 },
+  { "phrase": "Titanic", "category": "movies", "difficulty": 2 },
+  { "phrase": "Jurassic Park", "category": "movies", "difficulty": 2 },
+  { "phrase": "Star Wars", "category": "movies", "difficulty": 2 },
+  { "phrase": "Pirates of the Caribbean", "category": "movies", "difficulty": 3 },
+  { "phrase": "Finding Nemo", "category": "movies", "difficulty": 2 },
+  { "phrase": "Forrest Gump", "category": "movies", "difficulty": 3 },
+  { "phrase": "The Matrix", "category": "movies", "difficulty": 3 },
+
+  { "phrase": "Microwaving popcorn", "category": "tricky", "difficulty": 3 },
+  { "phrase": "Solving a Rubik's cube", "category": "tricky", "difficulty": 3 },
+  { "phrase": "Assembling flat-pack furniture", "category": "tricky", "difficulty": 4 },
+  { "phrase": "Doing your taxes", "category": "tricky", "difficulty": 4 },
+  { "phrase": "Negotiating a salary", "category": "tricky", "difficulty": 4 },
+  { "phrase": "Photosynthesis", "category": "tricky", "difficulty": 5 },
+  { "phrase": "Gravity", "category": "tricky", "difficulty": 5 },
+  { "phrase": "Existential crisis", "category": "tricky", "difficulty": 5 }
+]

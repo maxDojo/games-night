@@ -1,0 +1,33 @@
+[
+  { "word": "Pizza",     "forbidden": ["cheese", "tomato", "Italian", "slice", "dough"], "category": "food", "difficulty": 1 },
+  { "word": "Coffee",    "forbidden": ["bean", "morning", "caffeine", "Starbucks", "brew"], "category": "food", "difficulty": 1 },
+  { "word": "Pasta",     "forbidden": ["Italian", "noodle", "spaghetti", "sauce", "carbs"], "category": "food", "difficulty": 1 },
+  { "word": "Sushi",     "forbidden": ["fish", "rice", "Japan", "raw", "roll"], "category": "food", "difficulty": 2 },
+  { "word": "Pancake",   "forbidden": ["flat", "syrup", "breakfast", "flip", "batter"], "category": "food", "difficulty": 2 },
+
+  { "word": "Beach",     "forbidden": ["sand", "ocean", "sun", "wave", "swim"], "category": "places", "difficulty": 1 },
+  { "word": "Library",   "forbidden": ["book", "quiet", "read", "study", "shelf"], "category": "places", "difficulty": 2 },
+  { "word": "Airport",   "forbidden": ["plane", "fly", "luggage", "gate", "travel"], "category": "places", "difficulty": 2 },
+  { "word": "Gym",       "forbidden": ["workout", "weight", "exercise", "muscle", "fitness"], "category": "places", "difficulty": 2 },
+  { "word": "Hospital",  "forbidden": ["doctor", "nurse", "sick", "patient", "medicine"], "category": "places", "difficulty": 2 },
+
+  { "word": "Football",  "forbidden": ["ball", "kick", "goal", "team", "soccer"], "category": "sports", "difficulty": 2 },
+  { "word": "Tennis",    "forbidden": ["racket", "court", "net", "ball", "Wimbledon"], "category": "sports", "difficulty": 2 },
+  { "word": "Marathon",  "forbidden": ["run", "race", "26", "long", "distance"], "category": "sports", "difficulty": 3 },
+  { "word": "Olympics",  "forbidden": ["medal", "gold", "athlete", "games", "torch"], "category": "sports", "difficulty": 3 },
+
+  { "word": "Birthday",  "forbidden": ["cake", "candle", "gift", "party", "age"], "category": "occasions", "difficulty": 1 },
+  { "word": "Wedding",   "forbidden": ["marriage", "bride", "groom", "ring", "ceremony"], "category": "occasions", "difficulty": 2 },
+  { "word": "Funeral",   "forbidden": ["death", "sad", "black", "grave", "cemetery"], "category": "occasions", "difficulty": 3 },
+  { "word": "Christmas", "forbidden": ["tree", "Santa", "December", "presents", "snow"], "category": "occasions", "difficulty": 1 },
+
+  { "word": "Pirate",    "forbidden": ["ship", "treasure", "sea", "parrot", "eye patch"], "category": "characters", "difficulty": 2 },
+  { "word": "Vampire",   "forbidden": ["blood", "fangs", "night", "Dracula", "bat"], "category": "characters", "difficulty": 2 },
+  { "word": "Astronaut", "forbidden": ["space", "moon", "rocket", "NASA", "suit"], "category": "characters", "difficulty": 2 },
+  { "word": "Detective", "forbidden": ["clue", "case", "Sherlock", "crime", "solve"], "category": "characters", "difficulty": 3 },
+
+  { "word": "Internet",  "forbidden": ["web", "online", "wifi", "browser", "Google"], "category": "modern", "difficulty": 3 },
+  { "word": "Selfie",    "forbidden": ["phone", "photo", "camera", "Instagram", "self"], "category": "modern", "difficulty": 2 },
+  { "word": "Podcast",   "forbidden": ["audio", "listen", "show", "episode", "Spotify"], "category": "modern", "difficulty": 3 },
+  { "word": "Meme",      "forbidden": ["funny", "internet", "joke", "viral", "image"], "category": "modern", "difficulty": 3 }
+]
