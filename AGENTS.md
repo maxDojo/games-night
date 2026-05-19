@@ -42,18 +42,38 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **M2 Taboo engine**                        | Turn-based clue play, forbidden-word penalties, challenger flow                       | Done   |
 | **Host planning**                          | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem`         | Done   |
 | **API Client Contract + Mobile Readiness** | REST/socket contract hardening, generated client guardrails, mobile integration notes | Done   |
+| **Operational Polish**                     | CI, coverage, integration checks, deploy readiness, production seams                  | Next   |
+
+#### API feature backlog
+
+- **Custom Games** - skipped as a numbered milestone for now. Revisit as a later feature once product behavior is specified.
 
 #### API task list
 
-- **API Client Contract + Mobile Readiness**
+- **API Client Contract + Mobile Readiness** - done
   - Done: audit current REST/OpenAPI/socket contract gaps.
   - Done: add public `GET /v1/games` for game discovery.
   - Done: expose typed built-in game config alternatives in OpenAPI.
   - Done: introduce shared Socket.IO event types and payload validation.
   - Done: generate TypeScript API types from `/docs/json` and compile a usage fixture.
   - Done: write mobile integration notes in `docs/mobile-integration.md`.
-- Custom games (M3).
-- Operational polish (M4): Sentry/errors provider, CI/CD, OTP login, push notifications.
+- **Operational Polish** - next
+  - Add CI guardrails for `pnpm test:api`, `pnpm build:api`, `pnpm smoke:docs`, and `pnpm api-client:check`.
+  - Add Vitest coverage tooling and a `test:api:coverage` script.
+  - Establish an initial coverage baseline before setting hard thresholds.
+  - Add optional real-Postgres integration test support gated on `INTEGRATION_TEST_DATABASE_URL`.
+  - Add a first integration slice covering readiness plus party/team/player lifecycle.
+  - Review deployment readiness for `Dockerfile`, `fly.toml`, runtime env vars, and Prisma migrate/deploy flow.
+  - Add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
+  - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
+- **Housekeeping** - deferred follow-up bucket
+  - Add mid-round persistence or a `Round.events` audit log so active rounds can recover after restart.
+  - Add prompt/card deduplication across rounds in the same party/night.
+  - Expand prompt pool reservation so small Charades/Taboo seed sets do not overlap heavily across teams.
+  - Add rich mobile config-form metadata if generated OpenAPI types are not enough for the mobile UI.
+  - Decide production content sourcing for Trivia and Taboo-style cards.
+  - Add email, push, storage, and concrete error-tracking provider implementations when product flows require them.
+  - Normalize REST and socket error envelopes if client error handling becomes repetitive.
 
 ### Web (`apps/web`)
 
