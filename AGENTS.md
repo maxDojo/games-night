@@ -22,26 +22,26 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 ### Repo-wide
 
-| Milestone | What | Status |
-|---|---|---|
-| **Repo shape** | pnpm monorepo conversion; mobile scaffold removed | Done |
+| Milestone      | What                                              | Status |
+| -------------- | ------------------------------------------------- | ------ |
+| **Repo shape** | pnpm monorepo conversion; mobile scaffold removed | Done   |
 
 ### API (`apps/api`)
 
 #### API milestones
 
-| Milestone | What | Status |
-|---|---|---|
-| **M0** Bootstrap | Fastify + TS scaffold, Prisma schema, Socket.IO, scoring engine, Swagger | Done |
-| **M1** Auth + party lifecycle | register/login, parties, teams, players, `party:state` broadcasts | Done |
-| **M1.5** Provider abstraction | Open Trivia DB + AI(disabled) seam, free defaults, idempotent seed pipeline | Done |
-| **M2 foundation** | Round state machine, manual scoring, leaderboard, `emitToParty` | Done |
-| **M2 Trivia engine** | Server-side timer, time bonus, streak bonus, auto-end | Done |
-| **M2 Charades engine** | Turn-based host-judged phrase play, team-private phrase emission | Done |
-| **M2 config/content filters** | Per-game Zod config schemas, categories, difficulty filters | Done |
-| **M2 Taboo engine** | Turn-based clue play, forbidden-word penalties, challenger flow | Done |
-| **Host planning** | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem` | Done |
-| **API Client Contract + Mobile Readiness** | REST/socket contract hardening and generated client guardrails | In progress |
+| Milestone                                  | What                                                                                  | Status |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- | ------ |
+| **M0** Bootstrap                           | Fastify + TS scaffold, Prisma schema, Socket.IO, scoring engine, Swagger              | Done   |
+| **M1** Auth + party lifecycle              | register/login, parties, teams, players, `party:state` broadcasts                     | Done   |
+| **M1.5** Provider abstraction              | Open Trivia DB + AI(disabled) seam, free defaults, idempotent seed pipeline           | Done   |
+| **M2 foundation**                          | Round state machine, manual scoring, leaderboard, `emitToParty`                       | Done   |
+| **M2 Trivia engine**                       | Server-side timer, time bonus, streak bonus, auto-end                                 | Done   |
+| **M2 Charades engine**                     | Turn-based host-judged phrase play, team-private phrase emission                      | Done   |
+| **M2 config/content filters**              | Per-game Zod config schemas, categories, difficulty filters                           | Done   |
+| **M2 Taboo engine**                        | Turn-based clue play, forbidden-word penalties, challenger flow                       | Done   |
+| **Host planning**                          | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem`         | Done   |
+| **API Client Contract + Mobile Readiness** | REST/socket contract hardening, generated client guardrails, mobile integration notes | Done   |
 
 #### API task list
 
@@ -51,7 +51,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: expose typed built-in game config alternatives in OpenAPI.
   - Done: introduce shared Socket.IO event types and payload validation.
   - Done: generate TypeScript API types from `/docs/json` and compile a usage fixture.
-  - Next: write mobile integration notes once the contract guardrails are merged.
+  - Done: write mobile integration notes in `docs/mobile-integration.md`.
 - Custom games (M3).
 - Operational polish (M4): Sentry/errors provider, CI/CD, OTP login, push notifications.
 
@@ -92,17 +92,17 @@ No active in-repo feature work is assumed from this file. The next direction sho
 
 ## 3. Tech stack (locked-in choices)
 
-| Layer | Choice | Why locked-in |
-|---|---|---|
-| Runtime | **Node.js 20 + TypeScript** | User answered this at bootstrap. |
-| Package manager | **pnpm 10.x workspaces** | Current monorepo standard. Use pnpm scripts by default. |
-| HTTP | **Fastify 4** | Lean, plugin model fits modular games. Not Fastify 5 (see version pins). |
-| Realtime | **Socket.IO** | Rooms map cleanly to parties; auto-reconnect. |
-| DB | **PostgreSQL** | Local Docker in dev, Neon planned for prod. |
-| ORM | **Prisma 5.x** | Type-safe queries, first-class migrations. |
-| Validation | **Zod** | Drives both runtime validation and OpenAPI via `fastify-type-provider-zod@^2`. |
-| Auth | `@fastify/jwt` + `argon2` | Hosts authed; players can be anonymous. |
-| Hosting | **Fly.io** (planned) | WebSockets work, multi-region, free tier. |
+| Layer           | Choice                      | Why locked-in                                                                  |
+| --------------- | --------------------------- | ------------------------------------------------------------------------------ |
+| Runtime         | **Node.js 20 + TypeScript** | User answered this at bootstrap.                                               |
+| Package manager | **pnpm 10.x workspaces**    | Current monorepo standard. Use pnpm scripts by default.                        |
+| HTTP            | **Fastify 4**               | Lean, plugin model fits modular games. Not Fastify 5 (see version pins).       |
+| Realtime        | **Socket.IO**               | Rooms map cleanly to parties; auto-reconnect.                                  |
+| DB              | **PostgreSQL**              | Local Docker in dev, Neon planned for prod.                                    |
+| ORM             | **Prisma 5.x**              | Type-safe queries, first-class migrations.                                     |
+| Validation      | **Zod**                     | Drives both runtime validation and OpenAPI via `fastify-type-provider-zod@^2`. |
+| Auth            | `@fastify/jwt` + `argon2`   | Hosts authed; players can be anonymous.                                        |
+| Hosting         | **Fly.io** (planned)        | WebSockets work, multi-region, free tier.                                      |
 
 ### Version pins to remember
 
@@ -136,7 +136,7 @@ No active in-repo feature work is assumed from this file. The next direction sho
 - Mock Prisma via `apps/api/tests/helpers/mockPrisma.ts`. Extend it whenever you use a new model method.
 - Game engines use a **custom manual fake clock** (not `vi.useFakeTimers`) - see `apps/api/tests/games/trivia.test.ts` for the pattern. It gives precise tick control.
 - Route tests usually build the app with mock prisma + `disableSockets: true`, close it in `afterAll`, and reset mocks in `beforeEach`.
-- Current API test suite is about 151 tests.
+- Current API test suite is 157 tests.
 
 ### Providers
 
@@ -168,20 +168,20 @@ No active in-repo feature work is assumed from this file. The next direction sho
 
 ## 5. Important architectural decisions and why
 
-| Decision | Why |
-|---|---|
-| **Anonymous players are first-class** | The use case is a games night with acquaintances, not a sign-up funnel. Players can join with just a nickname; an optional JWT links them to a User. |
-| **Hosts have unilateral authority** | Only the host creates teams, queues rounds, force-ends rounds, saves/applies plans, and overrides scores. Players have no admin powers. Matches the "one person on their phone runs the night" model. |
-| **Engines are in-memory** | Server restart mid-round = stuck `ACTIVE` round. Host force-ends to recover. Documented as MVP-acceptable. Persistence is a future `Round.events` audit log. |
-| **`Round.config` is stored fully-resolved** | Defaults merge with overrides at queue time. Historical rounds stay replayable even if `GameDefinition.defaults` changes later. |
-| **`Round` rows are the concrete party queue** | Saved plans are reusable templates; applying a plan appends concrete `Round` rows to the target party. |
-| **`PartyPlan` / `PartyPlanItem` are host-authored templates** | The host can prepare a games-night sequence on mobile and reuse it later without making the saved template itself an active party. |
-| **One generic socket event for game actions** | `round:event { roundId, type, payload? }`. Trivia -> `answer`; Charades -> `correct` / `skip`; Taboo -> `correct` / `skip` / `taboo` / `challenge`. Engines branch on type. `round:answer` remains as a back-compat alias. |
-| **Team rooms for private prompts** | `party:join` subscribes sockets to both `party:<id>` and `team:<teamId>`. Charades and Taboo can emit cards/phrases only to the acting or challenger team room. |
-| **Server-side timers are authoritative** | Clients suggest, server decides. Otherwise leaderboards become contestable. |
-| **Provider abstraction added before M2** | Engines call provider interfaces, not inlined API clients. Upgrading to paid tiers later should be a config change. |
-| **First-answer-per-team locking (Trivia)** | Otherwise teammates could spam answers. Server timestamps the first answer; later answers from the same team are ignored. |
-| **Only valid teams can drive turn actions** | Charades accepts correct/skip only from the acting team. Taboo adds opposing-team challenge/forbidden-word flows where appropriate. |
+| Decision                                                      | Why                                                                                                                                                                                                                        |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Anonymous players are first-class**                         | The use case is a games night with acquaintances, not a sign-up funnel. Players can join with just a nickname; an optional JWT links them to a User.                                                                       |
+| **Hosts have unilateral authority**                           | Only the host creates teams, queues rounds, force-ends rounds, saves/applies plans, and overrides scores. Players have no admin powers. Matches the "one person on their phone runs the night" model.                      |
+| **Engines are in-memory**                                     | Server restart mid-round = stuck `ACTIVE` round. Host force-ends to recover. Documented as MVP-acceptable. Persistence is a future `Round.events` audit log.                                                               |
+| **`Round.config` is stored fully-resolved**                   | Defaults merge with overrides at queue time. Historical rounds stay replayable even if `GameDefinition.defaults` changes later.                                                                                            |
+| **`Round` rows are the concrete party queue**                 | Saved plans are reusable templates; applying a plan appends concrete `Round` rows to the target party.                                                                                                                     |
+| **`PartyPlan` / `PartyPlanItem` are host-authored templates** | The host can prepare a games-night sequence on mobile and reuse it later without making the saved template itself an active party.                                                                                         |
+| **One generic socket event for game actions**                 | `round:event { roundId, type, payload? }`. Trivia -> `answer`; Charades -> `correct` / `skip`; Taboo -> `correct` / `skip` / `taboo` / `challenge`. Engines branch on type. `round:answer` remains as a back-compat alias. |
+| **Team rooms for private prompts**                            | `party:join` subscribes sockets to both `party:<id>` and `team:<teamId>`. Charades and Taboo can emit cards/phrases only to the acting or challenger team room.                                                            |
+| **Server-side timers are authoritative**                      | Clients suggest, server decides. Otherwise leaderboards become contestable.                                                                                                                                                |
+| **Provider abstraction added before M2**                      | Engines call provider interfaces, not inlined API clients. Upgrading to paid tiers later should be a config change.                                                                                                        |
+| **First-answer-per-team locking (Trivia)**                    | Otherwise teammates could spam answers. Server timestamps the first answer; later answers from the same team are ignored.                                                                                                  |
+| **Only valid teams can drive turn actions**                   | Charades accepts correct/skip only from the acting team. Taboo adds opposing-team challenge/forbidden-word flows where appropriate.                                                                                        |
 
 ---
 
@@ -200,6 +200,7 @@ No active in-repo feature work is assumed from this file. The next direction sho
 9. **Repo reset/import into fresh GitHub repo** - current public history starts with an empty `main`, then PR #1 imported the API as a pnpm monorepo.
 10. **PR #1: pnpm monorepo, Taboo, saved plans** - bootstrapped the current repo shape, added the Taboo engine, and added host-saved party plans that can queue games for a night.
 11. **PR #2: remove mobile scaffold** - deleted `apps/mobile` and related scripts/lockfile entries. The user intends to rebuild mobile deliberately, step by step.
+12. **API client contract hardening** - added game discovery, typed OpenAPI built-in config alternatives, typed Socket.IO event contracts, generated API client types, a compile-only client usage fixture, and mobile integration notes.
 
 ---
 
@@ -209,7 +210,7 @@ No active in-repo feature work is assumed from this file. The next direction sho
 2. **No mid-round engine persistence** - server restart kills the in-memory runner. Host force-ends to recover.
 3. **No prompt dedup across rounds in the same party** - the same trivia question / charades phrase / taboo card could appear twice in one night.
 4. **Prompt/card pools can overlap when seed content is small** - phrase/card pools are shared across teams unless future logic reserves used prompts.
-5. **Per-game config in Swagger is opaque** - route bodies still expose a broad config object. Validation happens server-side via each game's `configSchema`.
+5. **No rich mobile config-form metadata yet** - OpenAPI exposes typed built-in config alternatives, but there is no dedicated endpoint for mobile labels, control types, presets, or explanatory copy.
 6. **Email / push / storage / error-tracking providers are not wired yet** - interfaces deferred until M4 when something actually needs them.
 7. **No live integration tests against a real DB** - the suite mocks Prisma. Adding `apps/api/tests/integration/*.test.ts` gated on `INTEGRATION_TEST_DATABASE_URL` is a fine future addition.
 
@@ -243,7 +244,7 @@ pnpm prisma:migrate
 pnpm --filter @games-night/api db:seed          # fetches trivia from Open Trivia DB
 # OR for no-network: pnpm db:seed:offline
 pnpm dev:api                                    # http://localhost:3000  /docs  /socket.io
-pnpm test:api                                   # about 151 tests
+pnpm test:api                                   # 157 tests
 pnpm build:api                                  # TypeScript build
 ```
 
@@ -253,37 +254,40 @@ Useful: `pnpm smoke:docs` boots the app with a stub Prisma and verifies `/docs/`
 
 ## 10. Files to know
 
-| Path | Purpose |
-|---|---|
-| `package.json` | Root pnpm workspace scripts and build-script allowlist |
-| `pnpm-workspace.yaml` | Workspace package globs |
-| `apps/api/src/app.ts` | Fastify wiring (security, swagger, plugins, routes) |
-| `apps/api/src/config/env.ts` | Zod-validated environment |
-| `apps/api/src/config/providers.ts` | Single source of truth for external-dep selection |
-| `apps/api/src/lib/scoring.ts` | Unified "Party Points" formula |
-| `apps/api/src/lib/round-state.ts` | Pure state-machine guards + leaderboard tally |
-| `apps/api/src/games/types.ts` | `GameEngineFactory` / `RoundRunner` / `EngineClock` interfaces |
-| `apps/api/src/games/registry.ts` | slug -> factory + roundId -> live runner |
-| `apps/api/src/games/<slug>/runner.ts` | Engine class + factory export |
-| `apps/api/src/games/<slug>/config.ts` | Per-game Zod config schema |
-| `apps/api/src/games/taboo/` | Taboo engine and config |
-| `apps/api/src/plugins/games.ts` | Decorates `app.games` + builds engine deps |
-| `apps/api/src/plugins/socket.ts` | Socket.IO setup + `emitToParty` / `broadcastPartyState` helpers |
-| `apps/api/src/modules/plans/plans.routes.ts` | Saved host party plans and apply-to-party queueing |
+| Path                                           | Purpose                                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| `package.json`                                 | Root pnpm workspace scripts and build-script allowlist                   |
+| `pnpm-workspace.yaml`                          | Workspace package globs                                                  |
+| `docs/mobile-integration.md`                   | Mobile-facing API integration notes                                      |
+| `apps/api/src/app.ts`                          | Fastify wiring (security, swagger, plugins, routes)                      |
+| `apps/api/src/config/env.ts`                   | Zod-validated environment                                                |
+| `apps/api/src/config/providers.ts`             | Single source of truth for external-dep selection                        |
+| `apps/api/src/lib/scoring.ts`                  | Unified "Party Points" formula                                           |
+| `apps/api/src/lib/round-state.ts`              | Pure state-machine guards + leaderboard tally                            |
+| `apps/api/src/games/types.ts`                  | `GameEngineFactory` / `RoundRunner` / `EngineClock` interfaces           |
+| `apps/api/src/games/config-contracts.ts`       | OpenAPI-visible round/plan config request schemas                        |
+| `apps/api/src/games/registry.ts`               | slug -> factory + roundId -> live runner                                 |
+| `apps/api/src/games/<slug>/runner.ts`          | Engine class + factory export                                            |
+| `apps/api/src/games/<slug>/config.ts`          | Per-game Zod config schema                                               |
+| `apps/api/src/games/taboo/`                    | Taboo engine and config                                                  |
+| `apps/api/src/plugins/games.ts`                | Decorates `app.games` + builds engine deps                               |
+| `apps/api/src/plugins/socket.ts`               | Socket.IO setup + `emitToParty` / `broadcastPartyState` helpers          |
+| `apps/api/src/sockets/contracts.ts`            | Typed Socket.IO client/server event contract                             |
+| `apps/api/src/modules/plans/plans.routes.ts`   | Saved host party plans and apply-to-party queueing                       |
 | `apps/api/src/modules/<area>/<area>.routes.ts` | HTTP routes (rounds, parties, teams, players, auth, leaderboard, health) |
-| `apps/api/prisma/schema.prisma` | Domain model - read it before any DB work |
-| `apps/api/prisma/seeds/` | `games.ts` (GameDefinitions) + `prompts.ts` (provider + JSON) |
-| `apps/api/data/*.seed.json` | Static charades + taboo starter content |
-| `apps/api/tests/helpers/mockPrisma.ts` | Mock Prisma factory. Extend when using new model methods. |
-| `apps/api/tests/games/<slug>.test.ts` | Engine tests with the manual fake-clock pattern |
+| `apps/api/generated/api-types.d.ts`            | Generated OpenAPI TypeScript contract for client usage                   |
+| `apps/api/prisma/schema.prisma`                | Domain model - read it before any DB work                                |
+| `apps/api/prisma/seeds/`                       | `games.ts` (GameDefinitions) + `prompts.ts` (provider + JSON)            |
+| `apps/api/data/*.seed.json`                    | Static charades + taboo starter content                                  |
+| `apps/api/tests/helpers/mockPrisma.ts`         | Mock Prisma factory. Extend when using new model methods.                |
+| `apps/api/tests/games/<slug>.test.ts`          | Engine tests with the manual fake-clock pattern                          |
 
 ---
 
 ## 11. Open questions / decisions waiting on the user
 
-- **Mobile app location and shape** - `apps/mobile` was removed intentionally. The user wants to rebuild it step by step; whether it lands in this monorepo or elsewhere is still a product/workflow decision.
+- **Mobile app location and shape** - `apps/mobile` was removed intentionally. The user wants to rebuild it step by step; whether it lands in this monorepo or elsewhere is still a product/workflow decision. Use `docs/mobile-integration.md` as the API contract starting point.
 - **Content sourcing strategy for production** - free Open Trivia DB seed works for dev but is CC-BY-SA. The Trivia API has a paid commercial tier; Kaggle bulk imports are another option. Taboo-style content is trickier because of trademark/content concerns, so AI-generation + curation is probably the play.
-- **Typed client generation** - backend should generate or support a typed TypeScript client from `/docs/json` for mobile/web clients to consume.
 - **Push notifications** - backend prep deferred to M4. Will need a `DeviceToken` model + push provider abstraction.
 - **OTP / passwordless auth** - better for mobile than passwords. Probably M4.
 
@@ -298,7 +302,7 @@ In `apps/api/README.md` section 9. **Principle: never paywall the ability to run
 ## 13. If you're about to start work in a new session
 
 1. `git checkout main && git pull --ff-only`
-2. `pnpm install && pnpm test:api` - expect about 151 green tests
+2. `pnpm install && pnpm test:api` - expect 157 green tests
 3. Check open PRs on GitHub if the tooling is available
 4. Read this file + `apps/api/README.md`
 5. Confirm the user's current requested next step and the relevant project lane: API, mobile, or web
