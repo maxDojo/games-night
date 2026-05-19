@@ -41,10 +41,17 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **M2 config/content filters** | Per-game Zod config schemas, categories, difficulty filters | Done |
 | **M2 Taboo engine** | Turn-based clue play, forbidden-word penalties, challenger flow | Done |
 | **Host planning** | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem` | Done |
+| **API Client Contract + Mobile Readiness** | REST/socket contract hardening and generated client guardrails | In progress |
 
 #### API task list
 
-- Generate or maintain a typed TypeScript client from `/docs/json` for client apps.
+- **API Client Contract + Mobile Readiness**
+  - Done: audit current REST/OpenAPI/socket contract gaps.
+  - Done: add public `GET /v1/games` for game discovery.
+  - Done: expose typed built-in game config alternatives in OpenAPI.
+  - Done: introduce shared Socket.IO event types and payload validation.
+  - Done: generate TypeScript API types from `/docs/json` and compile a usage fixture.
+  - Next: write mobile integration notes once the contract guardrails are merged.
 - Custom games (M3).
 - Operational polish (M4): Sentry/errors provider, CI/CD, OTP login, push notifications.
 

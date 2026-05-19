@@ -18,6 +18,8 @@
     "prisma:generate": "pnpm --filter @games-night/api prisma:generate",
     "prisma:migrate": "pnpm --filter @games-night/api prisma:migrate",
     "db:seed:offline": "pnpm --filter @games-night/api db:seed:offline",
+    "api-client:generate": "pnpm --filter @games-night/api api-client:generate",
+    "api-client:check": "pnpm --filter @games-night/api api-client:check",
     "smoke:docs": "pnpm --filter @games-night/api smoke:docs"
   },
   "pnpm": {

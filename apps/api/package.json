@@ -19,6 +19,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:prompts": "tsx prisma/seed.ts --prompts-only",
     "db:seed:offline": "tsx prisma/seed.ts --skip-trivia",
+    "openapi:json": "tsx scripts/generate-openapi.ts",
+    "api-client:generate": "pnpm openapi:json && openapi-typescript generated/openapi.json -o generated/api-types.d.ts",
+    "api-client:check": "pnpm api-client:generate && tsc -p tsconfig.api-client.json",
     "smoke:docs": "tsx scripts/smoke-docs.ts"
   },
   "engines": {
@@ -48,6 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^7.16.0",
     "@typescript-eslint/parser": "^7.16.0",
     "eslint": "^8.57.0",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.3.3",
     "prisma": "^5.18.0",
     "tsx": "^4.16.2",
