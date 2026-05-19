@@ -9,10 +9,18 @@
 
 import type { PrismaClient } from '@prisma/client';
 import type { ZodTypeAny } from 'zod';
+import type {
+  ServerToClientEventName,
+  ServerToClientPayload,
+} from '../sockets/contracts.js';
 
 export interface PartyEmitter {
   /** Emit any event to a party id or explicit Socket.IO room such as team:<id>. */
-  (partyId: string, event: string, payload: unknown): void;
+  <E extends ServerToClientEventName>(
+    partyId: string,
+    event: E,
+    payload: ServerToClientPayload<E>,
+  ): void;
 }
 
 export interface EngineClock {

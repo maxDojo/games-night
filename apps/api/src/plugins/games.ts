@@ -37,7 +37,10 @@ function buildDeps(app: FastifyInstance): EngineDeps {
     prisma: app.prisma,
     emit: (target, event, payload) => {
       if (target.startsWith('team:') && app.io) {
-        app.io.to(target).emit(event, payload);
+        const room = app.io.to(target) as unknown as {
+          emit: (event: string, payload: unknown) => void;
+        };
+        room.emit(event, payload);
         return;
       }
       app.emitToParty(target, event, payload);

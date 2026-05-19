@@ -180,8 +180,14 @@ const roundsRoutes: FastifyPluginAsyncZod = async (app) => {
         return r;
       });
 
+      const def = await app.prisma.gameDefinition.findUnique({
+        where: { id: updated.gameDefinitionId },
+        select: { slug: true },
+      });
+
       app.emitToParty(round.partyId, 'round:started', {
         roundId: updated.id,
+        gameSlug: def?.slug ?? null,
         order: updated.order,
         config: updated.config,
         startedAt: updated.startedAt,
@@ -194,10 +200,6 @@ const roundsRoutes: FastifyPluginAsyncZod = async (app) => {
       // is missing), the round still runs in manual-scoring mode — the host
       // writes scores via POST /rounds/:id/score. We log the error so it
       // surfaces but don't fail the request.
-      const def = await app.prisma.gameDefinition.findUnique({
-        where: { id: updated.gameDefinitionId },
-        select: { slug: true },
-      });
       if (def && app.games.has(def.slug)) {
         app.games
           .startRound(def.slug, {

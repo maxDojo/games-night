@@ -1,41 +1,44 @@
 import type { Server as SocketIOServer, Socket } from 'socket.io';
 import type { FastifyInstance } from 'fastify';
+import {
+  PartyJoinPayloadSchema,
+  RoundEventPayloadSchema,
+  type ClientToServerEvents,
+  type InterServerEvents,
+  type ServerToClientEvents,
+  type SocketData,
+} from './contracts.js';
 
-// Socket events are namespaced into "rooms" — one room per Party (by joinCode).
-// Clients emit `party:join` with { joinCode, playerId } and we subscribe them.
-//
-// Incoming (client → server):
-//   party:join     { joinCode, playerId }
-//   round:event    { roundId, type, payload? }
-//                    type values per game:
-//                      trivia:   'answer'            payload { choice: string }
-//                      charades: 'correct' | 'skip'  payload (none)
-//                      taboo:    'correct' | 'skip' | 'taboo'  payload (none)
-//                  Backward-compat alias: `round:answer` is auto-mapped to type='answer'.
-//
-// Outgoing (server → clients in the party room):
-//   party:state          full lobby/team state
-//   round:started        { roundId, gameSlug, config }
-//   round:ended          { roundId, scores }
-//   score:updated        { roundId, teamId, points, delta? }
-//   prompt:next          { promptId, ... game-specific ... , deadlineAt }
-//   prompt:reveal        { promptId, ... game-specific ... }
-//   turn:started         { teamId, deadlineAt }           ← charades / taboo
-//   turn:ended           { teamId, points, correct, skips }
-//   error                { message }
+type GamesNightSocketServer = SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
 
-interface RoundEventPayload {
-  roundId?: unknown;
-  type?: unknown;
-  payload?: unknown;
-}
+type GamesNightSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
 
-export function registerSocketHandlers(io: SocketIOServer, app: FastifyInstance) {
-  async function dispatchEvent(socket: Socket, msg: RoundEventPayload, defaultType?: string) {
-    const roundId = typeof msg?.roundId === 'string' ? msg.roundId : null;
-    if (!roundId) return;
-    const type = typeof msg?.type === 'string' ? msg.type : defaultType;
-    if (!type) return;
+export function registerSocketHandlers(io: GamesNightSocketServer, app: FastifyInstance) {
+  async function dispatchEvent(
+    socket: GamesNightSocket,
+    msg: unknown,
+    defaultType?: string,
+  ) {
+    const parsed = RoundEventPayloadSchema.safeParse(msg);
+    if (!parsed.success) {
+      return emitSocketError(socket, 'ValidationError', 'Invalid round event payload', parsed.error.flatten());
+    }
+
+    const { roundId, payload } = parsed.data;
+    const type = parsed.data.type ?? defaultType;
+    if (!type) {
+      return emitSocketError(socket, 'ValidationError', 'Missing round event type');
+    }
 
     const runner = app.games.get(roundId);
     if (!runner) return; // round has no engine (manual-scoring mode), ignore.
@@ -44,22 +47,28 @@ export function registerSocketHandlers(io: SocketIOServer, app: FastifyInstance)
       where: { socketId: socket.id },
       select: { id: true, teamId: true },
     });
-    if (!player) return socket.emit('error', { message: 'Not joined to a party' });
+    if (!player) return emitSocketError(socket, 'NotJoined', 'Not joined to a party');
 
     await runner.handleEvent(type, {
       playerId: player.id,
       teamId: player.teamId,
-      payload: msg.payload,
+      payload,
     });
   }
 
-  io.on('connection', (socket: Socket) => {
+  io.on('connection', (socket) => {
     app.log.info({ socketId: socket.id }, 'socket connected');
 
-    socket.on('party:join', async ({ joinCode, playerId }: { joinCode: string; playerId: string }) => {
+    socket.on('party:join', async (payload) => {
       try {
+        const parsed = PartyJoinPayloadSchema.safeParse(payload);
+        if (!parsed.success) {
+          return emitSocketError(socket, 'ValidationError', 'Invalid party join payload', parsed.error.flatten());
+        }
+
+        const { joinCode, playerId } = parsed.data;
         const party = await app.prisma.party.findUnique({ where: { joinCode } });
-        if (!party) return socket.emit('error', { message: 'Party not found' });
+        if (!party) return emitSocketError(socket, 'NotFound', 'Party not found');
 
         socket.join(`party:${party.id}`);
         const player = await app.prisma.player.update({
@@ -69,29 +78,29 @@ export function registerSocketHandlers(io: SocketIOServer, app: FastifyInstance)
         // Also join a team-scoped room so engines can emit private events
         // (e.g. the charades phrase) only to the acting team.
         socket.join(`team:${player.teamId}`);
-        socket.emit('party:state', { partyId: party.id, status: party.status });
+        await app.broadcastPartyState(party.id);
       } catch (err) {
         app.log.error({ err }, 'party:join failed');
-        socket.emit('error', { message: 'Could not join party' });
+        emitSocketError(socket, 'JoinFailed', 'Could not join party');
       }
     });
 
-    socket.on('round:event', async (msg: RoundEventPayload) => {
+    socket.on('round:event', async (msg) => {
       try {
         await dispatchEvent(socket, msg);
       } catch (err) {
         app.log.error({ err }, 'round:event failed');
-        socket.emit('error', { message: 'Could not process event' });
+        emitSocketError(socket, 'EventFailed', 'Could not process event');
       }
     });
 
     // Back-compat: older trivia clients emit `round:answer`. Treat as type='answer'.
-    socket.on('round:answer', async (msg: RoundEventPayload) => {
+    socket.on('round:answer', async (msg) => {
       try {
         await dispatchEvent(socket, msg, 'answer');
       } catch (err) {
         app.log.error({ err }, 'round:answer failed');
-        socket.emit('error', { message: 'Could not process answer' });
+        emitSocketError(socket, 'AnswerFailed', 'Could not process answer');
       }
     });
 
@@ -102,4 +111,13 @@ export function registerSocketHandlers(io: SocketIOServer, app: FastifyInstance)
         .catch(() => undefined);
     });
   });
+}
+
+function emitSocketError(
+  socket: GamesNightSocket,
+  error: string,
+  message: string,
+  issues?: unknown,
+) {
+  socket.emit('error', { error, message, issues });
 }
