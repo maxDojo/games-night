@@ -15,6 +15,7 @@
     "format:api": "pnpm --filter @games-night/api format",
     "test": "pnpm -r --if-present test",
     "test:api": "pnpm --filter @games-night/api test",
+    "test:api:coverage": "pnpm --filter @games-night/api test:coverage",
     "prisma:generate": "pnpm --filter @games-night/api prisma:generate",
     "prisma:migrate": "pnpm --filter @games-night/api prisma:migrate",
     "db:seed:offline": "pnpm --filter @games-night/api db:seed:offline",
