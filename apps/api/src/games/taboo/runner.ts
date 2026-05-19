@@ -141,6 +141,7 @@ export class TabooRoundRunner implements RoundRunner {
     this.turn.currentPrompt = card;
 
     const payload = {
+      kind: 'taboo-card' as const,
       roundId: this.roundId,
       promptId: card.id,
       teamId: this.turn.team.id,

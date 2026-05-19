@@ -100,6 +100,7 @@ describe('CharadesRoundRunner', () => {
     expect(promptNext).toBeTruthy();
     // Phrase goes to the team room (privacy), not the party room.
     expect(promptNext![0]).toBe('team:t1');
+    expect((promptNext![2] as { kind: string; phrase: string }).kind).toBe('charades-phrase');
     expect((promptNext![2] as { phrase: string }).phrase).toBe('Phrase 1');
   });
 

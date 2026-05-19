@@ -2,10 +2,25 @@ import { Server as SocketIOServer } from 'socket.io';
 import fp from 'fastify-plugin';
 import { env } from '../config/env.js';
 import { registerSocketHandlers } from '../sockets/index.js';
+import type {
+  ClientToServerEvents,
+  InterServerEvents,
+  ServerToClientEventName,
+  ServerToClientEvents,
+  ServerToClientPayload,
+  SocketData,
+} from '../sockets/contracts.js';
+
+type GamesNightSocketServer = SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
 
 declare module 'fastify' {
   interface FastifyInstance {
-    io: SocketIOServer;
+    io: GamesNightSocketServer;
     /**
      * Broadcast the full party state (teams + players) to every socket joined
      * to that party's room. No-op if sockets are disabled.
@@ -15,7 +30,11 @@ declare module 'fastify' {
      * Low-level: emit any event to every socket in the party room. Used for
      * round/score/game events. No-op if sockets are disabled.
      */
-    emitToParty: (partyId: string, event: string, payload: unknown) => void;
+    emitToParty: <E extends ServerToClientEventName>(
+      partyId: string,
+      event: E,
+      payload: ServerToClientPayload<E>,
+    ) => void;
   }
 }
 
@@ -31,7 +50,12 @@ export default fp<SocketPluginOpts>(async (app, opts) => {
     return;
   }
 
-  const io = new SocketIOServer(app.server, {
+  const io = new SocketIOServer<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >(app.server, {
     path: env.SOCKET_PATH,
     cors: {
       origin: env.CORS_ORIGINS === '*' ? true : env.CORS_ORIGINS.split(','),
@@ -51,8 +75,11 @@ export default fp<SocketPluginOpts>(async (app, opts) => {
     io.to(`party:${partyId}`).emit('party:state', party);
   });
 
-  app.decorate('emitToParty', (partyId: string, event: string, payload: unknown) => {
-    io.to(`party:${partyId}`).emit(event, payload);
+  app.decorate('emitToParty', (partyId, event, payload) => {
+    const room = io.to(`party:${partyId}`) as unknown as {
+      emit: (event: string, payload: unknown) => void;
+    };
+    room.emit(event, payload);
   });
 
   app.addHook('onClose', async () => {

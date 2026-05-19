@@ -143,6 +143,7 @@ export class TriviaRoundRunner implements RoundRunner {
 
     const deadlineAt = new Date(this.current.startedAtMs + this.config.secondsPerQuestion * 1000);
     this.deps.emit(this.partyId, 'prompt:next', {
+      kind: 'trivia-question',
       roundId: this.roundId,
       promptId: p.id,
       questionNumber: this.currentIndex + 1,
@@ -229,6 +230,7 @@ export class TriviaRoundRunner implements RoundRunner {
     }
 
     this.deps.emit(this.partyId, 'prompt:reveal', {
+      kind: 'trivia-answer',
       roundId: this.roundId,
       promptId: current.promptId,
       questionNumber: this.currentIndex + 1,

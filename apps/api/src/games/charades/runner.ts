@@ -183,6 +183,7 @@ export class CharadesRoundRunner implements RoundRunner {
     this.turn.currentPrompt = phrase;
 
     this.deps.emit(`team:${this.turn.team.id}`, 'prompt:next', {
+      kind: 'charades-phrase',
       roundId: this.roundId,
       promptId: phrase.id,
       teamId: this.turn.team.id,

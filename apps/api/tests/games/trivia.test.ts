@@ -122,7 +122,8 @@ describe('TriviaRoundRunner', () => {
     await runner.start();
     const calls = emit.mock.calls.filter((c) => c[1] === 'prompt:next');
     expect(calls).toHaveLength(1);
-    const payload = calls[0]![2] as { questionNumber: number; total: number; question: string };
+    const payload = calls[0]![2] as { kind: string; questionNumber: number; total: number; question: string };
+    expect(payload.kind).toBe('trivia-question');
     expect(payload.questionNumber).toBe(1);
     expect(payload.total).toBe(3);
     expect(payload.question).toBe('Q1');
@@ -136,7 +137,9 @@ describe('TriviaRoundRunner', () => {
     await runner.start();
 
     await fake.advance(20_000); // question timeout
-    expect(emit.mock.calls.find((c) => c[1] === 'prompt:reveal')).toBeTruthy();
+    const reveal = emit.mock.calls.find((c) => c[1] === 'prompt:reveal');
+    expect(reveal).toBeTruthy();
+    expect((reveal![2] as { kind: string }).kind).toBe('trivia-answer');
 
     await fake.advance(5_000); // reveal pause → next question
     const promptCalls = emit.mock.calls.filter((c) => c[1] === 'prompt:next');

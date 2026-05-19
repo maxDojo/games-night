@@ -93,6 +93,7 @@ describe('TabooRoundRunner', () => {
     const actingPrompt = emit.mock.calls.find((c) => c[1] === 'prompt:next');
     expect(actingPrompt).toBeTruthy();
     expect(actingPrompt![0]).toBe('team:t1');
+    expect((actingPrompt![2] as { kind: string }).kind).toBe('taboo-card');
     expect((actingPrompt![2] as { word: string; forbidden: string[] }).word).toBe('Word 1');
     expect((actingPrompt![2] as { forbidden: string[] }).forbidden).toEqual(['Nope 1']);
 
