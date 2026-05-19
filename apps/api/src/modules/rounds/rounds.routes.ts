@@ -9,6 +9,7 @@ import {
   canWriteScore,
   mergeRoundConfig,
 } from '../../lib/round-state.js';
+import { QueueRoundBodySchema } from '../../games/config-contracts.js';
 
 // ---------- Schemas ----------
 
@@ -41,11 +42,6 @@ const JoinCodeParam = z.object({
 });
 
 const RoundIdParam = z.object({ roundId: z.string().min(1) });
-
-const CreateRoundBody = z.object({
-  gameSlug: z.string().min(1).describe('Slug of the GameDefinition: trivia | charades | taboo | ...'),
-  config: z.record(z.string(), z.unknown()).optional().describe('Overrides merged shallowly with GameDefinition.defaultConfig.'),
-});
 
 const WriteScoreBody = z.object({
   teamId: z.string().min(1),
@@ -94,7 +90,7 @@ const roundsRoutes: FastifyPluginAsyncZod = async (app) => {
           'Host-only. Resolves the GameDefinition by slug, merges defaultConfig with overrides, and creates the round in PENDING.',
         security: [{ bearerAuth: [] }],
         params: JoinCodeParam,
-        body: CreateRoundBody,
+        body: QueueRoundBodySchema,
         response: { 201: RoundSchema, 401: ErrorSchema, 403: ErrorSchema, 404: ErrorSchema, 409: ErrorSchema },
       },
     },
@@ -117,7 +113,7 @@ const roundsRoutes: FastifyPluginAsyncZod = async (app) => {
 
       const merged = mergeRoundConfig(
         (game.defaultConfig as Record<string, unknown>) ?? {},
-        req.body.config,
+        req.body.config as Record<string, unknown> | undefined,
       );
 
       // If the game has a registered engine with a config schema, validate

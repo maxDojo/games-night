@@ -43,6 +43,8 @@ async function main() {
   console.log('\nPaths in OpenAPI spec:');
   for (const path of Object.keys(json.paths ?? {})) console.log(`  - ${path}`);
 
+  failed += assertOpenApiContract(json);
+
   await app.close();
   process.exit(failed === 0 ? 0 : 1);
 }
@@ -51,3 +53,75 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
+
+function assertOpenApiContract(json: { paths?: Record<string, unknown> }) {
+  let failed = 0;
+  const paths = json.paths ?? {};
+
+  failed += assert(Boolean(paths['/v1/games']), 'OpenAPI includes /v1/games');
+
+  const queueRoundSchema = requestBodySchema(paths, '/v1/parties/{joinCode}/rounds', 'post');
+  failed += assertGameConfigAlternatives(queueRoundSchema, 'round queue body');
+
+  const savePlanSchema = requestBodySchema(paths, '/v1/plans', 'post');
+  const planRoundSchema = savePlanSchema?.properties?.rounds?.items;
+  failed += assertGameConfigAlternatives(planRoundSchema, 'plan round body');
+
+  return failed;
+}
+
+function requestBodySchema(
+  paths: Record<string, unknown>,
+  path: string,
+  method: string,
+): SchemaObject | undefined {
+  const pathItem = paths[path] as Record<string, unknown> | undefined;
+  const operation = pathItem?.[method] as Record<string, unknown> | undefined;
+  const requestBody = operation?.requestBody as Record<string, unknown> | undefined;
+  const content = requestBody?.content as Record<string, unknown> | undefined;
+  const jsonContent = content?.['application/json'] as Record<string, unknown> | undefined;
+  return jsonContent?.schema as SchemaObject | undefined;
+}
+
+function assertGameConfigAlternatives(schema: SchemaObject | undefined, label: string) {
+  let failed = 0;
+  const alternatives = schema?.anyOf ?? [];
+  failed += assert(alternatives.length >= 4, `${label} exposes typed built-in alternatives`);
+
+  failed += assert(
+    hasAlternative(alternatives, 'trivia', ['questionsPerRound', 'secondsPerQuestion']),
+    `${label} includes trivia config fields`,
+  );
+  failed += assert(
+    hasAlternative(alternatives, 'charades', ['phrasesPerTurn', 'secondsPerTurn']),
+    `${label} includes charades config fields`,
+  );
+  failed += assert(
+    hasAlternative(alternatives, 'taboo', ['cardsPerTurn', 'forbiddenWordPenalty']),
+    `${label} includes taboo config fields`,
+  );
+
+  return failed;
+}
+
+function hasAlternative(alternatives: SchemaObject[], slug: string, fields: string[]) {
+  return alternatives.some((alternative) => {
+    const gameSlug = alternative.properties?.gameSlug;
+    if (!gameSlug?.enum?.includes(slug)) return false;
+
+    const configProperties = alternative.properties?.config?.properties ?? {};
+    return fields.every((field) => Boolean(configProperties[field]));
+  });
+}
+
+function assert(ok: boolean, label: string) {
+  console.log(`${ok ? '✓' : '✗'}  contract  ${label}`);
+  return ok ? 0 : 1;
+}
+
+interface SchemaObject {
+  anyOf?: SchemaObject[];
+  enum?: string[];
+  properties?: Record<string, SchemaObject>;
+  items?: SchemaObject;
+}
