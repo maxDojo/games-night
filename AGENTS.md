@@ -59,8 +59,9 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: write mobile integration notes in `docs/mobile-integration.md`.
 - **Operational Polish** - next
   - Done: add CI guardrails for `pnpm test:api`, `pnpm build:api`, `pnpm smoke:docs`, and `pnpm api-client:check`.
-  - Add Vitest coverage tooling and a `test:api:coverage` script.
-  - Establish an initial coverage baseline before setting hard thresholds.
+  - Done: add Vitest coverage tooling and a `test:api:coverage` script.
+  - Done: establish initial coverage baseline before setting hard thresholds.
+    - Baseline: 88.15% statements/lines, 83.16% branches, 87.5% functions.
   - Add optional real-Postgres integration test support gated on `INTEGRATION_TEST_DATABASE_URL`.
   - Add a first integration slice covering readiness plus party/team/player lifecycle.
   - Review deployment readiness for `Dockerfile`, `fly.toml`, runtime env vars, and Prisma migrate/deploy flow.
