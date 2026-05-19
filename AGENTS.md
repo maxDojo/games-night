@@ -58,7 +58,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: generate TypeScript API types from `/docs/json` and compile a usage fixture.
   - Done: write mobile integration notes in `docs/mobile-integration.md`.
 - **Operational Polish** - next
-  - Add CI guardrails for `pnpm test:api`, `pnpm build:api`, `pnpm smoke:docs`, and `pnpm api-client:check`.
+  - Done: add CI guardrails for `pnpm test:api`, `pnpm build:api`, `pnpm smoke:docs`, and `pnpm api-client:check`.
   - Add Vitest coverage tooling and a `test:api:coverage` script.
   - Establish an initial coverage baseline before setting hard thresholds.
   - Add optional real-Postgres integration test support gated on `INTEGRATION_TEST_DATABASE_URL`.

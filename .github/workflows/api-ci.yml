@@ -1,0 +1,51 @@
+name: API CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: API guardrails
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma:generate
+
+      - name: Test API
+        run: pnpm test:api
+
+      - name: Build API
+        run: pnpm build:api
+
+      - name: Smoke docs
+        run: pnpm smoke:docs
+
+      - name: Check API client contract
+        run: pnpm api-client:check
