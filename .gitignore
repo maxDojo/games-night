@@ -9,6 +9,7 @@ dist/
 coverage/
 .turbo/
 .vite/
+apps/api/generated/openapi.json
 
 *.log
 npm-debug.log*
