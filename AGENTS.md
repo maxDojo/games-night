@@ -62,8 +62,8 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add Vitest coverage tooling and a `test:api:coverage` script.
   - Done: establish initial coverage baseline before setting hard thresholds.
     - Baseline: 88.15% statements/lines, 83.16% branches, 87.5% functions.
-  - Add optional real-Postgres integration test support gated on `INTEGRATION_TEST_DATABASE_URL`.
-  - Add a first integration slice covering readiness plus party/team/player lifecycle.
+  - Done: add optional real-Postgres integration test support gated on `INTEGRATION_TEST_DATABASE_URL`.
+  - Done: add a first integration slice covering readiness plus party/team/player lifecycle.
   - Review deployment readiness for `Dockerfile`, `fly.toml`, runtime env vars, and Prisma migrate/deploy flow.
   - Add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
   - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
@@ -266,6 +266,7 @@ pnpm --filter @games-night/api db:seed          # fetches trivia from Open Trivi
 # OR for no-network: pnpm db:seed:offline
 pnpm dev:api                                    # http://localhost:3000  /docs  /socket.io
 pnpm test:api                                   # 157 tests
+pnpm test:api:integration                       # skips unless INTEGRATION_TEST_DATABASE_URL is set
 pnpm build:api                                  # TypeScript build
 ```
 
@@ -275,33 +276,34 @@ Useful: `pnpm smoke:docs` boots the app with a stub Prisma and verifies `/docs/`
 
 ## 10. Files to know
 
-| Path                                           | Purpose                                                                  |
-| ---------------------------------------------- | ------------------------------------------------------------------------ |
-| `package.json`                                 | Root pnpm workspace scripts and build-script allowlist                   |
-| `pnpm-workspace.yaml`                          | Workspace package globs                                                  |
-| `docs/mobile-integration.md`                   | Mobile-facing API integration notes                                      |
-| `apps/api/src/app.ts`                          | Fastify wiring (security, swagger, plugins, routes)                      |
-| `apps/api/src/config/env.ts`                   | Zod-validated environment                                                |
-| `apps/api/src/config/providers.ts`             | Single source of truth for external-dep selection                        |
-| `apps/api/src/lib/scoring.ts`                  | Unified "Party Points" formula                                           |
-| `apps/api/src/lib/round-state.ts`              | Pure state-machine guards + leaderboard tally                            |
-| `apps/api/src/games/types.ts`                  | `GameEngineFactory` / `RoundRunner` / `EngineClock` interfaces           |
-| `apps/api/src/games/config-contracts.ts`       | OpenAPI-visible round/plan config request schemas                        |
-| `apps/api/src/games/registry.ts`               | slug -> factory + roundId -> live runner                                 |
-| `apps/api/src/games/<slug>/runner.ts`          | Engine class + factory export                                            |
-| `apps/api/src/games/<slug>/config.ts`          | Per-game Zod config schema                                               |
-| `apps/api/src/games/taboo/`                    | Taboo engine and config                                                  |
-| `apps/api/src/plugins/games.ts`                | Decorates `app.games` + builds engine deps                               |
-| `apps/api/src/plugins/socket.ts`               | Socket.IO setup + `emitToParty` / `broadcastPartyState` helpers          |
-| `apps/api/src/sockets/contracts.ts`            | Typed Socket.IO client/server event contract                             |
-| `apps/api/src/modules/plans/plans.routes.ts`   | Saved host party plans and apply-to-party queueing                       |
-| `apps/api/src/modules/<area>/<area>.routes.ts` | HTTP routes (rounds, parties, teams, players, auth, leaderboard, health) |
-| `apps/api/generated/api-types.d.ts`            | Generated OpenAPI TypeScript contract for client usage                   |
-| `apps/api/prisma/schema.prisma`                | Domain model - read it before any DB work                                |
-| `apps/api/prisma/seeds/`                       | `games.ts` (GameDefinitions) + `prompts.ts` (provider + JSON)            |
-| `apps/api/data/*.seed.json`                    | Static charades + taboo starter content                                  |
-| `apps/api/tests/helpers/mockPrisma.ts`         | Mock Prisma factory. Extend when using new model methods.                |
-| `apps/api/tests/games/<slug>.test.ts`          | Engine tests with the manual fake-clock pattern                          |
+| Path                                           | Purpose                                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------------------- |
+| `package.json`                                 | Root pnpm workspace scripts and build-script allowlist                          |
+| `pnpm-workspace.yaml`                          | Workspace package globs                                                         |
+| `docs/mobile-integration.md`                   | Mobile-facing API integration notes                                             |
+| `apps/api/src/app.ts`                          | Fastify wiring (security, swagger, plugins, routes)                             |
+| `apps/api/src/config/env.ts`                   | Zod-validated environment                                                       |
+| `apps/api/src/config/providers.ts`             | Single source of truth for external-dep selection                               |
+| `apps/api/src/lib/scoring.ts`                  | Unified "Party Points" formula                                                  |
+| `apps/api/src/lib/round-state.ts`              | Pure state-machine guards + leaderboard tally                                   |
+| `apps/api/src/games/types.ts`                  | `GameEngineFactory` / `RoundRunner` / `EngineClock` interfaces                  |
+| `apps/api/src/games/config-contracts.ts`       | OpenAPI-visible round/plan config request schemas                               |
+| `apps/api/src/games/registry.ts`               | slug -> factory + roundId -> live runner                                        |
+| `apps/api/src/games/<slug>/runner.ts`          | Engine class + factory export                                                   |
+| `apps/api/src/games/<slug>/config.ts`          | Per-game Zod config schema                                                      |
+| `apps/api/src/games/taboo/`                    | Taboo engine and config                                                         |
+| `apps/api/src/plugins/games.ts`                | Decorates `app.games` + builds engine deps                                      |
+| `apps/api/src/plugins/socket.ts`               | Socket.IO setup + `emitToParty` / `broadcastPartyState` helpers                 |
+| `apps/api/src/sockets/contracts.ts`            | Typed Socket.IO client/server event contract                                    |
+| `apps/api/src/modules/plans/plans.routes.ts`   | Saved host party plans and apply-to-party queueing                              |
+| `apps/api/src/modules/<area>/<area>.routes.ts` | HTTP routes (rounds, parties, teams, players, auth, leaderboard, health)        |
+| `apps/api/generated/api-types.d.ts`            | Generated OpenAPI TypeScript contract for client usage                          |
+| `apps/api/prisma/schema.prisma`                | Domain model - read it before any DB work                                       |
+| `apps/api/prisma/seeds/`                       | `games.ts` (GameDefinitions) + `prompts.ts` (provider + JSON)                   |
+| `apps/api/data/*.seed.json`                    | Static charades + taboo starter content                                         |
+| `apps/api/tests/helpers/mockPrisma.ts`         | Mock Prisma factory. Extend when using new model methods.                       |
+| `apps/api/tests/games/<slug>.test.ts`          | Engine tests with the manual fake-clock pattern                                 |
+| `apps/api/tests/integration/`                  | Opt-in real-Postgres integration tests gated by `INTEGRATION_TEST_DATABASE_URL` |
 
 ---
 

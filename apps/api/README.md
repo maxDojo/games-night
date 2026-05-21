@@ -246,6 +246,18 @@ npm run dev:api
 # → http://localhost:3000  · docs at /docs  · socket at /socket.io
 ```
 
+### Integration tests
+
+The default API test suite uses mocked Prisma and needs no database. Real Postgres integration tests are opt-in and skipped unless `INTEGRATION_TEST_DATABASE_URL` is set.
+
+```bash
+pnpm test:api:integration
+
+# To run against a real database:
+INTEGRATION_TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/games_night_test?schema=public" pnpm prisma:deploy
+INTEGRATION_TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/games_night_test?schema=public" pnpm test:api:integration
+```
+
 ---
 
 ## 8. Project plan & task list
