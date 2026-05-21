@@ -64,7 +64,7 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Baseline: 88.15% statements/lines, 83.16% branches, 87.5% functions.
   - Done: add optional real-Postgres integration test support gated on `INTEGRATION_TEST_DATABASE_URL`.
   - Done: add a first integration slice covering readiness plus party/team/player lifecycle.
-  - Review deployment readiness for `Dockerfile`, `fly.toml`, runtime env vars, and Prisma migrate/deploy flow.
+  - Done: review deployment readiness for `Dockerfile`, `fly.toml`, runtime env vars, and Prisma migrate/deploy flow.
   - Add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
   - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
 - **Housekeeping** - deferred follow-up bucket

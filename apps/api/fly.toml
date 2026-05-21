@@ -9,6 +9,10 @@ primary_region = "lhr"
   NODE_ENV = "production"
   PORT = "3000"
   HOST = "0.0.0.0"
+  ENABLE_SWAGGER = "false"
+
+[deploy]
+  release_command = "pnpm --filter @games-night/api prisma:deploy"
 
 [http_service]
   internal_port = 3000
