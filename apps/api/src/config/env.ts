@@ -20,6 +20,7 @@ const EnvSchema = z.object({
   // Free defaults. Swap when ready to upgrade — see README §Providers.
   TRIVIA_PROVIDER: z.enum(['open-trivia-db', 'none']).default('open-trivia-db'),
   AI_PROVIDER: z.enum(['disabled']).default('disabled'),
+  ERROR_PROVIDER: z.enum(['disabled']).default('disabled'),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

@@ -201,8 +201,9 @@ Every external dependency (content sources, AI generation, push, email, storage,
 |---|---|---|---|
 | **Trivia content** | `TRIVIA_PROVIDER` | `open-trivia-db` — public CC-BY-SA API via native `fetch`, no key needed | The Trivia API (commercial), Kaggle bulk imports, licensed packs |
 | **AI generation** | `AI_PROVIDER` | `disabled` — interface exists, no calls made | Anthropic / OpenAI (paid) or Ollama (free, local install) — add an impl under `src/providers/ai/` and register it |
+| **Error tracking** | `ERROR_PROVIDER` | `disabled` — unexpected 5xx errors pass through a no-op capture sink | Sentry / Highlight / hosted logging provider — add an impl under `src/providers/errors/` and register it |
 
-To add new domains (e.g. `EMAIL_PROVIDER`, `PUSH_PROVIDER`, `ERROR_PROVIDER`, `STORAGE_PROVIDER`) when they're needed:
+To add new domains (e.g. `EMAIL_PROVIDER`, `PUSH_PROVIDER`, `STORAGE_PROVIDER`) when they're needed:
 
 1. Create `src/providers/<domain>/{types,impl-a,impl-b,index}.ts` with an interface and a noop default.
 2. Add the env var to `src/config/env.ts` (zod enum).
@@ -385,6 +386,7 @@ Optional env vars:
 - `SOCKET_PATH` - defaults to `/socket.io`.
 - `TRIVIA_PROVIDER` - defaults to `open-trivia-db`.
 - `AI_PROVIDER` - defaults to `disabled`.
+- `ERROR_PROVIDER` - defaults to `disabled`.
 
 Neon: create a project, copy the connection string into `DATABASE_URL`, and keep pooled/direct connection behavior aligned with Prisma migration requirements.
 

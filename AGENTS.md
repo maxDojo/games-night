@@ -65,7 +65,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add optional real-Postgres integration test support gated on `INTEGRATION_TEST_DATABASE_URL`.
   - Done: add a first integration slice covering readiness plus party/team/player lifecycle.
   - Done: review deployment readiness for `Dockerfile`, `fly.toml`, runtime env vars, and Prisma migrate/deploy flow.
-  - Add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
+  - Done: add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
   - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
 - **Housekeeping** - deferred follow-up bucket
   - Add mid-round persistence or a `Round.events` audit log so active rounds can recover after restart.
@@ -157,12 +157,12 @@ No active in-repo feature work is assumed from this file. The next direction sho
 - Mock Prisma via `apps/api/tests/helpers/mockPrisma.ts`. Extend it whenever you use a new model method.
 - Game engines use a **custom manual fake clock** (not `vi.useFakeTimers`) - see `apps/api/tests/games/trivia.test.ts` for the pattern. It gives precise tick control.
 - Route tests usually build the app with mock prisma + `disableSockets: true`, close it in `afterAll`, and reset mocks in `beforeEach`.
-- Current API test suite is 157 tests.
+- Current API test suite is 160 tests.
 
 ### Providers
 
 - Every external dependency goes through `apps/api/src/config/providers.ts`. Defaults should be free / zero-dep.
-- Currently wired: `trivia` (Open Trivia DB) and `ai` (disabled). Future: `email`, `push`, `errors`, `storage`.
+- Currently wired: `trivia` (Open Trivia DB), `ai` (disabled), and `errors` (disabled). Future: `email`, `push`, `storage`, and concrete provider implementations.
 - Documented in `apps/api/README.md` section 6. Adding a new domain is a 3-step process documented in `apps/api/src/config/providers.ts`.
 
 ### Game engines
@@ -232,7 +232,7 @@ No active in-repo feature work is assumed from this file. The next direction sho
 3. **No prompt dedup across rounds in the same party** - the same trivia question / charades phrase / taboo card could appear twice in one night.
 4. **Prompt/card pools can overlap when seed content is small** - phrase/card pools are shared across teams unless future logic reserves used prompts.
 5. **No rich mobile config-form metadata yet** - OpenAPI exposes typed built-in config alternatives, but there is no dedicated endpoint for mobile labels, control types, presets, or explanatory copy.
-6. **Email / push / storage / error-tracking providers are not wired yet** - interfaces deferred until M4 when something actually needs them.
+6. **Email / push / storage providers are not wired yet** - interfaces deferred until something actually needs them. Error tracking has a disabled provider seam, but no concrete Sentry-style implementation.
 7. **No live integration tests against a real DB** - the suite mocks Prisma. Adding `apps/api/tests/integration/*.test.ts` gated on `INTEGRATION_TEST_DATABASE_URL` is a fine future addition.
 
 ---
@@ -265,7 +265,7 @@ pnpm prisma:migrate
 pnpm --filter @games-night/api db:seed          # fetches trivia from Open Trivia DB
 # OR for no-network: pnpm db:seed:offline
 pnpm dev:api                                    # http://localhost:3000  /docs  /socket.io
-pnpm test:api                                   # 157 tests
+pnpm test:api                                   # 160 tests
 pnpm test:api:integration                       # skips unless INTEGRATION_TEST_DATABASE_URL is set
 pnpm build:api                                  # TypeScript build
 ```
@@ -325,7 +325,7 @@ In `apps/api/README.md` section 9. **Principle: never paywall the ability to run
 ## 13. If you're about to start work in a new session
 
 1. `git checkout main && git pull --ff-only`
-2. `pnpm install && pnpm test:api` - expect 157 green tests
+2. `pnpm install && pnpm test:api` - expect 160 green tests
 3. Check open PRs on GitHub if the tooling is available
 4. Read this file + `apps/api/README.md`
 5. Confirm the user's current requested next step and the relevant project lane: API, mobile, or web
