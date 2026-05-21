@@ -43,6 +43,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Host planning**                          | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem`         | Done   |
 | **API Client Contract + Mobile Readiness** | REST/socket contract hardening, generated client guardrails, mobile integration notes | Done   |
 | **Operational Polish**                     | CI, coverage, integration checks, deploy readiness, production seams                  | Next   |
+| **Persistent Teams + Mobile Host Controls** | API support for reusable teams/period leaderboards, host-only prompts, point overrides | Planned |
 
 #### API feature backlog
 
@@ -67,6 +68,16 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: review deployment readiness for `Dockerfile`, `fly.toml`, runtime env vars, and Prisma migrate/deploy flow.
   - Done: add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
   - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
+- **Persistent Teams + Mobile Host Controls** - planned
+  - Spec the product model for persistent host-owned periods, such as event, season, league, weekend, or trip.
+  - Add a persistent container above `Party` so a host can group multiple parties under one scoring period.
+  - Allow teams to belong either to a single party or to the persistent container.
+  - Add player team check-in for persistent teams without requiring durable individual identity.
+  - Add leaderboard aggregation modes: current party only and persistent period.
+  - Review `Round.config` and scoring inputs so the host can set points per round/game from mobile.
+  - Change Charades and Taboo private prompt delivery so prompts/forbidden words are host-control-device only, not team-room broadcasts.
+  - Update REST/OpenAPI/socket contracts and mobile integration notes for the new flows.
+  - Add integration coverage for persistent team check-in and period leaderboard aggregation.
 - **Housekeeping** - deferred follow-up bucket
   - Add mid-round persistence or a `Round.events` audit log so active rounds can recover after restart.
   - Add prompt/card deduplication across rounds in the same party/night.
@@ -90,12 +101,31 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 #### Mobile milestones
 
-- No mobile milestones defined yet.
 - `apps/mobile` was intentionally removed after an exploratory scaffold so it can be rebuilt step by step.
+
+| Milestone | What | Status |
+| --------- | ---- | ------ |
+| **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Planned |
+| **Mobile M1** Player join/check-in | Join by code, choose/check into team, view party status, view leaderboard, answer Trivia when active | Planned |
+| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments | Planned |
+| **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
+| **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, aggregate leaderboard across the period | Planned |
 
 #### Mobile task list
 
-- Rebuild the mobile app step by step against the API once the user provides direction.
+- **Mobile product contract** - agreed direction
+  - Hybrid model: host controls setup and moderation; players use lightweight screens for check-in, party status, Trivia answers, and optional leaderboard viewing.
+  - Host can choose whether teams and leaderboard are one-night only or persistent for a defined period.
+  - Persistent player participation is team-based: players check into a team, but the product does not need durable individual identity.
+  - Charades and Taboo prompts/forbidden words are host-device only. The host may hand their phone to the active player; other team/player devices should not receive those private prompts.
+  - Host can modify point values per round/game from their phone before or during round setup.
+  - Basic games-night hosting remains free; monetisation should target depth, content, organizations, or marketplace features later.
+- **Mobile M0** - next after required API planning
+  - Choose mobile stack and app location.
+  - Create app shell and navigation split for host/player modes.
+  - Wire generated API client and socket lifecycle.
+  - Add local session persistence for host token, join code, team selection, and last party.
+  - Add placeholder screens for the agreed M1-M4 flows.
 
 ### Cross-project coordination
 
