@@ -4,3 +4,5 @@ export { createTriviaProvider } from './trivia/index.js';
 export type { TriviaProvider, TriviaProviderKind, TriviaQuestion, TriviaDifficulty } from './trivia/index.js';
 export { createAIProvider } from './ai/index.js';
 export type { AIProvider, AIProviderKind, CharadesPhrase, TabooCard, AIGenerationOptions } from './ai/index.js';
+export { createErrorProvider } from './errors/index.js';
+export type { ErrorProvider, ErrorProviderKind, ErrorCaptureContext } from './errors/index.js';

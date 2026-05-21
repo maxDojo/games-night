@@ -16,6 +16,7 @@ import {
 } from 'fastify-type-provider-zod';
 
 import { env } from './config/env.js';
+import { providers } from './config/providers.js';
 import prismaPlugin from './plugins/prisma.js';
 import socketPlugin from './plugins/socket.js';
 import authenticatePlugin from './plugins/authenticate.js';
@@ -99,7 +100,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   }
 
   // Map ZodErrors thrown from route handlers (and the validator) to 400 responses.
-  app.setErrorHandler((err, _req, reply) => {
+  app.setErrorHandler((err, req, reply) => {
     if (err instanceof ZodError) {
       return reply.code(400).send({ error: 'ValidationError', issues: err.flatten() });
     }
@@ -109,8 +110,26 @@ export async function buildApp(options: BuildAppOptions = {}) {
         .code(400)
         .send({ error: 'ValidationError', issues: (err as { validation: unknown }).validation });
     }
+    const statusCode = err.statusCode ?? 500;
+    if (statusCode >= 500) {
+      void providers.errors
+        .captureException(err, {
+          tags: {
+            method: req.method,
+            route: req.routeOptions.url ?? req.url,
+            statusCode,
+          },
+          extra: {
+            url: req.url,
+            requestId: req.id,
+          },
+        })
+        .catch((captureErr) => {
+          app.log.error({ err: captureErr }, 'Error provider capture failed');
+        });
+    }
     app.log.error(err);
-    return reply.code(err.statusCode ?? 500).send({ error: err.message });
+    return reply.code(statusCode).send({ error: err.message });
   });
 
   // Infra plugins
