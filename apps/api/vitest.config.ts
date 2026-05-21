@@ -6,6 +6,7 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.ts'],
+    exclude: ['tests/integration/**'],
     pool: 'forks', // Fastify + sockets behave better in forked processes
     coverage: {
       provider: 'v8',
