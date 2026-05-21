@@ -357,17 +357,36 @@ INTEGRATION_TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/gam
 
 ```bash
 # One-time
-fly launch --no-deploy           # creates app, edit name in fly.toml
+fly launch --no-deploy            # creates app; confirm app name in fly.toml
 fly secrets set DATABASE_URL=... JWT_SECRET=...
 
 # Each deploy
 fly deploy
-# Migrations run as a release_command (add to fly.toml when ready):
-# [deploy]
-#   release_command = "npx prisma migrate deploy"
 ```
 
-Neon: create a project, copy the pooled connection string into `DATABASE_URL`.
+`fly.toml` runs `pnpm --filter @games-night/api prisma:deploy` as a release command, so migrations apply before the new machine version serves traffic.
+
+Required production secrets:
+
+- `DATABASE_URL` - Neon/Postgres connection string.
+- `JWT_SECRET` - 32+ character signing secret.
+
+Production env defaults in `fly.toml`:
+
+- `NODE_ENV=production`
+- `PORT=3000`
+- `HOST=0.0.0.0`
+- `ENABLE_SWAGGER=false`
+
+Optional env vars:
+
+- `CORS_ORIGINS` - defaults to `*`; set to comma-separated mobile/web origins when known.
+- `JWT_EXPIRES_IN` - defaults to `7d`.
+- `SOCKET_PATH` - defaults to `/socket.io`.
+- `TRIVIA_PROVIDER` - defaults to `open-trivia-db`.
+- `AI_PROVIDER` - defaults to `disabled`.
+
+Neon: create a project, copy the connection string into `DATABASE_URL`, and keep pooled/direct connection behavior aligned with Prisma migration requirements.
 
 ---
 

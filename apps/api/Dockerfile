@@ -1,27 +1,35 @@
-# --- Build stage ---
-FROM node:20-alpine AS build
+# syntax=docker/dockerfile:1
+
+FROM node:20-alpine AS base
 WORKDIR /app
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN apk add --no-cache openssl
+RUN corepack enable
 
-COPY package*.json ./
+# --- Dependencies stage ---
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
-RUN npm ci --workspace @games-night/api
+RUN pnpm install --frozen-lockfile --filter @games-night/api...
 
+# --- Build stage ---
+FROM deps AS build
 COPY apps/api ./apps/api
-WORKDIR /app/apps/api
-RUN npx prisma generate && npm run build
+RUN pnpm --filter @games-night/api prisma:generate
+RUN pnpm --filter @games-night/api build
 
 # --- Runtime stage ---
-FROM node:20-alpine
-WORKDIR /app
+FROM base AS runtime
 ENV NODE_ENV=production
 
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
-RUN npm ci --omit=dev --workspace @games-night/api
+COPY apps/api/prisma ./apps/api/prisma
+RUN pnpm install --frozen-lockfile --prod --filter @games-night/api...
+RUN pnpm --filter @games-night/api prisma:generate
+COPY --from=build /app/apps/api/dist ./apps/api/dist
 
 WORKDIR /app/apps/api
-COPY --from=build /app/apps/api/dist ./dist
-COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
-COPY --from=build /app/apps/api/prisma ./prisma
 EXPOSE 3000
 CMD ["node", "dist/server.js"]
