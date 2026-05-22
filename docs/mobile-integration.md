@@ -7,13 +7,15 @@ These notes describe how a React Native client should integrate with the current
 The mobile app is a hybrid host/player experience:
 
 - Host mode controls setup, teams, game queue, score corrections, and live moderation.
-- Player mode stays lightweight: join by code, check into a team, answer Trivia when enabled, and view current standings.
+- Player mode stays lightweight: join by code, check into a team, answer Trivia when enabled, and view only a post-reveal score report.
 - Team scoring is the default product model. Individual player identity remains optional.
 - Persistent teams and period leaderboards are core planned behavior because real games nights may reuse teams across weekly parties.
 - Custom games are a core planned feature because hosts commonly run local/manual games that do not fit built-in engines.
 - Charades and Taboo private prompts must be host-device only. The host can hand the phone to the active player; other player devices must not receive the private phrase/card.
 - Shared screens are useful, but Trivia must also support displaying questions on player phones when venue screens are down or far away.
 - Score corrections and score-event history are first-class because manual scoring errors and point disputes are expected in normal play.
+- Live team totals should be host-hidden by default. The host controls a reveal moment, after which player devices can show an audit/history report for verification.
+- Hosts can award special bonuses, for example best dressed or most vibrant, as score events with reasons.
 - Optional location verification and team capacity limits are host controls, not mandatory join friction.
 - Hosts should be able to brand the room/period/party with a display name, cover photo, and safe accent palette, for example `Greg's House`.
 
@@ -79,6 +81,10 @@ The mobile app is a hybrid host/player experience:
   - `POST /v1/rounds/{roundId}/score` for manual scoring or host override.
   - `POST /v1/rounds/{roundId}/end` to force-end or complete a round.
   - `POST /v1/rounds/{roundId}/skip` to skip a pending round.
+- Reveal scores:
+  - Planned: host toggles score reveal when the room is ready.
+  - Before reveal, player devices should not show team totals or rank.
+  - After reveal, player devices can show score history and correction/bonus details for verification.
 
 ## Planned Host Flow Extensions
 
@@ -225,6 +231,8 @@ Planned model:
 - Every point change should be represented as an append-only score event.
 - Corrections should reference the original event rather than silently mutating history.
 - Host UI should show who changed points, which team changed, the delta, and the reason.
+- Special bonuses should use the same audit path as scoring, with `source: "bonus"` and a clear reason such as `best dressed` or `most vibrant`.
+- Player-facing score history should remain locked until the host reveals scores.
 
 Planned REST shape:
 
@@ -248,7 +256,7 @@ type ScoreEvent = {
   teamId: string;
   delta: number;
   reason: string;
-  source: "engine" | "manual" | "correction" | "penalty";
+  source: "engine" | "manual" | "correction" | "penalty" | "bonus";
   correctsScoreEventId?: string;
   createdByUserId?: string;
   createdAt: string;
@@ -259,7 +267,7 @@ Mobile guidance:
 
 - Show clear team color/icon/name on every score action to reduce wrong-team awards.
 - Host score correction should require a reason, even if short.
-- Player-facing history can be delayed; host-facing history is the priority.
+- Player-facing history should be delayed until host reveal; host-facing history is always available.
 
 ### Trivia display modes
 
@@ -339,7 +347,7 @@ type ThemeProfile = {
 Mobile guidance:
 
 - Mobile M0 should define a `ThemeProfile` UI type even before the API exists.
-- Apply the active theme to entry, host lobby, player check-in, leaderboard, and shared-display surfaces.
+- Apply the active theme to entry, host lobby, player check-in, locked reveal report, and shared-display surfaces.
 - Keep game-critical UI readable regardless of the uploaded photo.
 - Always use a dark overlay/scrim over cover images when text is placed on top.
 - Generate or require fallback colors from the cover image before allowing the theme to go live.
@@ -358,6 +366,9 @@ Mobile guidance:
   - Connect Socket.IO to the API host.
   - Emit `party:join` with `{ joinCode, playerId }`.
   - The server joins the socket to both the party room and the player's team room.
+- Player score visibility:
+  - Do not show live team totals or rank unless the host has revealed scores.
+  - Once revealed, show an audit report that includes score events, corrections, penalties, and bonuses.
 
 ## Socket Lifecycle
 
@@ -372,12 +383,14 @@ Mobile guidance:
   - `prompt:reveal` - Trivia answer reveal
   - `turn:started` - Charades/Taboo turn start
   - `turn:ended` - Charades/Taboo turn summary
-  - `score:updated` - live score update
+  - `score:updated` - live score update; player clients should treat this as hidden state until reveal
+  - `score:revealed` - planned host-controlled reveal that unlocks player score report
   - `round:ended` - final round scores
   - `error` - socket validation/domain error
 - On reconnect:
   - Re-emit `party:join`.
-  - Refetch `GET /v1/parties/{joinCode}`, `GET /v1/parties/{joinCode}/rounds`, and `GET /v1/parties/{joinCode}/leaderboard` to rebuild screen state.
+  - Refetch `GET /v1/parties/{joinCode}` and `GET /v1/parties/{joinCode}/rounds` to rebuild screen state.
+  - Refetch leaderboard/score-event history only when host reveal state permits it.
 
 ## Gameplay Events
 

@@ -12,7 +12,7 @@
 
 Backend API for a **multi-team party games night app**. A host on a phone creates a Party (gets a short join-code), 2-8 teams of up to 10 players each join, and they play rounds of **Trivia / Charades / Taboo / custom games**. Real-time over Socket.IO. Unified **"Party Points"** scoring keeps different game types comparable on one leaderboard.
 
-The current repo is an **API-first pnpm monorepo**. The backend lives in `apps/api`. `apps/mobile` was intentionally removed after an exploratory scaffold so the mobile app can be rebuilt step by step. `apps/web` may exist as an empty placeholder, but no web app is currently shipped.
+The current repo is an **API-first pnpm monorepo** with a rebuilt Expo mobile app shell. The backend lives in `apps/api`; the mobile app lives in `apps/mobile` and currently covers the agreed host/player shell, local session persistence, API contract wiring, and placeholder screens for the next mobile milestones. `apps/web` may exist as an empty placeholder, but no web app is currently shipped.
 
 ---
 
@@ -24,7 +24,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 | Milestone      | What                                              | Status |
 | -------------- | ------------------------------------------------- | ------ |
-| **Repo shape** | pnpm monorepo conversion; mobile scaffold removed | Done   |
+| **Repo shape** | pnpm monorepo conversion; exploratory mobile scaffold removed, Expo mobile shell rebuilt | Done   |
 
 ### API (`apps/api`)
 
@@ -130,14 +130,13 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 #### Mobile milestones
 
-- `apps/mobile` was intentionally removed after an exploratory scaffold so it can be rebuilt step by step.
 - Selected visual direction: arcade-first, saturated, playful. Current design reference: `/Users/adodojo/Documents/Games_night_mob.pen`.
 
 | Milestone | What | Status |
 | --------- | ---- | ------ |
-| **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Planned |
-| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status, view leaderboard, answer Trivia when active | Planned |
-| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, score log/corrections | Planned |
+| **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | In progress |
+| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Planned |
+| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Planned |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
@@ -145,11 +144,13 @@ Keep milestones and task lists separated by project. The current shipped work is
 #### Mobile task list
 
 - **Mobile product contract** - agreed direction
-  - Hybrid model: host controls setup and moderation; players use lightweight screens for check-in, party status, Trivia answers, and optional leaderboard viewing.
+  - Hybrid model: host controls setup and moderation; players use lightweight screens for check-in, party status, Trivia answers, and a post-reveal score report.
   - Host can choose whether teams and leaderboard are one-night only or persistent for a defined period.
+  - Player devices should not show live team totals by default; the host controls a big reveal, after which players can view score history and verify accuracy.
   - Persistent player participation is team-based: players check into a team, but the product does not need durable individual identity.
   - Charades and Taboo prompts/forbidden words are host-device only. The host may hand their phone to the active player; other team/player devices should not receive those private prompts.
   - Host can modify point values per round/game from their phone before or during round setup.
+  - Host can award special bonuses, such as best dressed or most vibrant, as auditable score events.
   - Team capacity limits are host-controlled so one team cannot inflate scores through extra check-ins.
   - Optional location verification can gate join/check-in for venue-only play, but must include host override because indoor GPS is unreliable.
   - Trivia can display questions on shared screens, player phones, or both depending on host setting and venue screen availability.
@@ -157,13 +158,14 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Score corrections and audit trails are first-class because manual scorekeeping causes wrong awards and disputes.
   - Host/period/party theming should let a host brand the room, for example `Greg's House`, with a cover photo and safe generated palette.
   - Basic games-night hosting remains free; monetisation should target depth, content, organizations, or marketplace features later.
-- **Mobile M0** - next after required API planning
-  - Choose mobile stack and app location.
-  - Create app shell and navigation split for host/player modes.
-  - Wire generated API client and socket lifecycle.
-  - Define a local `ThemeProfile` UI type so the arcade-first design is tokenized instead of hardcoded.
-  - Add local session persistence for host token, join code, team selection, and last party.
-  - Add placeholder screens for the agreed M1-M4 flows.
+- **Mobile M0** - in progress
+  - Done: choose Expo/React Native in `apps/mobile`.
+  - Done: create app shell and navigation split for host/player modes.
+  - Done: wire generated API type usage and Socket.IO lifecycle helper.
+  - Done: define a local `ThemeProfile` UI type so the arcade-first design is tokenized instead of hardcoded.
+  - Done: add local secure session persistence for host token, join code, team selection, and last party.
+  - Done: add placeholder screens for the agreed M1-M5 flows.
+  - Verify the shell on a simulator/device before marking M0 complete.
 
 ### Cross-project coordination
 
@@ -295,12 +297,13 @@ No active in-repo feature work is assumed from this file. The next direction sho
 11. **PR #2: remove mobile scaffold** - deleted `apps/mobile` and related scripts/lockfile entries. The user intends to rebuild mobile deliberately, step by step.
 12. **API client contract hardening** - added game discovery, typed OpenAPI built-in config alternatives, typed Socket.IO event contracts, generated API client types, a compile-only client usage fixture, and mobile integration notes.
 13. **Games-night field notes** - observed weekly lounge play with month-long teams, manual scorekeeping errors, heated point disputes, team-first scoring, Kahoot-style phone trivia, shared screens, and many custom/manual games. This promoted persistent teams, custom games, score audit, team capacity, optional location verification, and flexible trivia display into planned work.
+14. **Mobile M0 shell started** - rebuilt `apps/mobile` as an Expo app shell with arcade-first styling, host/player mode routing, local session persistence helpers, API type import, Socket.IO client helper, and placeholder screens for check-in, host controls, private prompt play, persistent teams, custom games, venue display, and theming.
 
 ---
 
 ## 7. Known limitations (intentional for MVP)
 
-1. **No mobile app currently in repo** - this is intentional. Do not assume an existing `apps/mobile`.
+1. **Mobile app is shell-only** - `apps/mobile` exists, but it is not yet connected to live API flows beyond the typed client/socket helpers. Treat real host/player workflows as upcoming M1+ work.
 2. **No mid-round engine persistence** - server restart kills the in-memory runner. Host force-ends to recover.
 3. **No prompt dedup across rounds in the same party** - the same trivia question / charades phrase / taboo card could appear twice in one night.
 4. **Prompt/card pools can overlap when seed content is small** - phrase/card pools are shared across teams unless future logic reserves used prompts.
@@ -345,6 +348,14 @@ pnpm build:api                                  # TypeScript build
 
 Useful: `pnpm smoke:docs` boots the app with a stub Prisma and verifies `/docs/` plus the OpenAPI JSON. No live DB needed.
 
+Mobile shell:
+
+```bash
+pnpm install
+pnpm build:mobile
+pnpm dev:mobile
+```
+
 ---
 
 ## 10. Files to know
@@ -354,6 +365,13 @@ Useful: `pnpm smoke:docs` boots the app with a stub Prisma and verifies `/docs/`
 | `package.json`                                 | Root pnpm workspace scripts and build-script allowlist                          |
 | `pnpm-workspace.yaml`                          | Workspace package globs                                                         |
 | `docs/mobile-integration.md`                   | Mobile-facing API integration notes                                             |
+| `apps/mobile/README.md`                        | Mobile shell scope and local run notes                                          |
+| `apps/mobile/app/`                             | Expo Router routes, route layouts, redirects, and route-owned actions           |
+| `apps/mobile/src/screens/`                     | Host/player placeholder screen composition                                      |
+| `apps/mobile/src/components/`                  | Reusable mobile layout, navigation, game, and UI primitives                     |
+| `apps/mobile/src/api/client.ts`                | Mobile API config, generated OpenAPI type usage, and Socket.IO client helper    |
+| `apps/mobile/src/storage/sessionStore.ts`      | Secure local session persistence for host/player context                        |
+| `apps/mobile/src/theme/`                       | Tokenized arcade-first theme profile, shared styles, and style hook             |
 | `apps/api/src/app.ts`                          | Fastify wiring (security, swagger, plugins, routes)                             |
 | `apps/api/src/config/env.ts`                   | Zod-validated environment                                                       |
 | `apps/api/src/config/providers.ts`             | Single source of truth for external-dep selection                               |
@@ -382,7 +400,7 @@ Useful: `pnpm smoke:docs` boots the app with a stub Prisma and verifies `/docs/`
 
 ## 11. Open questions / decisions waiting on the user
 
-- **Mobile app location and shape** - `apps/mobile` was removed intentionally. The user wants to rebuild it step by step; whether it lands in this monorepo or elsewhere is still a product/workflow decision. Use `docs/mobile-integration.md` as the API contract starting point.
+- **Mobile runtime verification** - `apps/mobile` now lives in this monorepo as an Expo app shell. Before marking M0 fully done, verify it in Expo Go, an emulator, or a device against the desired local API URL.
 - **Content sourcing strategy for production** - free Open Trivia DB seed works for dev but is CC-BY-SA. The Trivia API has a paid commercial tier; Kaggle bulk imports are another option. Taboo-style content is trickier because of trademark/content concerns, so AI-generation + curation is probably the play.
 - **Push notifications** - backend prep deferred to M4. Will need a `DeviceToken` model + push provider abstraction.
 - **OTP / passwordless auth** - better for mobile than passwords. Probably M4.

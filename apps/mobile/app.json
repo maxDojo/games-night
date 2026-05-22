@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Games Night",
+    "slug": "games-night",
+    "scheme": "gamesnight",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#100D2B"
+      }
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:3000/v1",
+      "socketUrl": "http://localhost:3000"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
+  }
+}
