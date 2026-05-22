@@ -9,6 +9,8 @@ dist/
 coverage/
 .turbo/
 .vite/
+.expo/
+web-build/
 apps/api/generated/openapi.json
 
 *.log
