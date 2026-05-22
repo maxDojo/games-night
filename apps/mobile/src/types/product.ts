@@ -1,5 +1,7 @@
 export type PlayerRoute = 'check-in' | 'answer' | 'report';
 
+export type PlayerTabRoute = Exclude<PlayerRoute, 'check-in'>;
+
 export type HostRoute = 'lobby' | 'queue' | 'stage' | 'teams';
 
 export type TriviaDisplayMode = 'shared_screen_only' | 'player_devices' | 'both';

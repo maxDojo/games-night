@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 import { BadgeCheck, Ticket } from 'lucide-react-native';
+import { router } from 'expo-router';
 
 import { TeamCard } from '../../components/game/TeamCard';
 import { Screen } from '../../components/layout/Screen';
@@ -27,7 +28,7 @@ export function PlayerCheckInScreen() {
           <TeamCard key={team.id} team={team} selected={team.isSelected} showPoints={false} />
         ))}
       </View>
-      <ActionButton label="Check in to Neon Noodles" icon={BadgeCheck} onPress={() => undefined} danger />
+      <ActionButton label="Check in to Neon Noodles" icon={BadgeCheck} onPress={() => router.replace('/player/answer')} danger />
     </Screen>
   );
 }
