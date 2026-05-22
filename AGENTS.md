@@ -46,6 +46,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Persistent Teams + Mobile Host Controls** | API support for reusable teams/period leaderboards, host-only prompts, point overrides | Planned |
 | **Custom Games + Score Audit**             | Host-defined games, manual scoring workflows, correction history, dispute support     | Planned |
 | **Venue Controls + Display Modes**         | Optional location verification, team capacity limits, player-phone trivia display     | Planned |
+| **Room Identity + Theming**                | Host/period/party names, cover photos, inherited theme resolution, safe palettes      | Planned |
 
 #### API feature backlog
 
@@ -71,6 +72,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
   - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
 - **Persistent Teams + Mobile Host Controls** - planned
+  - Done: spec the API/mobile contract direction for persistent periods, capacity-aware teams, check-in, score audit, custom games, venue controls, and trivia display modes in `docs/mobile-integration.md`.
   - Spec the product model for persistent host-owned periods, such as event, season, league, weekend, or trip.
   - Add a persistent container above `Party` so a host can group multiple parties under one scoring period.
   - Allow teams to belong either to a single party or to the persistent container.
@@ -83,6 +85,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Update REST/OpenAPI/socket contracts and mobile integration notes for the new flows.
   - Add integration coverage for persistent team check-in and period leaderboard aggregation.
 - **Custom Games + Score Audit** - planned
+  - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
   - Define a generic custom-game model for host-authored games with name, rules, scoring mode, default points, penalties, and optional timer.
   - Support reusable custom-game templates that can be saved in plans and queued like built-in games.
   - Add manual score events with team identity, point delta, reason, and actor.
@@ -91,12 +94,19 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Keep individual player identity optional; scoring remains team-first by default.
   - Add tests for custom-game queueing, scoring, correction history, and leaderboard aggregation.
 - **Venue Controls + Display Modes** - planned
+  - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
   - Add optional location verification for party join/check-in. It should be host-enabled, radius-based, and include host override for bad indoor GPS.
   - Store minimal join/check-in verification status, not continuous player tracking.
   - Add trivia display mode settings: `shared_screen_only`, `player_devices`, and `both`.
   - Ensure player-device trivia payloads include question text/options only when the display mode allows it.
   - Keep shared screen/cast mode useful for lounges with multiple TVs, while preserving host-only secrecy for Charades and Taboo prompts.
   - Add tests for team capacity enforcement, location-gated check-in decisions, and trivia display payload gating.
+- **Room Identity + Theming** - planned
+  - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
+  - Add host/period/party theme profiles with display name, cover image, optional avatar/logo, accent color, and derived safe palette.
+  - Resolve active theme by inheritance: party -> period -> host -> system default.
+  - Add a storage/provider path for cover images when uploads are implemented.
+  - Keep text contrast and gameplay clarity enforced regardless of uploaded theme assets.
 - **Housekeeping** - deferred follow-up bucket
   - Add mid-round persistence or a `Round.events` audit log so active rounds can recover after restart.
   - Add prompt/card deduplication across rounds in the same party/night.
@@ -145,11 +155,13 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Trivia can display questions on shared screens, player phones, or both depending on host setting and venue screen availability.
   - Custom games are a major product path, not a distant add-on, because real games nights often use local/manual games.
   - Score corrections and audit trails are first-class because manual scorekeeping causes wrong awards and disputes.
+  - Host/period/party theming should let a host brand the room, for example `Greg's House`, with a cover photo and safe generated palette.
   - Basic games-night hosting remains free; monetisation should target depth, content, organizations, or marketplace features later.
 - **Mobile M0** - next after required API planning
   - Choose mobile stack and app location.
   - Create app shell and navigation split for host/player modes.
   - Wire generated API client and socket lifecycle.
+  - Define a local `ThemeProfile` UI type so the arcade-first design is tokenized instead of hardcoded.
   - Add local session persistence for host token, join code, team selection, and last party.
   - Add placeholder screens for the agreed M1-M4 flows.
 
