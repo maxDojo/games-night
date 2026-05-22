@@ -14,7 +14,7 @@ export function PlayerCheckInScreen() {
   return (
     <Screen eyebrow="VENUE VERIFIED" title="Choose your side">
       <Text style={styles.bodyText}>
-        You are inside the venue radius. Pick a team before it fills up.
+        You are inside the venue radius. Pick a team before it fills up. Scores stay sealed until the host reveal.
       </Text>
       <InfoBanner
         icon={Ticket}
@@ -24,7 +24,7 @@ export function PlayerCheckInScreen() {
       />
       <View style={styles.stack}>
         {teams.map((team) => (
-          <TeamCard key={team.id} team={team} selected={team.isSelected} />
+          <TeamCard key={team.id} team={team} selected={team.isSelected} showPoints={false} />
         ))}
       </View>
       <ActionButton label="Check in to Neon Noodles" icon={BadgeCheck} onPress={() => undefined} danger />

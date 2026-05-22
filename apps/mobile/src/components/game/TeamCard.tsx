@@ -7,11 +7,14 @@ import type { TeamSummary } from '../../types/product';
 interface TeamCardProps {
   team: TeamSummary;
   selected?: boolean;
+  showPoints?: boolean;
 }
 
-export function TeamCard({ team, selected }: TeamCardProps) {
+export function TeamCard({ team, selected, showPoints = true }: TeamCardProps) {
   const { styles, theme } = useAppStyles();
   const full = team.checkedIn >= team.capacity;
+  const status = `${team.checkedIn}/${team.capacity} ${full ? 'full' : 'checked in'}`;
+  const meta = showPoints ? `${status} / ${team.points.toLocaleString()} pts` : status;
 
   return (
     <View style={[styles.teamCard, selected && styles.teamCardSelected]}>
@@ -20,9 +23,7 @@ export function TeamCard({ team, selected }: TeamCardProps) {
       </View>
       <View style={styles.flex}>
         <Text style={[styles.teamName, selected && styles.teamNameSelected]}>{team.name}</Text>
-        <Text style={[styles.teamMeta, selected && styles.teamMetaSelected]}>
-          {team.checkedIn}/{team.capacity} {full ? 'full' : 'checked in'} / {team.points.toLocaleString()} pts
-        </Text>
+        <Text style={[styles.teamMeta, selected && styles.teamMetaSelected]}>{meta}</Text>
       </View>
       {selected ? <Check color={theme.palette.ink} size={21} /> : null}
     </View>
