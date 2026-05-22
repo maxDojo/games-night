@@ -11,6 +11,16 @@ Expo/React Native app shell for the Games Night host and player experience.
 - Socket.IO client helper for future party subscriptions.
 - Placeholder screens for player check-in, Trivia answering, standings, host lobby, queue, team management, and host-only prompt control.
 
+## Structure
+
+- `App.tsx` - provider entrypoint only.
+- `src/shell/` - app-level mode and route state.
+- `src/screens/` - host/player screen composition.
+- `src/components/` - reusable game, layout, navigation, and UI primitives.
+- `src/theme/` - theme profile, shared styles, and `useAppStyles()`.
+- `src/data/` - temporary mock state until live API flows replace it.
+- `src/api/` and `src/storage/` - API/socket and local session boundaries.
+
 ## Run
 
 ```bash

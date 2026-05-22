@@ -364,10 +364,13 @@ pnpm dev:mobile
 | `pnpm-workspace.yaml`                          | Workspace package globs                                                         |
 | `docs/mobile-integration.md`                   | Mobile-facing API integration notes                                             |
 | `apps/mobile/README.md`                        | Mobile shell scope and local run notes                                          |
-| `apps/mobile/App.tsx`                          | Expo mobile shell, host/player mode routing, and placeholder UI flows           |
+| `apps/mobile/App.tsx`                          | Expo mobile provider entrypoint                                                 |
+| `apps/mobile/src/shell/AppShell.tsx`           | Host/player mode state and route selection                                      |
+| `apps/mobile/src/screens/`                     | Host/player placeholder screen composition                                      |
+| `apps/mobile/src/components/`                  | Reusable mobile layout, navigation, game, and UI primitives                     |
 | `apps/mobile/src/api/client.ts`                | Mobile API config, generated OpenAPI type usage, and Socket.IO client helper    |
 | `apps/mobile/src/storage/sessionStore.ts`      | Secure local session persistence for host/player context                        |
-| `apps/mobile/src/theme/theme.tsx`              | Tokenized arcade-first mobile theme profile                                     |
+| `apps/mobile/src/theme/`                       | Tokenized arcade-first theme profile, shared styles, and style hook             |
 | `apps/api/src/app.ts`                          | Fastify wiring (security, swagger, plugins, routes)                             |
 | `apps/api/src/config/env.ts`                   | Zod-validated environment                                                       |
 | `apps/api/src/config/providers.ts`             | Single source of truth for external-dep selection                               |

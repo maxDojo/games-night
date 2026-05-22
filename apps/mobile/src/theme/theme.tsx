@@ -5,20 +5,22 @@ export interface ThemeProfile {
   coverImageUrl?: string;
   avatarUrl?: string;
   accentColor?: string;
-  palette: {
-    background: string;
-    ink: string;
-    surface: string;
-    surfaceAlt: string;
-    foreground: string;
-    muted: string;
-    line: string;
-    accent: string;
-    accentAlt: string;
-    danger: string;
-    success: string;
-    info: string;
-  };
+  palette: ThemePalette;
+}
+
+export interface ThemePalette {
+  background: string;
+  ink: string;
+  surface: string;
+  surfaceAlt: string;
+  foreground: string;
+  muted: string;
+  line: string;
+  accent: string;
+  accentAlt: string;
+  danger: string;
+  success: string;
+  info: string;
 }
 
 export const gregHouseTheme: ThemeProfile = {
