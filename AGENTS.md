@@ -71,6 +71,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add an error-tracking provider seam; defer a concrete Sentry implementation until deploy/runtime needs are clearer.
   - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
 - **Persistent Teams + Mobile Host Controls** - planned
+  - Done: spec the API/mobile contract direction for persistent periods, capacity-aware teams, check-in, score audit, custom games, venue controls, and trivia display modes in `docs/mobile-integration.md`.
   - Spec the product model for persistent host-owned periods, such as event, season, league, weekend, or trip.
   - Add a persistent container above `Party` so a host can group multiple parties under one scoring period.
   - Allow teams to belong either to a single party or to the persistent container.
@@ -83,6 +84,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Update REST/OpenAPI/socket contracts and mobile integration notes for the new flows.
   - Add integration coverage for persistent team check-in and period leaderboard aggregation.
 - **Custom Games + Score Audit** - planned
+  - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
   - Define a generic custom-game model for host-authored games with name, rules, scoring mode, default points, penalties, and optional timer.
   - Support reusable custom-game templates that can be saved in plans and queued like built-in games.
   - Add manual score events with team identity, point delta, reason, and actor.
@@ -91,6 +93,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Keep individual player identity optional; scoring remains team-first by default.
   - Add tests for custom-game queueing, scoring, correction history, and leaderboard aggregation.
 - **Venue Controls + Display Modes** - planned
+  - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
   - Add optional location verification for party join/check-in. It should be host-enabled, radius-based, and include host override for bad indoor GPS.
   - Store minimal join/check-in verification status, not continuous player tracking.
   - Add trivia display mode settings: `shared_screen_only`, `player_devices`, and `both`.
