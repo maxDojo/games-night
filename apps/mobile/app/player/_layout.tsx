@@ -5,7 +5,7 @@ import { PlayerNav } from '../../src/components/navigation/PlayerNav';
 import { useAppStyles } from '../../src/theme/useAppStyles';
 import type { PlayerRoute } from '../../src/types/product';
 
-const playerRoutes: PlayerRoute[] = ['check-in', 'answer', 'standings'];
+const playerRoutes: PlayerRoute[] = ['check-in', 'answer', 'report'];
 
 export default function PlayerLayout() {
   const pathname = usePathname();

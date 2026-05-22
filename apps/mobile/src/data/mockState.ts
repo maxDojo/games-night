@@ -1,4 +1,10 @@
-import type { PeriodSummary, QueuedRoundSummary, ScoreEventSummary, TeamSummary } from '../types/product';
+import type {
+  BonusAwardSummary,
+  PeriodSummary,
+  QueuedRoundSummary,
+  ScoreEventSummary,
+  TeamSummary,
+} from '../types/product';
 
 export const joinCode = 'LUCKY7';
 
@@ -55,6 +61,28 @@ export const scoreEvents: ScoreEventSummary[] = [
     delta: -100,
     teamName: 'Pixel Pirates',
     source: 'correction',
+  },
+  {
+    id: 'score-bonus',
+    label: 'Bonus: most vibrant table',
+    delta: 75,
+    teamName: 'Quiz Queens',
+    source: 'bonus',
+  },
+];
+
+export const bonusAwards: BonusAwardSummary[] = [
+  {
+    id: 'bonus-best-dressed',
+    label: 'Best dressed',
+    points: 100,
+    reason: 'Theme fit, effort, crowd reaction',
+  },
+  {
+    id: 'bonus-most-vibrant',
+    label: 'Most vibrant',
+    points: 75,
+    reason: 'Energy, chants, room presence',
   },
 ];
 

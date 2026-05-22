@@ -1,11 +1,11 @@
 import { Text, View } from 'react-native';
-import { ClipboardList, Play } from 'lucide-react-native';
+import { Award, ClipboardList, Gift, Play } from 'lucide-react-native';
 
 import { Screen } from '../../components/layout/Screen';
 import { ActionButton } from '../../components/ui/ActionButton';
 import { Pill } from '../../components/ui/Badges';
 import { Stat } from '../../components/ui/Stat';
-import { joinCode } from '../../data/mockState';
+import { bonusAwards, joinCode } from '../../data/mockState';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 export function HostLobbyScreen() {
@@ -37,9 +37,33 @@ export function HostLobbyScreen() {
           Manual score round. Corrections require a reason and stay visible in the score log.
         </Text>
       </View>
+      <View style={styles.card}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.metaLabelAccent}>SPECIAL BONUSES</Text>
+          <Gift color={theme.palette.info} size={18} />
+        </View>
+        <Text style={styles.bodyText}>
+          Award room-energy points without exposing the live leaderboard to players.
+        </Text>
+        <View style={styles.stack}>
+          {bonusAwards.map((bonus) => (
+            <View key={bonus.id} style={styles.scoreLogItem}>
+              <View style={styles.flex}>
+                <Text style={styles.scoreLogLabel}>{bonus.label}</Text>
+                <Text style={styles.teamMeta}>{bonus.reason}</Text>
+              </View>
+              <Text style={[styles.scoreLogDelta, { color: theme.palette.success }]}>+{bonus.points}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
       <View style={styles.twoColumn}>
         <ActionButton label="Start" icon={Play} onPress={() => undefined} primary />
+        <ActionButton label="Bonus" icon={Award} onPress={() => undefined} success />
+      </View>
+      <View style={styles.twoColumn}>
         <ActionButton label="Score log" icon={ClipboardList} onPress={() => undefined} />
+        <ActionButton label="Reveal" icon={Gift} onPress={() => undefined} />
       </View>
     </Screen>
   );

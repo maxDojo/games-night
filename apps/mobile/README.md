@@ -9,7 +9,7 @@ Expo/React Native app shell for the Games Night host and player experience.
 - Local secure session helpers for host token, join code, selected team, and last party.
 - Generated API type import from `apps/api/generated/api-types.d.ts`.
 - Socket.IO client helper for future party subscriptions.
-- Placeholder screens for player check-in, Trivia answering, standings, host lobby, queue, team management, and host-only prompt control.
+- Placeholder screens for player check-in, Trivia answering, locked reveal report, host lobby, queue, team management, bonuses, and host-only prompt control.
 
 ## Structure
 

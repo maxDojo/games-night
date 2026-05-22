@@ -1,4 +1,4 @@
-export type PlayerRoute = 'check-in' | 'answer' | 'standings';
+export type PlayerRoute = 'check-in' | 'answer' | 'report';
 
 export type HostRoute = 'lobby' | 'queue' | 'stage' | 'teams';
 
@@ -28,7 +28,7 @@ export interface ScoreEventSummary {
   label: string;
   delta: number;
   teamName: string;
-  source: 'engine' | 'manual' | 'correction' | 'penalty';
+  source: 'engine' | 'manual' | 'correction' | 'penalty' | 'bonus';
 }
 
 export interface QueuedRoundSummary {
@@ -38,4 +38,11 @@ export interface QueuedRoundSummary {
   detail: string;
   points: number;
   kind: 'trivia' | 'charades' | 'taboo' | 'custom';
+}
+
+export interface BonusAwardSummary {
+  id: string;
+  label: string;
+  points: number;
+  reason: string;
 }

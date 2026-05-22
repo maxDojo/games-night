@@ -135,8 +135,8 @@ Keep milestones and task lists separated by project. The current shipped work is
 | Milestone | What | Status |
 | --------- | ---- | ------ |
 | **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | In progress |
-| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status, view leaderboard, answer Trivia when active | Planned |
-| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, score log/corrections | Planned |
+| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Planned |
+| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Planned |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
@@ -144,11 +144,13 @@ Keep milestones and task lists separated by project. The current shipped work is
 #### Mobile task list
 
 - **Mobile product contract** - agreed direction
-  - Hybrid model: host controls setup and moderation; players use lightweight screens for check-in, party status, Trivia answers, and optional leaderboard viewing.
+  - Hybrid model: host controls setup and moderation; players use lightweight screens for check-in, party status, Trivia answers, and a post-reveal score report.
   - Host can choose whether teams and leaderboard are one-night only or persistent for a defined period.
+  - Player devices should not show live team totals by default; the host controls a big reveal, after which players can view score history and verify accuracy.
   - Persistent player participation is team-based: players check into a team, but the product does not need durable individual identity.
   - Charades and Taboo prompts/forbidden words are host-device only. The host may hand their phone to the active player; other team/player devices should not receive those private prompts.
   - Host can modify point values per round/game from their phone before or during round setup.
+  - Host can award special bonuses, such as best dressed or most vibrant, as auditable score events.
   - Team capacity limits are host-controlled so one team cannot inflate scores through extra check-ins.
   - Optional location verification can gate join/check-in for venue-only play, but must include host override because indoor GPS is unreliable.
   - Trivia can display questions on shared screens, player phones, or both depending on host setting and venue screen availability.
