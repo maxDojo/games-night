@@ -15,6 +15,7 @@ The mobile app is a hybrid host/player experience:
 - Shared screens are useful, but Trivia must also support displaying questions on player phones when venue screens are down or far away.
 - Score corrections and score-event history are first-class because manual scoring errors and point disputes are expected in normal play.
 - Optional location verification and team capacity limits are host controls, not mandatory join friction.
+- Hosts should be able to brand the room/period/party with a display name, cover photo, and safe accent palette, for example `Greg's House`.
 
 ## Contract Sources
 
@@ -295,6 +296,55 @@ Mobile guidance:
 - Build Trivia answer UI so it can render both “answer-only” and “question + answers” states.
 - Default to `both` only if the host explicitly chooses it or if no shared display is configured.
 
+### Room identity and theming
+
+Planned model:
+
+- A host can define a default room identity:
+  - display name, for example `Greg's House`
+  - cover image
+  - accent color
+  - optional logo/avatar
+- A period can inherit the host theme or override it.
+- A party can inherit the period theme or override it for one night.
+- Active theme resolution should be:
+  - Party theme -> Period theme -> Host theme -> system default.
+
+Planned REST shape:
+
+- `PATCH /v1/hosts/me/theme`
+  - Host-only. Set default host room identity.
+- `PATCH /v1/periods/{periodId}/theme`
+  - Host-only. Override period theme.
+- `PATCH /v1/parties/{joinCode}/theme`
+  - Host-only. Override one party's theme.
+
+Draft theme object:
+
+```ts
+type ThemeProfile = {
+  displayName: string;
+  coverImageUrl?: string;
+  avatarUrl?: string;
+  accentColor?: string;
+  palette?: {
+    background: string;
+    foreground: string;
+    accent: string;
+    muted: string;
+  };
+};
+```
+
+Mobile guidance:
+
+- Mobile M0 should define a `ThemeProfile` UI type even before the API exists.
+- Apply the active theme to entry, host lobby, player check-in, leaderboard, and shared-display surfaces.
+- Keep game-critical UI readable regardless of the uploaded photo.
+- Always use a dark overlay/scrim over cover images when text is placed on top.
+- Generate or require fallback colors from the cover image before allowing the theme to go live.
+- Do not allow a theme to override private-prompt visibility or gameplay state colors when it would reduce clarity.
+
 ## Player Flow
 
 - Join by code:
@@ -406,3 +456,4 @@ Mobile guidance:
 - No score event/correction audit log yet.
 - No host-only Charades/Taboo prompt delivery yet.
 - No Trivia player-phone display mode yet.
+- No host/period/party theming or cover image storage flow yet.
