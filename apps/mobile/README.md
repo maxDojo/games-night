@@ -4,7 +4,7 @@ Expo/React Native app shell for the Games Night host and player experience.
 
 ## Current scope
 
-- Host/player mode routing.
+- Expo Router file-based host/player routing.
 - Arcade-first theme tokens based on the current Pencil direction.
 - Local secure session helpers for host token, join code, selected team, and last party.
 - Generated API type import from `apps/api/generated/api-types.d.ts`.
@@ -13,8 +13,7 @@ Expo/React Native app shell for the Games Night host and player experience.
 
 ## Structure
 
-- `App.tsx` - provider entrypoint only.
-- `src/shell/` - app-level mode and route state.
+- `app/` - Expo Router routes, route layouts, redirects, and route-owned actions.
 - `src/screens/` - host/player screen composition.
 - `src/components/` - reusable game, layout, navigation, and UI primitives.
 - `src/theme/` - theme profile, shared styles, and `useAppStyles()`.

@@ -1,5 +1,3 @@
-export type AppMode = 'welcome' | 'player' | 'host';
-
 export type PlayerRoute = 'check-in' | 'answer' | 'standings';
 
 export type HostRoute = 'lobby' | 'queue' | 'stage' | 'teams';

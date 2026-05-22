@@ -364,8 +364,7 @@ pnpm dev:mobile
 | `pnpm-workspace.yaml`                          | Workspace package globs                                                         |
 | `docs/mobile-integration.md`                   | Mobile-facing API integration notes                                             |
 | `apps/mobile/README.md`                        | Mobile shell scope and local run notes                                          |
-| `apps/mobile/App.tsx`                          | Expo mobile provider entrypoint                                                 |
-| `apps/mobile/src/shell/AppShell.tsx`           | Host/player mode state and route selection                                      |
+| `apps/mobile/app/`                             | Expo Router routes, route layouts, redirects, and route-owned actions           |
 | `apps/mobile/src/screens/`                     | Host/player placeholder screen composition                                      |
 | `apps/mobile/src/components/`                  | Reusable mobile layout, navigation, game, and UI primitives                     |
 | `apps/mobile/src/api/client.ts`                | Mobile API config, generated OpenAPI type usage, and Socket.IO client helper    |
