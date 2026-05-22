@@ -44,10 +44,12 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **API Client Contract + Mobile Readiness** | REST/socket contract hardening, generated client guardrails, mobile integration notes | Done   |
 | **Operational Polish**                     | CI, coverage, integration checks, deploy readiness, production seams                  | Next   |
 | **Persistent Teams + Mobile Host Controls** | API support for reusable teams/period leaderboards, host-only prompts, point overrides | Planned |
+| **Custom Games + Score Audit**             | Host-defined games, manual scoring workflows, correction history, dispute support     | Planned |
+| **Venue Controls + Display Modes**         | Optional location verification, team capacity limits, player-phone trivia display     | Planned |
 
 #### API feature backlog
 
-- **Custom Games** - skipped as a numbered milestone for now. Revisit as a later feature once product behavior is specified.
+- **Custom Games** - promoted back into the main roadmap after real games-night observation. The product needs host-defined games to cover common local/manual games such as word scramble, improvised Taboo variants, lounge-specific challenges, and other games the room already plays.
 
 #### API task list
 
@@ -73,11 +75,28 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Add a persistent container above `Party` so a host can group multiple parties under one scoring period.
   - Allow teams to belong either to a single party or to the persistent container.
   - Add player team check-in for persistent teams without requiring durable individual identity.
+  - Add host-configurable team capacity limits so full teams cannot keep accumulating extra check-ins.
+  - Add host override flows for moving players or allowing exceptions.
   - Add leaderboard aggregation modes: current party only and persistent period.
   - Review `Round.config` and scoring inputs so the host can set points per round/game from mobile.
   - Change Charades and Taboo private prompt delivery so prompts/forbidden words are host-control-device only, not team-room broadcasts.
   - Update REST/OpenAPI/socket contracts and mobile integration notes for the new flows.
   - Add integration coverage for persistent team check-in and period leaderboard aggregation.
+- **Custom Games + Score Audit** - planned
+  - Define a generic custom-game model for host-authored games with name, rules, scoring mode, default points, penalties, and optional timer.
+  - Support reusable custom-game templates that can be saved in plans and queued like built-in games.
+  - Add manual score events with team identity, point delta, reason, and actor.
+  - Add correction history so wrong awards can be reversed or amended without losing auditability.
+  - Add dispute-friendly host UI affordances: visible score log, correction reason, and clear team color/icon/name display to avoid similar-name mistakes.
+  - Keep individual player identity optional; scoring remains team-first by default.
+  - Add tests for custom-game queueing, scoring, correction history, and leaderboard aggregation.
+- **Venue Controls + Display Modes** - planned
+  - Add optional location verification for party join/check-in. It should be host-enabled, radius-based, and include host override for bad indoor GPS.
+  - Store minimal join/check-in verification status, not continuous player tracking.
+  - Add trivia display mode settings: `shared_screen_only`, `player_devices`, and `both`.
+  - Ensure player-device trivia payloads include question text/options only when the display mode allows it.
+  - Keep shared screen/cast mode useful for lounges with multiple TVs, while preserving host-only secrecy for Charades and Taboo prompts.
+  - Add tests for team capacity enforcement, location-gated check-in decisions, and trivia display payload gating.
 - **Housekeeping** - deferred follow-up bucket
   - Add mid-round persistence or a `Round.events` audit log so active rounds can recover after restart.
   - Add prompt/card deduplication across rounds in the same party/night.
@@ -102,14 +121,16 @@ Keep milestones and task lists separated by project. The current shipped work is
 #### Mobile milestones
 
 - `apps/mobile` was intentionally removed after an exploratory scaffold so it can be rebuilt step by step.
+- Selected visual direction: arcade-first, saturated, playful. Current design reference: `/Users/adodojo/Documents/Games_night_mob.pen`.
 
 | Milestone | What | Status |
 | --------- | ---- | ------ |
 | **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Planned |
-| **Mobile M1** Player join/check-in | Join by code, choose/check into team, view party status, view leaderboard, answer Trivia when active | Planned |
-| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments | Planned |
+| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status, view leaderboard, answer Trivia when active | Planned |
+| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, score log/corrections | Planned |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
-| **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, aggregate leaderboard across the period | Planned |
+| **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
+| **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
 
 #### Mobile task list
 
@@ -119,6 +140,11 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Persistent player participation is team-based: players check into a team, but the product does not need durable individual identity.
   - Charades and Taboo prompts/forbidden words are host-device only. The host may hand their phone to the active player; other team/player devices should not receive those private prompts.
   - Host can modify point values per round/game from their phone before or during round setup.
+  - Team capacity limits are host-controlled so one team cannot inflate scores through extra check-ins.
+  - Optional location verification can gate join/check-in for venue-only play, but must include host override because indoor GPS is unreliable.
+  - Trivia can display questions on shared screens, player phones, or both depending on host setting and venue screen availability.
+  - Custom games are a major product path, not a distant add-on, because real games nights often use local/manual games.
+  - Score corrections and audit trails are first-class because manual scorekeeping causes wrong awards and disputes.
   - Basic games-night hosting remains free; monetisation should target depth, content, organizations, or marketplace features later.
 - **Mobile M0** - next after required API planning
   - Choose mobile stack and app location.
@@ -233,6 +259,10 @@ No active in-repo feature work is assumed from this file. The next direction sho
 | **Provider abstraction added before M2**                      | Engines call provider interfaces, not inlined API clients. Upgrading to paid tiers later should be a config change.                                                                                                        |
 | **First-answer-per-team locking (Trivia)**                    | Otherwise teammates could spam answers. Server timestamps the first answer; later answers from the same team are ignored.                                                                                                  |
 | **Only valid teams can drive turn actions**                   | Charades accepts correct/skip only from the acting team. Taboo adds opposing-team challenge/forbidden-word flows where appropriate.                                                                                        |
+| **Team scoring takes precedence over individual scoring**     | Real games-night observation confirmed people cared about teams first. Individual identity should stay optional; check-ins only need to attach participation to a team.                                                     |
+| **Custom games are a core product path**                      | Real hosts play local/manual games such as word scramble and house-rule variants. The app must support host-defined games rather than only built-in engines.                                                               |
+| **Score history matters because disputes are part of play**   | Manual scoring caused a wrong team award and heated arguments. The product should preserve banter while making point changes auditable and correctable.                                                                    |
+| **Shared screens are useful but not guaranteed**              | Lounge screens helped for Kahoot-style trivia, but player-phone question display should be available when screens are down, distant, or not usable.                                                                        |
 
 ---
 
@@ -252,6 +282,7 @@ No active in-repo feature work is assumed from this file. The next direction sho
 10. **PR #1: pnpm monorepo, Taboo, saved plans** - bootstrapped the current repo shape, added the Taboo engine, and added host-saved party plans that can queue games for a night.
 11. **PR #2: remove mobile scaffold** - deleted `apps/mobile` and related scripts/lockfile entries. The user intends to rebuild mobile deliberately, step by step.
 12. **API client contract hardening** - added game discovery, typed OpenAPI built-in config alternatives, typed Socket.IO event contracts, generated API client types, a compile-only client usage fixture, and mobile integration notes.
+13. **Games-night field notes** - observed weekly lounge play with month-long teams, manual scorekeeping errors, heated point disputes, team-first scoring, Kahoot-style phone trivia, shared screens, and many custom/manual games. This promoted persistent teams, custom games, score audit, team capacity, optional location verification, and flexible trivia display into planned work.
 
 ---
 
