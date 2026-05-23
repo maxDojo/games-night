@@ -14,6 +14,7 @@ export function HostLobbyScreen() {
     awardNextBonus,
     awardedBonusIds,
     bonusAwards,
+    hostUser,
     joinCode,
     queuedRounds,
     revealScores,
@@ -25,7 +26,7 @@ export function HostLobbyScreen() {
   const bonusLabel = awardedBonusIds.length >= bonusAwards.length ? 'Bonuses done' : 'Award bonus';
 
   return (
-    <Screen eyebrow="THEMED ROOM" title={theme.displayName}>
+    <Screen eyebrow={hostUser ? `HOST: ${hostUser.displayName}` : 'THEMED ROOM'} title={theme.displayName}>
       <View style={styles.roomCard}>
         <View style={styles.rowBetween}>
           <View>

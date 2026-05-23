@@ -9,8 +9,11 @@ import {
   isTriviaRevealPayload,
   joinPartyRoom,
   joinTeam,
+  loginHost,
   normalizeJoinCode,
+  registerHost,
   submitRoundEvent,
+  type AuthResponse,
   type PartyByCodeResponse,
   type RoundEndedPayload,
   type RoundStartedPayload,
@@ -37,6 +40,11 @@ import type {
 } from '../types/product';
 
 interface PartyState {
+  hostToken?: string;
+  hostUser?: MobileSession['hostUser'];
+  isRestoringHostSession: boolean;
+  isHostAuthenticating: boolean;
+  hostAuthError?: string;
   joinCode: string;
   partyId?: string;
   partyName: string;
@@ -69,11 +77,14 @@ interface PartyState {
 }
 
 interface PartyStateContextValue extends PartyState {
+  isHostAuthenticated: boolean;
   checkedInTeam?: TeamSummary;
   selectedTeam?: TeamSummary;
   currentRound?: PlayerRoundStatus;
   nextRound?: PlayerRoundStatus;
   totalPlayers: number;
+  loginHostAccount: (email: string, password: string) => Promise<boolean>;
+  registerHostAccount: (email: string, displayName: string, password: string) => Promise<boolean>;
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
@@ -85,6 +96,10 @@ interface PartyStateContextValue extends PartyState {
 }
 
 type PartyAction =
+  | { type: 'restoreHostSession'; session?: MobileSession }
+  | { type: 'hostAuthStart' }
+  | { type: 'hostAuthSuccess'; auth: AuthResponse }
+  | { type: 'hostAuthFailure'; error: string }
   | { type: 'selectTeam'; teamId: string }
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
@@ -110,6 +125,8 @@ type PartyAction =
 const firstAvailableTeam = teams.find((team) => team.checkedIn < team.capacity);
 
 const initialState: PartyState = {
+  isRestoringHostSession: true,
+  isHostAuthenticating: false,
   joinCode,
   partyName: period.name,
   partySource: 'mock',
@@ -133,6 +150,30 @@ const PartyStateContext = createContext<PartyStateContextValue | undefined>(unde
 
 function partyReducer(state: PartyState, action: PartyAction): PartyState {
   switch (action.type) {
+    case 'restoreHostSession':
+      return {
+        ...state,
+        hostToken: action.session?.hostToken,
+        hostUser: action.session?.hostUser,
+        isRestoringHostSession: false,
+      };
+    case 'hostAuthStart':
+      return { ...state, isHostAuthenticating: true, hostAuthError: undefined };
+    case 'hostAuthSuccess':
+      return {
+        ...state,
+        hostToken: action.auth.token,
+        hostUser: {
+          id: action.auth.user.id,
+          email: action.auth.user.email,
+          displayName: action.auth.user.displayName,
+        },
+        isHostAuthenticating: false,
+        isRestoringHostSession: false,
+        hostAuthError: undefined,
+      };
+    case 'hostAuthFailure':
+      return { ...state, isHostAuthenticating: false, hostAuthError: action.error };
     case 'selectTeam': {
       if (state.checkedInTeamId) {
         return state;
@@ -390,6 +431,52 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     }
   }, [refreshPlayerRounds]);
 
+  const loginHostAccount = useCallback(async (email: string, password: string) => {
+    dispatch({ type: 'hostAuthStart' });
+
+    try {
+      const auth = await loginHost({ email: email.trim().toLowerCase(), password });
+      await saveSession({
+        hostToken: auth.token,
+        hostUser: {
+          id: auth.user.id,
+          email: auth.user.email,
+          displayName: auth.user.displayName,
+        },
+      });
+      dispatch({ type: 'hostAuthSuccess', auth });
+      return true;
+    } catch (error) {
+      dispatch({ type: 'hostAuthFailure', error: getPlayerError(error) });
+      return false;
+    }
+  }, []);
+
+  const registerHostAccount = useCallback(async (email: string, displayName: string, password: string) => {
+    dispatch({ type: 'hostAuthStart' });
+
+    try {
+      const auth = await registerHost({
+        email: email.trim().toLowerCase(),
+        displayName: displayName.trim(),
+        password,
+      });
+      await saveSession({
+        hostToken: auth.token,
+        hostUser: {
+          id: auth.user.id,
+          email: auth.user.email,
+          displayName: auth.user.displayName,
+        },
+      });
+      dispatch({ type: 'hostAuthSuccess', auth });
+      return true;
+    } catch (error) {
+      dispatch({ type: 'hostAuthFailure', error: getPlayerError(error) });
+      return false;
+    }
+  }, []);
+
   const checkInSelectedTeam = useCallback(
     async (nickname: string) => {
       const trimmedNickname = nickname.trim();
@@ -466,8 +553,12 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
   useEffect(() => {
     let cancelled = false;
 
-    async function restorePlayerSession() {
+    async function restoreSession() {
       const session = await loadSession();
+      if (!cancelled) {
+        dispatch({ type: 'restoreHostSession', session });
+      }
+
       if (!session?.joinCode) {
         return;
       }
@@ -489,7 +580,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       }
     }
 
-    void restorePlayerSession();
+    void restoreSession();
 
     return () => {
       cancelled = true;
@@ -506,11 +597,14 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
 
     return {
       ...state,
+      isHostAuthenticated: Boolean(state.hostToken),
       checkedInTeam,
       selectedTeam,
       currentRound,
       nextRound,
       totalPlayers,
+      loginHostAccount,
+      registerHostAccount,
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
@@ -541,7 +635,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
         }
       },
     };
-  }, [checkInSelectedTeam, loadPlayerParty, state]);
+  }, [checkInSelectedTeam, loadPlayerParty, loginHostAccount, registerHostAccount, state]);
 
   return <PartyStateContext.Provider value={value}>{children}</PartyStateContext.Provider>;
 }
