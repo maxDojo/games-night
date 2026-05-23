@@ -425,6 +425,9 @@ Mobile guidance:
 
 ## Game Config Guidance
 
+- Product direction: keep Trivia, Charades, and Taboo as polished built-in games, then make Custom Games the major expansion path for local/manual party formats.
+- Do not narrow the default product to Trivia-only; the observed games-night use case needs mixed games and host-led manual scoring.
+- Document/JSON-style game packs can become a later content/rules-template layer, but they should not replace built-in engines until a generic runtime is intentionally designed.
 - For built-in games, use typed request bodies from generated OpenAPI types:
   - `gameSlug: "trivia"` uses Trivia config overrides.
   - `gameSlug: "charades"` uses Charades config overrides.

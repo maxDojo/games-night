@@ -1,6 +1,7 @@
 import { Text, View } from 'react-native';
-import { Clock, EyeOff, Radio, ShieldCheck } from 'lucide-react-native';
+import { CheckCircle2, Clock, EyeOff, Lock, Radio, ShieldCheck } from 'lucide-react-native';
 
+import { AnswerOption } from '../../components/game/AnswerOption';
 import { Screen } from '../../components/layout/Screen';
 import { InfoBanner } from '../../components/ui/InfoBanner';
 import { Stat } from '../../components/ui/Stat';
@@ -31,11 +32,31 @@ export function PlayerAnswerScreen() {
     partyStatus,
     playerNickname,
     playerRounds,
+    submitTriviaAnswer,
+    triviaError,
+    triviaQuestion,
+    triviaReveal,
+    triviaSelectedChoice,
+    triviaSubmittedChoice,
   } = usePartyState();
   const activeRound = currentRound ?? nextRound;
-  const statusTitle = currentRound ? `${currentRound.label} is live` : 'Waiting for host';
+  const isActiveTrivia = currentRound?.gameSlug === 'trivia';
+  const activeTriviaQuestion = isActiveTrivia && triviaQuestion?.roundId === currentRound.id ? triviaQuestion : undefined;
+  const activeReveal =
+    activeTriviaQuestion && triviaReveal?.promptId === activeTriviaQuestion.promptId ? triviaReveal : undefined;
+  const answerLocked = Boolean(triviaSubmittedChoice || activeReveal);
+  const selectedChoice = triviaSelectedChoice ?? triviaSubmittedChoice ?? activeReveal?.selectedChoice;
+  const statusTitle = activeTriviaQuestion
+    ? `Question ${activeTriviaQuestion.questionNumber}`
+    : currentRound
+      ? `${currentRound.label} is live`
+      : 'Waiting for host';
   const statusSubtitle = currentRound
-    ? 'You are in the room. Watch for the host prompt.'
+    ? isActiveTrivia
+      ? activeTriviaQuestion
+        ? 'Choose once. First answer from your team is the one that counts.'
+        : 'Trivia is live. Waiting for the next question from the host.'
+      : 'You are in the room. Watch for the host prompt.'
     : nextRound
       ? `${nextRound.label} is queued next. Scores remain sealed.`
       : 'No queued round yet. Scores remain sealed.';
@@ -66,6 +87,55 @@ export function PlayerAnswerScreen() {
         <Stat value={playerRounds.length.toString()} label="rounds" />
         <Stat value="sealed" label="scores" danger />
       </View>
+
+      {activeTriviaQuestion ? (
+        <>
+          <View style={styles.questionPanel}>
+            <View style={styles.rowBetween}>
+              <Text style={styles.darkMeta}>
+                {activeTriviaQuestion.questionNumber}/{activeTriviaQuestion.total}
+              </Text>
+              <Text style={styles.lightMeta}>{answerLocked ? 'locked' : 'pick one'}</Text>
+            </View>
+            <Text style={styles.questionText}>{activeTriviaQuestion.question}</Text>
+            <View style={styles.lockNote}>
+              <Lock color={theme.palette.accent} size={15} />
+              <Text style={styles.lockText}>Live scores stay hidden until the host reveal.</Text>
+            </View>
+          </View>
+
+          <View style={styles.stack}>
+            {activeTriviaQuestion.choices.map((choice, index) => (
+              <AnswerOption
+                key={`${index}-${choice}`}
+                keyLabel={String.fromCharCode(65 + index)}
+                label={choice}
+                selected={choice === selectedChoice}
+                disabled={answerLocked}
+                onPress={() => submitTriviaAnswer(choice)}
+              />
+            ))}
+          </View>
+
+          {activeReveal ? (
+            <InfoBanner
+              icon={CheckCircle2}
+              title={activeReveal.wasCorrect ? 'Answer confirmed' : 'Answer revealed'}
+              subtitle={`Correct answer: ${activeReveal.correctAnswer}`}
+              color={activeReveal.wasCorrect ? theme.palette.success : theme.palette.info}
+            />
+          ) : triviaSubmittedChoice ? (
+            <InfoBanner
+              icon={ShieldCheck}
+              title="Answer locked"
+              subtitle="Your team answer has been sent. Results stay sealed here."
+              color={theme.palette.success}
+            />
+          ) : triviaError ? (
+            <Text style={styles.errorText}>{triviaError}</Text>
+          ) : null}
+        </>
+      ) : null}
 
       <View style={styles.card}>
         <View style={styles.rowBetween}>

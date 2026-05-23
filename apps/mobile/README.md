@@ -6,12 +6,12 @@ Expo/React Native app shell for the Games Night host and player experience.
 
 - Expo Router file-based host/player routing.
 - Arcade-first theme tokens based on the current Pencil direction.
-- API-backed player join-code lookup, capacity-aware team selection, anonymous player check-in, player-safe party status, and Socket.IO party-room join.
+- API-backed player join-code lookup, capacity-aware team selection, anonymous player check-in, player-safe party status, Trivia answer submission, and Socket.IO party-room join.
 - Local party state for host bonus awards, score reveal, post-reveal report flows, and live player check-in state.
 - Local secure session helpers for host token, join code, player ID, selected team, nickname, and last party.
 - Generated API type import from `apps/api/generated/api-types.d.ts`.
 - Socket.IO client helper for future party subscriptions.
-- Placeholder screens for player check-in, Trivia answering, locked reveal report, host lobby, queue, team management, bonuses, and host-only prompt control.
+- Placeholder screens for locked reveal report, host lobby, queue, team management, bonuses, and host-only prompt control.
 
 ## Structure
 

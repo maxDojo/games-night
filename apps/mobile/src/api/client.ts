@@ -29,6 +29,45 @@ export interface RoundEndedPayload {
   scores: Array<{ teamId: string; points: number }>;
 }
 
+export interface TriviaQuestionPayload {
+  kind: 'trivia-question';
+  roundId: string;
+  promptId: string;
+  questionNumber: number;
+  total: number;
+  question: string;
+  choices: string[];
+  difficulty: number;
+  deadlineAt: string;
+}
+
+export interface TriviaRevealPayload {
+  kind: 'trivia-answer';
+  roundId: string;
+  promptId: string;
+  questionNumber: number;
+  correctAnswer: string;
+  perTeam: Record<string, { correct: boolean; choice: string | null; points: number }>;
+}
+
+export function isTriviaQuestionPayload(payload: unknown): payload is TriviaQuestionPayload {
+  return Boolean(
+    payload &&
+      typeof payload === 'object' &&
+      'kind' in payload &&
+      (payload as { kind?: unknown }).kind === 'trivia-question',
+  );
+}
+
+export function isTriviaRevealPayload(payload: unknown): payload is TriviaRevealPayload {
+  return Boolean(
+    payload &&
+      typeof payload === 'object' &&
+      'kind' in payload &&
+      (payload as { kind?: unknown }).kind === 'trivia-answer',
+  );
+}
+
 interface ApiConfig {
   baseUrl: string;
   socketUrl: string;
@@ -139,4 +178,8 @@ export function createPartySocket(): Socket {
 
 export function joinPartyRoom(socket: Socket, joinCode: string, playerId: string) {
   socket.emit('party:join', { joinCode: normalizeJoinCode(joinCode), playerId });
+}
+
+export function submitRoundEvent(socket: Socket, roundId: string, type: string, payload?: unknown) {
+  socket.emit('round:event', { roundId, type, payload });
 }

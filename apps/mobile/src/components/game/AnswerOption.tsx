@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text } from 'react-native';
 
 import { useAppStyles } from '../../theme/useAppStyles';
 
@@ -6,15 +6,21 @@ interface AnswerOptionProps {
   keyLabel: string;
   label: string;
   selected?: boolean;
+  disabled?: boolean;
+  onPress?: () => void;
 }
 
-export function AnswerOption({ keyLabel, label, selected }: AnswerOptionProps) {
+export function AnswerOption({ keyLabel, label, selected, disabled, onPress }: AnswerOptionProps) {
   const { styles } = useAppStyles();
 
   return (
-    <View style={[styles.answerOption, selected && styles.answerSelected]}>
+    <Pressable
+      disabled={disabled}
+      style={[styles.answerOption, selected && styles.answerSelected, disabled && !selected && styles.disabledCard]}
+      onPress={onPress}
+    >
       <Text style={[styles.answerKey, selected && styles.answerKeySelected]}>{keyLabel}</Text>
       <Text style={[styles.answerLabel, selected && styles.answerLabelSelected]}>{label}</Text>
-    </View>
+    </Pressable>
   );
 }
