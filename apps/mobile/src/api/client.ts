@@ -12,6 +12,7 @@ export type AuthResponse =
   paths['/v1/auth/login']['post']['responses'][200]['content']['application/json'];
 export type TeamListResponse =
   paths['/v1/parties/{joinCode}/teams']['get']['responses'][200]['content']['application/json'];
+export type TeamResponse = TeamListResponse[number];
 export type JoinPlayerResponse =
   paths['/v1/teams/{teamId}/players']['post']['responses'][201]['content']['application/json'];
 export type RoundListResponse =
@@ -25,6 +26,8 @@ type HostRegisterRequest =
   paths['/v1/auth/register']['post']['requestBody']['content']['application/json'];
 type CreatePartyRequest =
   paths['/v1/parties']['post']['requestBody']['content']['application/json'];
+type CreateTeamRequest =
+  paths['/v1/parties/{joinCode}/teams']['post']['requestBody']['content']['application/json'];
 
 export interface RoundStartedPayload {
   roundId: string;
@@ -187,6 +190,14 @@ export async function getPartyByJoinCode(joinCode: string): Promise<PartyByCodeR
 
 export async function getPartyTeams(joinCode: string): Promise<TeamListResponse> {
   return requestJson<TeamListResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/teams`);
+}
+
+export async function createTeam(joinCode: string, body: CreateTeamRequest, token: string): Promise<TeamResponse> {
+  return requestJson<TeamResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/teams`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
 }
 
 export async function getPartyRounds(joinCode: string): Promise<RoundListResponse> {

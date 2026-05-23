@@ -2,6 +2,7 @@ import type {
   PartyByCodeResponse,
   PartyRoundResponse,
   RoundStartedPayload,
+  TeamResponse,
   TriviaQuestionPayload,
   TriviaRevealPayload,
 } from '../api/client';
@@ -32,6 +33,19 @@ export function mapPartyTeams(party: PartyByCodeResponse, selectedTeamId?: strin
       isSelected: team.id === selectedTeamId,
     };
   });
+}
+
+export function mapHostTeam(team: TeamResponse, capacity: number, selectedTeamId?: string): TeamSummary {
+  return {
+    id: team.id,
+    name: team.name,
+    shortName: getTeamShortName(team.name),
+    checkedIn: team.players?.length ?? 0,
+    capacity,
+    points: 0,
+    color: team.color,
+    isSelected: team.id === selectedTeamId,
+  };
 }
 
 export function getFirstAvailableTeamId(mappedTeams: TeamSummary[]) {
