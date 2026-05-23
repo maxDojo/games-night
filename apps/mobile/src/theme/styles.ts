@@ -136,6 +136,28 @@ export function createStyles(p: ThemePalette) {
     stack: {
       gap: 10,
     },
+    inputGroup: {
+      gap: 7,
+    },
+    textInput: {
+      minHeight: 56,
+      paddingHorizontal: 14,
+      borderWidth: 1,
+      borderColor: p.line,
+      borderRadius: 8,
+      backgroundColor: p.background,
+      color: p.foreground,
+      fontSize: 18,
+      fontWeight: '900',
+      letterSpacing: 0,
+    },
+    errorText: {
+      color: p.danger,
+      fontSize: 12,
+      fontWeight: '800',
+      lineHeight: 16,
+      letterSpacing: 0,
+    },
     infoBanner: {
       minHeight: 84,
       flexDirection: 'row',
