@@ -1,17 +1,19 @@
 import { Text, View } from 'react-native';
 import { EyeOff, Lock, ShieldCheck } from 'lucide-react-native';
 
+import { PodiumCard } from '../../components/game/PodiumCard';
 import { ScoreLogItem } from '../../components/game/ScoreLogItem';
 import { Screen } from '../../components/layout/Screen';
 import { InfoBanner } from '../../components/ui/InfoBanner';
-import { scoreEvents } from '../../data/mockState';
+import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 export function PlayerReportScreen() {
   const { styles, theme } = useAppStyles();
-  const revealed = false;
+  const { scoreEvents, scoresRevealed, teams } = usePartyState();
+  const rankedTeams = [...teams].sort((a, b) => b.points - a.points);
 
-  if (!revealed) {
+  if (!scoresRevealed) {
     return (
       <Screen eyebrow="REVEAL LOCKED" title="Scores stay sealed">
         <InfoBanner
@@ -43,6 +45,18 @@ export function PlayerReportScreen() {
         subtitle="Review point changes and flag anything that looks wrong."
         color={theme.palette.success}
       />
+      <View style={styles.podium}>
+        {rankedTeams.slice(0, 3).map((team, index) => (
+          <PodiumCard
+            key={team.id}
+            rank={`${index + 1}`}
+            name={team.name}
+            points={team.points.toLocaleString()}
+            color={team.color}
+            winner={index === 0}
+          />
+        ))}
+      </View>
       <Text style={styles.sectionTitle}>Score log</Text>
       {scoreEvents.map((event) => (
         <ScoreLogItem key={event.id} label={`${event.teamName}: ${event.label}`} delta={event.delta} />
