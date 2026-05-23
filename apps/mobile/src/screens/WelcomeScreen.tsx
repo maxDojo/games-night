@@ -1,7 +1,6 @@
 import { Text, View } from 'react-native';
 import { ArrowRight, BadgeAlert, Brain, Crown, Drama, Sparkles, Users } from 'lucide-react-native';
 
-import { joinCode } from '../data/mockState';
 import { Screen } from '../components/layout/Screen';
 import { ActionButton } from '../components/ui/ActionButton';
 import { Pill, Token } from '../components/ui/Badges';
@@ -38,7 +37,7 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
       <View style={styles.cardCompact}>
         <View>
           <Text style={styles.metaLabel}>JOIN {theme.displayName.toUpperCase()}</Text>
-          <Text style={styles.codeText}>{joinCode}</Text>
+          <Text style={styles.codeText}>ENTER CODE</Text>
         </View>
         <ArrowRight color={theme.palette.info} size={22} />
       </View>

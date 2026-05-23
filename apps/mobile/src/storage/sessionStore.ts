@@ -5,6 +5,7 @@ export interface MobileSession {
   joinCode?: string;
   playerId?: string;
   teamId?: string;
+  playerNickname?: string;
   lastPartyId?: string;
 }
 

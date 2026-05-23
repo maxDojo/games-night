@@ -6,8 +6,9 @@ Expo/React Native app shell for the Games Night host and player experience.
 
 - Expo Router file-based host/player routing.
 - Arcade-first theme tokens based on the current Pencil direction.
-- Local party state for mock-driven check-in, host bonus awards, score reveal, and post-reveal report flows.
-- Local secure session helpers for host token, join code, selected team, and last party.
+- API-backed player join-code lookup, capacity-aware team selection, anonymous player check-in, and Socket.IO party-room join.
+- Local party state for host bonus awards, score reveal, post-reveal report flows, and live player check-in state.
+- Local secure session helpers for host token, join code, player ID, selected team, nickname, and last party.
 - Generated API type import from `apps/api/generated/api-types.d.ts`.
 - Socket.IO client helper for future party subscriptions.
 - Placeholder screens for player check-in, Trivia answering, locked reveal report, host lobby, queue, team management, bonuses, and host-only prompt control.
@@ -18,7 +19,7 @@ Expo/React Native app shell for the Games Night host and player experience.
 - `src/screens/` - host/player screen composition.
 - `src/components/` - reusable game, layout, navigation, and UI primitives.
 - `src/theme/` - theme profile, shared styles, and `useAppStyles()`.
-- `src/state/` - local party state used by the shell before live API wiring.
+- `src/state/` - shared party state, including live player check-in and mock host/demo state.
 - `src/data/` - temporary mock state until live API flows replace it.
 - `src/api/` and `src/storage/` - API/socket and local session boundaries.
 
@@ -35,4 +36,4 @@ The shell reads API defaults from `app.json`:
 - `extra.apiBaseUrl`: defaults to `http://localhost:3000/v1`
 - `extra.socketUrl`: defaults to `http://localhost:3000`
 
-When testing on a physical device, point those values at a reachable LAN URL instead of `localhost`.
+When testing on a physical device, point those values at a reachable LAN URL instead of `localhost`. During Expo development, the app also rewrites localhost API defaults to the Expo dev host when available so Android/Expo Go can reach a local API server on the same machine.
