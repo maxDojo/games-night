@@ -4,15 +4,24 @@ import type { Socket } from 'socket.io-client';
 import {
   createPartySocket,
   getPartyByJoinCode,
+  getPartyRounds,
   joinPartyRoom,
   joinTeam,
   normalizeJoinCode,
   type PartyByCodeResponse,
+  type RoundEndedPayload,
+  type RoundStartedPayload,
 } from '../api/client';
 import { bonusAwards, joinCode, period, queuedRounds, scoreEvents, teams } from '../data/mockState';
-import { getFirstAvailableTeamId, getPlayerError, mapPartyTeams } from './partyMappers';
+import {
+  getFirstAvailableTeamId,
+  getPlayerError,
+  mapPartyRound,
+  mapPartyTeams,
+  mapStartedRound,
+} from './partyMappers';
 import { loadSession, saveSession, type MobileSession } from '../storage/sessionStore';
-import type { BonusAwardSummary, ScoreEventSummary, TeamSummary } from '../types/product';
+import type { BonusAwardSummary, PlayerRoundStatus, ScoreEventSummary, TeamSummary } from '../types/product';
 
 interface PartyState {
   joinCode: string;
@@ -22,6 +31,7 @@ interface PartyState {
   partySource: 'mock' | 'api';
   period: typeof period;
   teams: TeamSummary[];
+  playerRounds: PlayerRoundStatus[];
   queuedRounds: typeof queuedRounds;
   bonusAwards: BonusAwardSummary[];
   scoreEvents: ScoreEventSummary[];
@@ -30,6 +40,7 @@ interface PartyState {
   checkedInPlayerId?: string;
   playerNickname?: string;
   isLoadingParty: boolean;
+  isLoadingRounds: boolean;
   isCheckingIn: boolean;
   playerError?: string;
   scoresRevealed: boolean;
@@ -39,6 +50,8 @@ interface PartyState {
 interface PartyStateContextValue extends PartyState {
   checkedInTeam?: TeamSummary;
   selectedTeam?: TeamSummary;
+  currentRound?: PlayerRoundStatus;
+  nextRound?: PlayerRoundStatus;
   totalPlayers: number;
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
@@ -52,9 +65,14 @@ type PartyAction =
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
   | { type: 'loadPartyFailure'; error: string }
+  | { type: 'loadRoundsStart' }
+  | { type: 'loadRoundsSuccess'; rounds: PlayerRoundStatus[] }
+  | { type: 'loadRoundsFailure' }
   | { type: 'checkInStart' }
   | { type: 'checkInSuccess'; playerId: string; teamId: string; nickname: string }
   | { type: 'checkInFailure'; error: string }
+  | { type: 'roundStarted'; round: PlayerRoundStatus }
+  | { type: 'roundEnded'; roundId: string }
   | { type: 'revealScores' }
   | { type: 'awardBonus'; bonusId: string; teamId: string };
 
@@ -66,11 +84,13 @@ const initialState: PartyState = {
   partySource: 'mock',
   period,
   teams: teams.map((team) => ({ ...team, isSelected: team.id === firstAvailableTeam?.id })),
+  playerRounds: [],
   queuedRounds,
   bonusAwards,
   scoreEvents,
   selectedTeamId: firstAvailableTeam?.id,
   isLoadingParty: false,
+  isLoadingRounds: false,
   isCheckingIn: false,
   scoresRevealed: false,
   awardedBonusIds: [],
@@ -102,6 +122,7 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         ...state,
         joinCode: normalizeJoinCode(action.joinCode),
         isLoadingParty: true,
+        isLoadingRounds: false,
         playerError: undefined,
       };
     case 'loadPartySuccess': {
@@ -127,6 +148,12 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
     }
     case 'loadPartyFailure':
       return { ...state, isLoadingParty: false, playerError: action.error };
+    case 'loadRoundsStart':
+      return { ...state, isLoadingRounds: true };
+    case 'loadRoundsSuccess':
+      return { ...state, playerRounds: action.rounds, isLoadingRounds: false };
+    case 'loadRoundsFailure':
+      return { ...state, isLoadingRounds: false };
     case 'checkInStart':
       return { ...state, isCheckingIn: true, playerError: undefined };
     case 'checkInSuccess':
@@ -142,6 +169,28 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       };
     case 'checkInFailure':
       return { ...state, isCheckingIn: false, playerError: action.error };
+    case 'roundStarted': {
+      const existing = state.playerRounds.some((round) => round.id === action.round.id);
+      const rounds = existing
+        ? state.playerRounds.map((round) =>
+            round.id === action.round.id ? action.round : round.status === 'ACTIVE' ? { ...round, status: 'COMPLETED' as const, detail: 'Finished' } : round,
+          )
+        : [
+            ...state.playerRounds.map((round) =>
+              round.status === 'ACTIVE' ? { ...round, status: 'COMPLETED' as const, detail: 'Finished' } : round,
+            ),
+            action.round,
+          ];
+
+      return { ...state, playerRounds: rounds.sort((a, b) => a.order - b.order) };
+    }
+    case 'roundEnded':
+      return {
+        ...state,
+        playerRounds: state.playerRounds.map((round) =>
+          round.id === action.roundId ? { ...round, status: 'COMPLETED', detail: 'Finished' } : round,
+        ),
+      };
     case 'revealScores':
       return { ...state, scoresRevealed: true };
     case 'awardBonus': {
@@ -185,6 +234,17 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
   const [state, dispatch] = useReducer(partyReducer, initialState);
   const playerSocketRef = useRef<Socket | undefined>(undefined);
 
+  const refreshPlayerRounds = useCallback(async (nextJoinCode: string) => {
+    dispatch({ type: 'loadRoundsStart' });
+
+    try {
+      const rounds = await getPartyRounds(nextJoinCode);
+      dispatch({ type: 'loadRoundsSuccess', rounds: rounds.map(mapPartyRound) });
+    } catch {
+      dispatch({ type: 'loadRoundsFailure' });
+    }
+  }, []);
+
   const connectPlayerSocket = useCallback(
     (nextJoinCode: string, playerId: string, teamId: string, nickname?: string) => {
       playerSocketRef.current?.disconnect();
@@ -198,10 +258,18 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
           party,
           session: { joinCode: party.joinCode, playerId, teamId, playerNickname: nickname },
         });
+        void refreshPlayerRounds(party.joinCode);
+      });
+      socket.on('round:started', (payload: RoundStartedPayload) => {
+        dispatch({ type: 'roundStarted', round: mapStartedRound(payload) });
+      });
+      socket.on('round:ended', (payload: RoundEndedPayload) => {
+        dispatch({ type: 'roundEnded', roundId: payload.roundId });
+        void refreshPlayerRounds(nextJoinCode);
       });
       socket.connect();
     },
-    [],
+    [refreshPlayerRounds],
   );
 
   const loadPlayerParty = useCallback(async (nextJoinCode: string) => {
@@ -217,10 +285,11 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       const party = await getPartyByJoinCode(normalizedJoinCode);
       await saveSession({ joinCode: party.joinCode, lastPartyId: party.id });
       dispatch({ type: 'loadPartySuccess', party });
+      void refreshPlayerRounds(party.joinCode);
     } catch (error) {
       dispatch({ type: 'loadPartyFailure', error: getPlayerError(error) });
     }
-  }, []);
+  }, [refreshPlayerRounds]);
 
   const checkInSelectedTeam = useCallback(
     async (nickname: string) => {
@@ -300,6 +369,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
         }
 
         dispatch({ type: 'loadPartySuccess', party, session });
+        void refreshPlayerRounds(party.joinCode);
 
         if (session.playerId && session.teamId) {
           connectPlayerSocket(party.joinCode, session.playerId, session.teamId, session.playerNickname);
@@ -315,17 +385,21 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       cancelled = true;
       playerSocketRef.current?.disconnect();
     };
-  }, [connectPlayerSocket]);
+  }, [connectPlayerSocket, refreshPlayerRounds]);
 
   const value = useMemo<PartyStateContextValue>(() => {
     const checkedInTeam = state.teams.find((team) => team.id === state.checkedInTeamId);
     const selectedTeam = state.teams.find((team) => team.id === state.selectedTeamId);
+    const currentRound = state.playerRounds.find((round) => round.status === 'ACTIVE');
+    const nextRound = state.playerRounds.find((round) => round.status === 'PENDING');
     const totalPlayers = state.teams.reduce((total, team) => total + team.checkedIn, 0);
 
     return {
       ...state,
       checkedInTeam,
       selectedTeam,
+      currentRound,
+      nextRound,
       totalPlayers,
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
