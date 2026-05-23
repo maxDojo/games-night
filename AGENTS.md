@@ -86,8 +86,10 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Add integration coverage for persistent team check-in and period leaderboard aggregation.
 - **Custom Games + Score Audit** - planned
   - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
+  - Keep Trivia, Charades, and Taboo as polished first-class built-ins rather than narrowing the product to Trivia-only.
   - Define a generic custom-game model for host-authored games with name, rules, scoring mode, default points, penalties, and optional timer.
   - Support reusable custom-game templates that can be saved in plans and queued like built-in games.
+  - Treat document/JSON-style game packs as a later extension for content/rules templates, not as a replacement for built-in engine behavior until custom-game patterns are proven.
   - Add manual score events with team identity, point delta, reason, and actor.
   - Add correction history so wrong awards can be reversed or amended without losing auditability.
   - Add dispute-friendly host UI affordances: visible score log, correction reason, and clear team color/icon/name display to avoid similar-name mistakes.
@@ -186,6 +188,7 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: submit answers to the backend through `round:event`.
     - Done: show submitted/locked answer state.
     - Done: avoid exposing live scoring details on player devices.
+    - Follow-up: backend/mobile currently do not replay the active Trivia question to a player who reconnects after `prompt:next`; they receive the next question instead.
   - **M1.5 Optional location verification placeholder**
     - Add the UI permission/request path for venue-only join/check-in.
     - Keep backend enforcement and host override wiring for a later API-backed slice if the required backend contract is not ready.
