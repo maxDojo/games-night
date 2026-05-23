@@ -1,5 +1,11 @@
-import type { PartyByCodeResponse, PartyRoundResponse, RoundStartedPayload } from '../api/client';
-import type { PlayerRoundStatus, TeamSummary } from '../types/product';
+import type {
+  PartyByCodeResponse,
+  PartyRoundResponse,
+  RoundStartedPayload,
+  TriviaQuestionPayload,
+  TriviaRevealPayload,
+} from '../api/client';
+import type { PlayerRoundStatus, PlayerTriviaQuestion, PlayerTriviaReveal, TeamSummary } from '../types/product';
 
 export function getTeamShortName(name: string) {
   const initials = name
@@ -89,5 +95,29 @@ export function mapStartedRound(payload: RoundStartedPayload): PlayerRoundStatus
     label: `${getRoundLabel(payload.gameSlug)} ${payload.order}`,
     detail: 'Live now',
     gameSlug: payload.gameSlug,
+  };
+}
+
+export function mapTriviaQuestion(payload: TriviaQuestionPayload): PlayerTriviaQuestion {
+  return {
+    roundId: payload.roundId,
+    promptId: payload.promptId,
+    questionNumber: payload.questionNumber,
+    total: payload.total,
+    question: payload.question,
+    choices: payload.choices,
+    deadlineAt: payload.deadlineAt,
+  };
+}
+
+export function mapTriviaReveal(payload: TriviaRevealPayload, teamId?: string): PlayerTriviaReveal {
+  const teamResult = teamId ? payload.perTeam[teamId] : undefined;
+
+  return {
+    promptId: payload.promptId,
+    questionNumber: payload.questionNumber,
+    correctAnswer: payload.correctAnswer,
+    selectedChoice: teamResult?.choice ?? undefined,
+    wasCorrect: teamResult?.correct,
   };
 }

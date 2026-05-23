@@ -5,9 +5,12 @@ import {
   createPartySocket,
   getPartyByJoinCode,
   getPartyRounds,
+  isTriviaQuestionPayload,
+  isTriviaRevealPayload,
   joinPartyRoom,
   joinTeam,
   normalizeJoinCode,
+  submitRoundEvent,
   type PartyByCodeResponse,
   type RoundEndedPayload,
   type RoundStartedPayload,
@@ -19,9 +22,18 @@ import {
   mapPartyRound,
   mapPartyTeams,
   mapStartedRound,
+  mapTriviaQuestion,
+  mapTriviaReveal,
 } from './partyMappers';
 import { loadSession, saveSession, type MobileSession } from '../storage/sessionStore';
-import type { BonusAwardSummary, PlayerRoundStatus, ScoreEventSummary, TeamSummary } from '../types/product';
+import type {
+  BonusAwardSummary,
+  PlayerRoundStatus,
+  PlayerTriviaQuestion,
+  PlayerTriviaReveal,
+  ScoreEventSummary,
+  TeamSummary,
+} from '../types/product';
 
 interface PartyState {
   joinCode: string;
@@ -42,6 +54,11 @@ interface PartyState {
   isLoadingParty: boolean;
   isLoadingRounds: boolean;
   isCheckingIn: boolean;
+  triviaQuestion?: PlayerTriviaQuestion;
+  triviaReveal?: PlayerTriviaReveal;
+  triviaSelectedChoice?: string;
+  triviaSubmittedChoice?: string;
+  triviaError?: string;
   playerError?: string;
   scoresRevealed: boolean;
   awardedBonusIds: string[];
@@ -56,6 +73,7 @@ interface PartyStateContextValue extends PartyState {
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
+  submitTriviaAnswer: (choice: string) => void;
   revealScores: () => void;
   awardNextBonus: () => void;
 }
@@ -73,6 +91,10 @@ type PartyAction =
   | { type: 'checkInFailure'; error: string }
   | { type: 'roundStarted'; round: PlayerRoundStatus }
   | { type: 'roundEnded'; roundId: string }
+  | { type: 'triviaQuestion'; question: PlayerTriviaQuestion }
+  | { type: 'triviaAnswerSubmitted'; choice: string }
+  | { type: 'triviaReveal'; reveal: PlayerTriviaReveal }
+  | { type: 'triviaSubmitFailure'; error: string }
   | { type: 'revealScores' }
   | { type: 'awardBonus'; bonusId: string; teamId: string };
 
@@ -190,7 +212,37 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         playerRounds: state.playerRounds.map((round) =>
           round.id === action.roundId ? { ...round, status: 'COMPLETED', detail: 'Finished' } : round,
         ),
+        triviaQuestion: state.triviaQuestion?.roundId === action.roundId ? undefined : state.triviaQuestion,
+        triviaReveal: state.triviaQuestion?.roundId === action.roundId ? undefined : state.triviaReveal,
+        triviaSelectedChoice: state.triviaQuestion?.roundId === action.roundId ? undefined : state.triviaSelectedChoice,
+        triviaSubmittedChoice: state.triviaQuestion?.roundId === action.roundId ? undefined : state.triviaSubmittedChoice,
+        triviaError: undefined,
       };
+    case 'triviaQuestion':
+      return {
+        ...state,
+        triviaQuestion: action.question,
+        triviaReveal: undefined,
+        triviaSelectedChoice: undefined,
+        triviaSubmittedChoice: undefined,
+        triviaError: undefined,
+      };
+    case 'triviaAnswerSubmitted':
+      return {
+        ...state,
+        triviaSelectedChoice: action.choice,
+        triviaSubmittedChoice: action.choice,
+        triviaError: undefined,
+      };
+    case 'triviaReveal':
+      return {
+        ...state,
+        triviaReveal: action.reveal,
+        triviaSubmittedChoice: undefined,
+        triviaSelectedChoice: action.reveal.selectedChoice ?? state.triviaSelectedChoice,
+      };
+    case 'triviaSubmitFailure':
+      return { ...state, triviaError: action.error };
     case 'revealScores':
       return { ...state, scoresRevealed: true };
     case 'awardBonus': {
@@ -266,6 +318,16 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       socket.on('round:ended', (payload: RoundEndedPayload) => {
         dispatch({ type: 'roundEnded', roundId: payload.roundId });
         void refreshPlayerRounds(nextJoinCode);
+      });
+      socket.on('prompt:next', (payload: unknown) => {
+        if (isTriviaQuestionPayload(payload)) {
+          dispatch({ type: 'triviaQuestion', question: mapTriviaQuestion(payload) });
+        }
+      });
+      socket.on('prompt:reveal', (payload: unknown) => {
+        if (isTriviaRevealPayload(payload)) {
+          dispatch({ type: 'triviaReveal', reveal: mapTriviaReveal(payload, teamId) });
+        }
       });
       socket.connect();
     },
@@ -404,6 +466,18 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
+      submitTriviaAnswer: (choice) => {
+        const socket = playerSocketRef.current;
+        const activeQuestion = state.triviaQuestion;
+
+        if (!socket?.connected || !activeQuestion) {
+          dispatch({ type: 'triviaSubmitFailure', error: 'Waiting for the live question connection.' });
+          return;
+        }
+
+        submitRoundEvent(socket, activeQuestion.roundId, 'answer', { choice });
+        dispatch({ type: 'triviaAnswerSubmitted', choice });
+      },
       revealScores: () => dispatch({ type: 'revealScores' }),
       awardNextBonus: () => {
         const bonus = state.bonusAwards.find((item) => !state.awardedBonusIds.includes(item.id));

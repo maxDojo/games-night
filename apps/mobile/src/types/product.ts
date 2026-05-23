@@ -57,3 +57,21 @@ export interface PlayerRoundStatus {
   detail: string;
   gameSlug?: string | null;
 }
+
+export interface PlayerTriviaQuestion {
+  roundId: string;
+  promptId: string;
+  questionNumber: number;
+  total: number;
+  question: string;
+  choices: string[];
+  deadlineAt: string;
+}
+
+export interface PlayerTriviaReveal {
+  promptId: string;
+  questionNumber: number;
+  correctAnswer: string;
+  selectedChoice?: string;
+  wasCorrect?: boolean;
+}

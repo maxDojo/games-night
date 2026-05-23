@@ -181,11 +181,11 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: show current and next round state from public rounds plus socket updates.
     - Done: hide leaderboard and team point totals until host reveal.
     - Done: show the player's team identity plus waiting/current game context.
-  - **M1.4 Trivia answer path**
-    - Receive active Trivia round state.
-    - Submit answers to the backend.
-    - Show submitted/locked answer state.
-    - Avoid exposing live scoring details on player devices.
+  - **M1.4 Trivia answer path** - done
+    - Done: receive active Trivia question state from socket `prompt:next`.
+    - Done: submit answers to the backend through `round:event`.
+    - Done: show submitted/locked answer state.
+    - Done: avoid exposing live scoring details on player devices.
   - **M1.5 Optional location verification placeholder**
     - Add the UI permission/request path for venue-only join/check-in.
     - Keep backend enforcement and host override wiring for a later API-backed slice if the required backend contract is not ready.
