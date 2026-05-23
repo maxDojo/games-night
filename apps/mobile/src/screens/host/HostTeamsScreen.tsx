@@ -5,11 +5,12 @@ import { TeamCard } from '../../components/game/TeamCard';
 import { Screen } from '../../components/layout/Screen';
 import { ActionButton } from '../../components/ui/ActionButton';
 import { InfoBanner } from '../../components/ui/InfoBanner';
-import { period, teams } from '../../data/mockState';
+import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 export function HostTeamsScreen() {
   const { styles, theme } = useAppStyles();
+  const { checkedInTeam, period, teams } = usePartyState();
 
   return (
     <Screen eyebrow="TEAM SEASON" title={`${theme.displayName} teams`}>
@@ -24,7 +25,7 @@ export function HostTeamsScreen() {
       />
       <View style={styles.stack}>
         {teams.map((team) => (
-          <TeamCard key={team.id} team={team} selected={team.isSelected} />
+          <TeamCard key={team.id} team={team} selected={team.id === checkedInTeam?.id} />
         ))}
       </View>
       <View style={styles.twoColumn}>

@@ -5,11 +5,24 @@ import { Screen } from '../../components/layout/Screen';
 import { ActionButton } from '../../components/ui/ActionButton';
 import { Pill } from '../../components/ui/Badges';
 import { Stat } from '../../components/ui/Stat';
-import { bonusAwards, joinCode } from '../../data/mockState';
+import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 export function HostLobbyScreen() {
   const { styles, theme } = useAppStyles();
+  const {
+    awardNextBonus,
+    awardedBonusIds,
+    bonusAwards,
+    joinCode,
+    queuedRounds,
+    revealScores,
+    scoresRevealed,
+    teams,
+    totalPlayers,
+  } = usePartyState();
+  const nextRound = queuedRounds[queuedRounds.length - 1];
+  const bonusLabel = awardedBonusIds.length >= bonusAwards.length ? 'Bonuses done' : 'Award bonus';
 
   return (
     <Screen eyebrow="THEMED ROOM" title={theme.displayName}>
@@ -22,19 +35,19 @@ export function HostLobbyScreen() {
           <Pill label="LIVE" />
         </View>
         <View style={styles.statRow}>
-          <Stat value="3" label="teams" />
-          <Stat value="19" label="players" />
-          <Stat value="6" label="rounds" />
+          <Stat value={teams.length.toString()} label="teams" />
+          <Stat value={totalPlayers.toString()} label="players" />
+          <Stat value={scoresRevealed ? 'open' : 'sealed'} label="scores" accent={scoresRevealed} />
         </View>
       </View>
       <View style={styles.card}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
-          <Text style={styles.positiveText}>650 pts</Text>
+          <Text style={styles.positiveText}>{nextRound.points} pts</Text>
         </View>
-        <Text style={styles.cardTitle}>Custom: Word Scramble</Text>
+        <Text style={styles.cardTitle}>{nextRound.label}</Text>
         <Text style={styles.bodyText}>
-          Manual score round. Corrections require a reason and stay visible in the score log.
+          Manual score round. Corrections and special bonuses require a reason and stay visible in the final audit.
         </Text>
       </View>
       <View style={styles.card}>
@@ -52,18 +65,31 @@ export function HostLobbyScreen() {
                 <Text style={styles.scoreLogLabel}>{bonus.label}</Text>
                 <Text style={styles.teamMeta}>{bonus.reason}</Text>
               </View>
-              <Text style={[styles.scoreLogDelta, { color: theme.palette.success }]}>+{bonus.points}</Text>
+              <Text style={[styles.scoreLogDelta, { color: theme.palette.success }]}>
+                {awardedBonusIds.includes(bonus.id) ? 'Awarded' : `+${bonus.points}`}
+              </Text>
             </View>
           ))}
         </View>
       </View>
       <View style={styles.twoColumn}>
         <ActionButton label="Start" icon={Play} onPress={() => undefined} primary />
-        <ActionButton label="Bonus" icon={Award} onPress={() => undefined} success />
+        <ActionButton
+          label={bonusLabel}
+          icon={Award}
+          onPress={awardNextBonus}
+          disabled={awardedBonusIds.length >= bonusAwards.length}
+          success
+        />
       </View>
       <View style={styles.twoColumn}>
         <ActionButton label="Score log" icon={ClipboardList} onPress={() => undefined} />
-        <ActionButton label="Reveal" icon={Gift} onPress={() => undefined} />
+        <ActionButton
+          label={scoresRevealed ? 'Revealed' : 'Reveal'}
+          icon={Gift}
+          onPress={revealScores}
+          disabled={scoresRevealed}
+        />
       </View>
     </Screen>
   );

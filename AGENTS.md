@@ -165,6 +165,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: define a local `ThemeProfile` UI type so the arcade-first design is tokenized instead of hardcoded.
   - Done: add local secure session persistence for host token, join code, team selection, and last party.
   - Done: add placeholder screens for the agreed M1-M5 flows.
+  - Done: add local stateful shell flows for capacity-aware player check-in, hidden player scores, host bonus award, host score reveal, and post-reveal score reporting.
   - Verify the shell on a simulator/device before marking M0 complete.
 
 ### Cross-project coordination

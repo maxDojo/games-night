@@ -10,9 +10,10 @@ interface ActionButtonProps {
   primary?: boolean;
   danger?: boolean;
   success?: boolean;
+  disabled?: boolean;
 }
 
-export function ActionButton({ label, icon: Icon, onPress, primary, danger, success }: ActionButtonProps) {
+export function ActionButton({ label, icon: Icon, onPress, primary, danger, success, disabled }: ActionButtonProps) {
   const { styles, theme } = useAppStyles();
   const backgroundColor = primary
     ? theme.palette.accent
@@ -24,7 +25,11 @@ export function ActionButton({ label, icon: Icon, onPress, primary, danger, succ
   const color = primary || success ? theme.palette.ink : theme.palette.foreground;
 
   return (
-    <Pressable style={[styles.actionButton, { backgroundColor }]} onPress={onPress}>
+    <Pressable
+      disabled={disabled}
+      style={[styles.actionButton, { backgroundColor }, disabled && styles.disabledCard]}
+      onPress={onPress}
+    >
       <Icon color={color} size={18} />
       <Text style={[styles.actionButtonText, { color }]}>{label}</Text>
     </Pressable>

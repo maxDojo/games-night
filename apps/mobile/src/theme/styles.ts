@@ -175,6 +175,9 @@ export function createStyles(p: ThemePalette) {
       backgroundColor: p.accent,
       borderColor: p.accent,
     },
+    disabledCard: {
+      opacity: 0.55,
+    },
     teamGlyph: {
       width: 40,
       height: 40,

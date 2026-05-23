@@ -5,11 +5,12 @@ import { QueuedRoundCard } from '../../components/game/QueuedRoundCard';
 import { Screen } from '../../components/layout/Screen';
 import { InfoBanner } from '../../components/ui/InfoBanner';
 import { SmallButton } from '../../components/ui/SmallButton';
-import { queuedRounds } from '../../data/mockState';
+import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 export function HostQueueScreen() {
   const { styles, theme } = useAppStyles();
+  const { queuedRounds } = usePartyState();
 
   return (
     <Screen eyebrow="QUEUE LAB / TV + PHONES" title="Build the run">
