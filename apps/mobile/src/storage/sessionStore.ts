@@ -2,6 +2,11 @@ import * as SecureStore from 'expo-secure-store';
 
 export interface MobileSession {
   hostToken?: string;
+  hostUser?: {
+    id: string;
+    email: string;
+    displayName: string;
+  };
   joinCode?: string;
   playerId?: string;
   teamId?: string;
@@ -17,7 +22,8 @@ export async function loadSession(): Promise<MobileSession | undefined> {
 }
 
 export async function saveSession(session: MobileSession): Promise<void> {
-  await SecureStore.setItemAsync(sessionKey, JSON.stringify(session));
+  const current = await loadSession();
+  await SecureStore.setItemAsync(sessionKey, JSON.stringify({ ...current, ...session }));
 }
 
 export async function clearSession(): Promise<void> {

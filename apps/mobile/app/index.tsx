@@ -12,7 +12,7 @@ export default function HomeRoute() {
   };
 
   const enterHost = () => {
-    router.push('/host/lobby');
+    router.push('/host/auth');
   };
 
   return (

@@ -6,6 +6,8 @@ type HealthResponse =
   paths['/v1/health']['get']['responses'][200]['content']['application/json'];
 export type PartyByCodeResponse =
   paths['/v1/parties/{joinCode}']['get']['responses'][200]['content']['application/json'];
+export type AuthResponse =
+  paths['/v1/auth/login']['post']['responses'][200]['content']['application/json'];
 export type TeamListResponse =
   paths['/v1/parties/{joinCode}/teams']['get']['responses'][200]['content']['application/json'];
 export type JoinPlayerResponse =
@@ -15,6 +17,10 @@ export type RoundListResponse =
 export type PartyRoundResponse = RoundListResponse[number];
 type JoinPlayerRequest =
   paths['/v1/teams/{teamId}/players']['post']['requestBody']['content']['application/json'];
+type HostLoginRequest =
+  paths['/v1/auth/login']['post']['requestBody']['content']['application/json'];
+type HostRegisterRequest =
+  paths['/v1/auth/register']['post']['requestBody']['content']['application/json'];
 
 export interface RoundStartedPayload {
   roundId: string;
@@ -143,6 +149,20 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function getHealth(): Promise<HealthResponse> {
   return requestJson<HealthResponse>('/health');
+}
+
+export async function loginHost(body: HostLoginRequest): Promise<AuthResponse> {
+  return requestJson<AuthResponse>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function registerHost(body: HostRegisterRequest): Promise<AuthResponse> {
+  return requestJson<AuthResponse>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }
 
 export function normalizeJoinCode(joinCode: string) {

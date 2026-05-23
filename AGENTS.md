@@ -194,10 +194,10 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: show failed-check and host-override placeholder states without continuous player tracking.
     - Done: keep backend enforcement, real device location capture, and host override persistence for a later API-backed slice.
 - **Mobile M2** - next
-  - **M2.1 Host auth/session**
-    - Add API-backed host register/login from mobile.
-    - Persist and restore host token through the existing session store.
-    - Route authenticated hosts into the host lobby flow.
+  - **M2.1 Host auth/session** - done
+    - Done: add API-backed host register/login from mobile.
+    - Done: persist and restore host token through the existing session store.
+    - Done: route authenticated hosts into the host lobby flow.
   - **M2.2 Create party**
     - Create parties from mobile using the host token.
     - Show join code, party name/status, and basic capacity settings after creation.
