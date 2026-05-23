@@ -198,10 +198,10 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: add API-backed host register/login from mobile.
     - Done: persist and restore host token through the existing session store.
     - Done: route authenticated hosts into the host lobby flow.
-  - **M2.2 Create party**
-    - Create parties from mobile using the host token.
-    - Show join code, party name/status, and basic capacity settings after creation.
-    - Keep future theming hooks in the screen structure without implementing uploads yet.
+  - **M2.2 Create party** - done
+    - Done: create parties from mobile using the host token.
+    - Done: show join code, party name/status, and basic capacity settings after creation.
+    - Done: keep future theming hooks in the screen structure without implementing uploads yet.
   - **M2.3 Host lobby/team setup**
     - Create/select teams from the host flow when the required API support exists.
     - Show team capacity and player check-ins clearly.

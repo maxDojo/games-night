@@ -7,6 +7,14 @@ export interface MobileSession {
     email: string;
     displayName: string;
   };
+  hostParty?: {
+    id: string;
+    joinCode: string;
+    name: string;
+    status: string;
+    maxTeams: number;
+    maxPerTeam: number;
+  };
   joinCode?: string;
   playerId?: string;
   teamId?: string;

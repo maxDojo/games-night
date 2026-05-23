@@ -2,6 +2,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 import type { Socket } from 'socket.io-client';
 
 import {
+  createParty,
   createPartySocket,
   getPartyByJoinCode,
   getPartyRounds,
@@ -14,6 +15,7 @@ import {
   registerHost,
   submitRoundEvent,
   type AuthResponse,
+  type CreatePartyResponse,
   type PartyByCodeResponse,
   type RoundEndedPayload,
   type RoundStartedPayload,
@@ -42,9 +44,12 @@ import type {
 interface PartyState {
   hostToken?: string;
   hostUser?: MobileSession['hostUser'];
+  hostParty?: MobileSession['hostParty'];
   isRestoringHostSession: boolean;
   isHostAuthenticating: boolean;
+  isCreatingHostParty: boolean;
   hostAuthError?: string;
+  hostPartyError?: string;
   joinCode: string;
   partyId?: string;
   partyName: string;
@@ -85,6 +90,7 @@ interface PartyStateContextValue extends PartyState {
   totalPlayers: number;
   loginHostAccount: (email: string, password: string) => Promise<boolean>;
   registerHostAccount: (email: string, displayName: string, password: string) => Promise<boolean>;
+  createHostParty: (name: string, maxTeams: number, maxPerTeam: number) => Promise<boolean>;
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
@@ -100,6 +106,9 @@ type PartyAction =
   | { type: 'hostAuthStart' }
   | { type: 'hostAuthSuccess'; auth: AuthResponse }
   | { type: 'hostAuthFailure'; error: string }
+  | { type: 'createHostPartyStart' }
+  | { type: 'createHostPartySuccess'; party: CreatePartyResponse }
+  | { type: 'createHostPartyFailure'; error: string }
   | { type: 'selectTeam'; teamId: string }
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
@@ -127,6 +136,7 @@ const firstAvailableTeam = teams.find((team) => team.checkedIn < team.capacity);
 const initialState: PartyState = {
   isRestoringHostSession: true,
   isHostAuthenticating: false,
+  isCreatingHostParty: false,
   joinCode,
   partyName: period.name,
   partySource: 'mock',
@@ -155,6 +165,7 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         ...state,
         hostToken: action.session?.hostToken,
         hostUser: action.session?.hostUser,
+        hostParty: action.session?.hostParty,
         isRestoringHostSession: false,
       };
     case 'hostAuthStart':
@@ -174,6 +185,17 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       };
     case 'hostAuthFailure':
       return { ...state, isHostAuthenticating: false, hostAuthError: action.error };
+    case 'createHostPartyStart':
+      return { ...state, isCreatingHostParty: true, hostPartyError: undefined };
+    case 'createHostPartySuccess':
+      return {
+        ...state,
+        hostParty: mapHostParty(action.party),
+        isCreatingHostParty: false,
+        hostPartyError: undefined,
+      };
+    case 'createHostPartyFailure':
+      return { ...state, isCreatingHostParty: false, hostPartyError: action.error };
     case 'selectTeam': {
       if (state.checkedInTeamId) {
         return state;
@@ -477,6 +499,43 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     }
   }, []);
 
+  const createHostParty = useCallback(
+    async (name: string, maxTeams: number, maxPerTeam: number) => {
+      const trimmedName = name.trim();
+
+      if (!state.hostToken) {
+        dispatch({ type: 'createHostPartyFailure', error: 'Login as host before creating a party.' });
+        return false;
+      }
+
+      if (!trimmedName) {
+        dispatch({ type: 'createHostPartyFailure', error: 'Enter a party name.' });
+        return false;
+      }
+
+      dispatch({ type: 'createHostPartyStart' });
+
+      try {
+        const party = await createParty(
+          {
+            name: trimmedName,
+            maxTeams,
+            maxPerTeam,
+          },
+          state.hostToken,
+        );
+        const hostParty = mapHostParty(party);
+        await saveSession({ hostParty });
+        dispatch({ type: 'createHostPartySuccess', party });
+        return true;
+      } catch (error) {
+        dispatch({ type: 'createHostPartyFailure', error: getPlayerError(error) });
+        return false;
+      }
+    },
+    [state.hostToken],
+  );
+
   const checkInSelectedTeam = useCallback(
     async (nickname: string) => {
       const trimmedNickname = nickname.trim();
@@ -605,6 +664,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       totalPlayers,
       loginHostAccount,
       registerHostAccount,
+      createHostParty,
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
@@ -635,7 +695,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
         }
       },
     };
-  }, [checkInSelectedTeam, loadPlayerParty, loginHostAccount, registerHostAccount, state]);
+  }, [checkInSelectedTeam, createHostParty, loadPlayerParty, loginHostAccount, registerHostAccount, state]);
 
   return <PartyStateContext.Provider value={value}>{children}</PartyStateContext.Provider>;
 }
@@ -660,6 +720,17 @@ function isLocationVerificationRequired(settings: unknown) {
   }
 
   return false;
+}
+
+function mapHostParty(party: CreatePartyResponse | PartyByCodeResponse): NonNullable<MobileSession['hostParty']> {
+  return {
+    id: party.id,
+    joinCode: party.joinCode,
+    name: party.name,
+    status: party.status,
+    maxTeams: party.maxTeams,
+    maxPerTeam: party.maxPerTeam,
+  };
 }
 
 export function usePartyState() {
