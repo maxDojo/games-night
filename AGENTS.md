@@ -135,7 +135,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | Milestone | What | Status |
 | --------- | ---- | ------ |
 | **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Done |
-| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Planned |
+| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Next |
 | **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Planned |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
@@ -167,6 +167,29 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add placeholder screens for the agreed M1-M5 flows.
   - Done: add local stateful shell flows for capacity-aware player check-in, hidden player scores, host bonus award, host score reveal, and post-reveal score reporting.
   - Done: verify the shell on Android emulator with Expo Go, including player check-in guard, player answer flow, host lobby controls, hidden player scores, score reveal, and bottom-nav spacing.
+- **Mobile M1** - planned
+  - **M1.1 API-backed join by code**
+    - Replace local mock join flow with API calls.
+    - Validate the party code against the backend.
+    - Show party theme/name/status from backend data.
+  - **M1.2 Team selection + capacity-aware check-in**
+    - Fetch teams for the selected party.
+    - Show team capacity states clearly, including full/disabled teams.
+    - Check the player into the selected team.
+    - Persist local player/session context after successful check-in.
+  - **M1.3 Player party status without live scores**
+    - Show current and next round state.
+    - Hide leaderboard and team point totals until host reveal.
+    - Show the player's team identity plus waiting/current game context.
+  - **M1.4 Trivia answer path**
+    - Receive active Trivia round state.
+    - Submit answers to the backend.
+    - Show submitted/locked answer state.
+    - Avoid exposing live scoring details on player devices.
+  - **M1.5 Optional location verification placeholder**
+    - Add the UI permission/request path for venue-only join/check-in.
+    - Keep backend enforcement and host override wiring for a later API-backed slice if the required backend contract is not ready.
+  - Recommended first implementation PR: combine M1.1 and M1.2 as one vertical slice covering join code, party lookup, team list, and player check-in.
 
 ### Cross-project coordination
 
