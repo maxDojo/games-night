@@ -137,8 +137,8 @@ Keep milestones and task lists separated by project. The current shipped work is
 | Milestone | What | Status |
 | --------- | ---- | ------ |
 | **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Done |
-| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | In progress |
-| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Planned |
+| **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Done |
+| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Next |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
@@ -169,7 +169,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add placeholder screens for the agreed M1-M5 flows.
   - Done: add local stateful shell flows for capacity-aware player check-in, hidden player scores, host bonus award, host score reveal, and post-reveal score reporting.
   - Done: verify the shell on Android emulator with Expo Go, including player check-in guard, player answer flow, host lobby controls, hidden player scores, score reveal, and bottom-nav spacing.
-- **Mobile M1** - in progress
+- **Mobile M1** - done
   - **M1.1 API-backed join by code** - done
     - Done: replace local mock join flow with API calls.
     - Done: validate the party code against the backend.
@@ -193,7 +193,31 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: add the UI request path for venue-only join/check-in when future party settings require it.
     - Done: show failed-check and host-override placeholder states without continuous player tracking.
     - Done: keep backend enforcement, real device location capture, and host override persistence for a later API-backed slice.
-  - Recommended first implementation PR: combine M1.1 and M1.2 as one vertical slice covering join code, party lookup, team list, and player check-in.
+- **Mobile M2** - next
+  - **M2.1 Host auth/session**
+    - Add API-backed host register/login from mobile.
+    - Persist and restore host token through the existing session store.
+    - Route authenticated hosts into the host lobby flow.
+  - **M2.2 Create party**
+    - Create parties from mobile using the host token.
+    - Show join code, party name/status, and basic capacity settings after creation.
+    - Keep future theming hooks in the screen structure without implementing uploads yet.
+  - **M2.3 Host lobby/team setup**
+    - Create/select teams from the host flow when the required API support exists.
+    - Show team capacity and player check-ins clearly.
+    - Leave host move/override flows as placeholders unless the API slice is ready.
+  - **M2.4 Round queue/config**
+    - Use game discovery to list built-in games.
+    - Queue rounds and expose per-game config for points/timers using backend defaults.
+    - Keep Custom Games as a visible planned path, not a full editor in this milestone.
+  - **M2.5 Round controls**
+    - Start, end, and skip rounds from the host phone.
+    - Add manual score adjustment controls for active rounds.
+    - Keep Charades/Taboo private prompt control for Mobile M3.
+  - **M2.6 Bonuses/reveal**
+    - Add special bonus award controls.
+    - Show score log/correction placeholders until the score event audit API exists.
+    - Add host-controlled score reveal so players only see standings after reveal.
 
 ### Cross-project coordination
 
