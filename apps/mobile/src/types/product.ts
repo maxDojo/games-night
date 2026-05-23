@@ -6,6 +6,8 @@ export type HostRoute = 'lobby' | 'queue' | 'stage' | 'teams';
 
 export type TriviaDisplayMode = 'shared_screen_only' | 'player_devices' | 'both';
 
+export type LocationVerificationStatus = 'not_required' | 'required' | 'checking' | 'verified' | 'failed' | 'overridden';
+
 export interface TeamSummary {
   id: string;
   name: string;

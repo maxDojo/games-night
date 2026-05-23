@@ -28,6 +28,7 @@ import {
 import { loadSession, saveSession, type MobileSession } from '../storage/sessionStore';
 import type {
   BonusAwardSummary,
+  LocationVerificationStatus,
   PlayerRoundStatus,
   PlayerTriviaQuestion,
   PlayerTriviaReveal,
@@ -54,6 +55,9 @@ interface PartyState {
   isLoadingParty: boolean;
   isLoadingRounds: boolean;
   isCheckingIn: boolean;
+  locationVerificationRequired: boolean;
+  locationVerificationStatus: LocationVerificationStatus;
+  locationVerificationMessage?: string;
   triviaQuestion?: PlayerTriviaQuestion;
   triviaReveal?: PlayerTriviaReveal;
   triviaSelectedChoice?: string;
@@ -73,6 +77,8 @@ interface PartyStateContextValue extends PartyState {
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
+  requestLocationVerification: () => void;
+  markLocationOverride: () => void;
   submitTriviaAnswer: (choice: string) => void;
   revealScores: () => void;
   awardNextBonus: () => void;
@@ -89,6 +95,9 @@ type PartyAction =
   | { type: 'checkInStart' }
   | { type: 'checkInSuccess'; playerId: string; teamId: string; nickname: string }
   | { type: 'checkInFailure'; error: string }
+  | { type: 'locationVerificationRequested' }
+  | { type: 'locationVerificationUnavailable' }
+  | { type: 'locationOverrideMarked' }
   | { type: 'roundStarted'; round: PlayerRoundStatus }
   | { type: 'roundEnded'; roundId: string }
   | { type: 'triviaQuestion'; question: PlayerTriviaQuestion }
@@ -114,6 +123,8 @@ const initialState: PartyState = {
   isLoadingParty: false,
   isLoadingRounds: false,
   isCheckingIn: false,
+  locationVerificationRequired: false,
+  locationVerificationStatus: 'not_required',
   scoresRevealed: false,
   awardedBonusIds: [],
 };
@@ -151,6 +162,7 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       const persistedTeamId = action.session?.teamId;
       const mappedTeams = mapPartyTeams(action.party, persistedTeamId);
       const selectedTeamId = persistedTeamId ?? getFirstAvailableTeamId(mappedTeams);
+      const locationVerificationRequired = isLocationVerificationRequired(action.party.settings);
 
       return {
         ...state,
@@ -165,6 +177,11 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         checkedInPlayerId: action.session?.playerId,
         playerNickname: action.session?.playerNickname,
         isLoadingParty: false,
+        locationVerificationRequired,
+        locationVerificationStatus: locationVerificationRequired ? 'required' : 'not_required',
+        locationVerificationMessage: locationVerificationRequired
+          ? 'Venue-only check-in is enabled for this room.'
+          : undefined,
         playerError: undefined,
       };
     }
@@ -191,6 +208,26 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       };
     case 'checkInFailure':
       return { ...state, isCheckingIn: false, playerError: action.error };
+    case 'locationVerificationRequested':
+      return {
+        ...state,
+        locationVerificationStatus: 'checking',
+        locationVerificationMessage: 'Checking whether this device is at the venue.',
+        playerError: undefined,
+      };
+    case 'locationVerificationUnavailable':
+      return {
+        ...state,
+        locationVerificationStatus: 'failed',
+        locationVerificationMessage: 'Mobile location capture is not wired to the backend yet. Ask the host to override.',
+      };
+    case 'locationOverrideMarked':
+      return {
+        ...state,
+        locationVerificationStatus: 'overridden',
+        locationVerificationMessage: 'Host override path noted for this check-in.',
+        playerError: undefined,
+      };
     case 'roundStarted': {
       const existing = state.playerRounds.some((round) => round.id === action.round.id);
       const rounds = existing
@@ -367,6 +404,15 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
         return undefined;
       }
 
+      if (
+        state.locationVerificationRequired &&
+        state.locationVerificationStatus !== 'verified' &&
+        state.locationVerificationStatus !== 'overridden'
+      ) {
+        dispatch({ type: 'checkInFailure', error: 'Complete the venue check or ask the host to override it.' });
+        return undefined;
+      }
+
       if (!trimmedNickname) {
         dispatch({ type: 'checkInFailure', error: 'Enter a display name for this party.' });
         return undefined;
@@ -408,6 +454,8 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       connectPlayerSocket,
       state.checkedInTeamId,
       state.joinCode,
+      state.locationVerificationRequired,
+      state.locationVerificationStatus,
       state.partyId,
       state.partySource,
       state.selectedTeamId,
@@ -466,6 +514,11 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
+      requestLocationVerification: () => {
+        dispatch({ type: 'locationVerificationRequested' });
+        setTimeout(() => dispatch({ type: 'locationVerificationUnavailable' }), 600);
+      },
+      markLocationOverride: () => dispatch({ type: 'locationOverrideMarked' }),
       submitTriviaAnswer: (choice) => {
         const socket = playerSocketRef.current;
         const activeQuestion = state.triviaQuestion;
@@ -491,6 +544,28 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
   }, [checkInSelectedTeam, loadPlayerParty, state]);
 
   return <PartyStateContext.Provider value={value}>{children}</PartyStateContext.Provider>;
+}
+
+function isLocationVerificationRequired(settings: unknown) {
+  if (!settings || typeof settings !== 'object') {
+    return false;
+  }
+
+  const value = settings as {
+    locationVerification?: unknown;
+    locationVerificationEnabled?: unknown;
+  };
+
+  if (value.locationVerificationEnabled === true) {
+    return true;
+  }
+
+  if (value.locationVerification && typeof value.locationVerification === 'object') {
+    const locationVerification = value.locationVerification as { enabled?: unknown; required?: unknown };
+    return locationVerification.enabled === true || locationVerification.required === true;
+  }
+
+  return false;
 }
 
 export function usePartyState() {
