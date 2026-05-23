@@ -177,10 +177,10 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: show team capacity states clearly, including full/disabled teams.
     - Done: check the player into the selected team.
     - Done: persist local player/session context after successful check-in.
-  - **M1.3 Player party status without live scores**
-    - Show current and next round state.
-    - Hide leaderboard and team point totals until host reveal.
-    - Show the player's team identity plus waiting/current game context.
+  - **M1.3 Player party status without live scores** - done
+    - Done: show current and next round state from public rounds plus socket updates.
+    - Done: hide leaderboard and team point totals until host reveal.
+    - Done: show the player's team identity plus waiting/current game context.
   - **M1.4 Trivia answer path**
     - Receive active Trivia round state.
     - Submit answers to the backend.

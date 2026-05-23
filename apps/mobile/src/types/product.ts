@@ -48,3 +48,12 @@ export interface BonusAwardSummary {
   points: number;
   reason: string;
 }
+
+export interface PlayerRoundStatus {
+  id: string;
+  order: number;
+  status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'SKIPPED';
+  label: string;
+  detail: string;
+  gameSlug?: string | null;
+}

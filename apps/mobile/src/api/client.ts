@@ -10,8 +10,24 @@ export type TeamListResponse =
   paths['/v1/parties/{joinCode}/teams']['get']['responses'][200]['content']['application/json'];
 export type JoinPlayerResponse =
   paths['/v1/teams/{teamId}/players']['post']['responses'][201]['content']['application/json'];
+export type RoundListResponse =
+  paths['/v1/parties/{joinCode}/rounds']['get']['responses'][200]['content']['application/json'];
+export type PartyRoundResponse = RoundListResponse[number];
 type JoinPlayerRequest =
   paths['/v1/teams/{teamId}/players']['post']['requestBody']['content']['application/json'];
+
+export interface RoundStartedPayload {
+  roundId: string;
+  gameSlug: string | null;
+  order: number;
+  config: unknown;
+  startedAt: string | Date | null;
+}
+
+export interface RoundEndedPayload {
+  roundId: string;
+  scores: Array<{ teamId: string; points: number }>;
+}
 
 interface ApiConfig {
   baseUrl: string;
@@ -100,6 +116,10 @@ export async function getPartyByJoinCode(joinCode: string): Promise<PartyByCodeR
 
 export async function getPartyTeams(joinCode: string): Promise<TeamListResponse> {
   return requestJson<TeamListResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/teams`);
+}
+
+export async function getPartyRounds(joinCode: string): Promise<RoundListResponse> {
+  return requestJson<RoundListResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/rounds`);
 }
 
 export async function joinTeam(teamId: string, body: JoinPlayerRequest): Promise<JoinPlayerResponse> {

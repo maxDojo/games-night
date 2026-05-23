@@ -1,5 +1,5 @@
-import type { PartyByCodeResponse } from '../api/client';
-import type { TeamSummary } from '../types/product';
+import type { PartyByCodeResponse, PartyRoundResponse, RoundStartedPayload } from '../api/client';
+import type { PlayerRoundStatus, TeamSummary } from '../types/product';
 
 export function getTeamShortName(name: string) {
   const initials = name
@@ -34,4 +34,60 @@ export function getFirstAvailableTeamId(mappedTeams: TeamSummary[]) {
 
 export function getPlayerError(error: unknown) {
   return error instanceof Error ? error.message : 'Something went wrong';
+}
+
+function getRoundLabel(gameSlug?: string | null) {
+  switch (gameSlug) {
+    case 'trivia':
+      return 'Trivia';
+    case 'charades':
+      return 'Charades';
+    case 'taboo':
+      return 'Taboo';
+    case null:
+    case undefined:
+      return 'Round';
+    default:
+      return gameSlug
+        .split(/[-_\s]+/u)
+        .filter(Boolean)
+        .map((part) => `${part[0]?.toUpperCase() ?? ''}${part.slice(1)}`)
+        .join(' ');
+  }
+}
+
+function getRoundDetail(status: PlayerRoundStatus['status']) {
+  switch (status) {
+    case 'ACTIVE':
+      return 'Live now';
+    case 'PENDING':
+      return 'Queued by host';
+    case 'COMPLETED':
+      return 'Finished';
+    case 'SKIPPED':
+      return 'Skipped';
+    default:
+      return 'Waiting';
+  }
+}
+
+export function mapPartyRound(round: PartyRoundResponse): PlayerRoundStatus {
+  return {
+    id: round.id,
+    order: round.order,
+    status: round.status,
+    label: `${getRoundLabel()} ${round.order}`,
+    detail: getRoundDetail(round.status),
+  };
+}
+
+export function mapStartedRound(payload: RoundStartedPayload): PlayerRoundStatus {
+  return {
+    id: payload.roundId,
+    order: payload.order,
+    status: 'ACTIVE',
+    label: `${getRoundLabel(payload.gameSlug)} ${payload.order}`,
+    detail: 'Live now',
+    gameSlug: payload.gameSlug,
+  };
 }
