@@ -4,7 +4,9 @@ import type { Socket } from 'socket.io-client';
 import {
   createParty,
   createPartySocket,
+  createTeam,
   getPartyByJoinCode,
+  getPartyTeams,
   getPartyRounds,
   isTriviaQuestionPayload,
   isTriviaRevealPayload,
@@ -24,6 +26,7 @@ import { bonusAwards, joinCode, period, queuedRounds, scoreEvents, teams } from 
 import {
   getFirstAvailableTeamId,
   getPlayerError,
+  mapHostTeam,
   mapPartyRound,
   mapPartyTeams,
   mapStartedRound,
@@ -45,11 +48,16 @@ interface PartyState {
   hostToken?: string;
   hostUser?: MobileSession['hostUser'];
   hostParty?: MobileSession['hostParty'];
+  hostTeams: TeamSummary[];
   isRestoringHostSession: boolean;
   isHostAuthenticating: boolean;
   isCreatingHostParty: boolean;
+  isLoadingHostTeams: boolean;
+  isCreatingHostTeam: boolean;
   hostAuthError?: string;
   hostPartyError?: string;
+  hostTeamError?: string;
+  selectedHostTeamId?: string;
   joinCode: string;
   partyId?: string;
   partyName: string;
@@ -91,6 +99,9 @@ interface PartyStateContextValue extends PartyState {
   loginHostAccount: (email: string, password: string) => Promise<boolean>;
   registerHostAccount: (email: string, displayName: string, password: string) => Promise<boolean>;
   createHostParty: (name: string, maxTeams: number, maxPerTeam: number) => Promise<boolean>;
+  refreshHostTeams: () => Promise<void>;
+  createHostTeam: (name: string, color: string) => Promise<boolean>;
+  selectHostTeam: (teamId: string) => void;
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
@@ -109,6 +120,13 @@ type PartyAction =
   | { type: 'createHostPartyStart' }
   | { type: 'createHostPartySuccess'; party: CreatePartyResponse }
   | { type: 'createHostPartyFailure'; error: string }
+  | { type: 'loadHostTeamsStart' }
+  | { type: 'loadHostTeamsSuccess'; teams: TeamSummary[] }
+  | { type: 'loadHostTeamsFailure'; error: string }
+  | { type: 'createHostTeamStart' }
+  | { type: 'createHostTeamSuccess'; team: TeamSummary }
+  | { type: 'createHostTeamFailure'; error: string }
+  | { type: 'selectHostTeam'; teamId: string }
   | { type: 'selectTeam'; teamId: string }
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
@@ -137,6 +155,9 @@ const initialState: PartyState = {
   isRestoringHostSession: true,
   isHostAuthenticating: false,
   isCreatingHostParty: false,
+  isLoadingHostTeams: false,
+  isCreatingHostTeam: false,
+  hostTeams: [],
   joinCode,
   partyName: period.name,
   partySource: 'mock',
@@ -191,11 +212,45 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       return {
         ...state,
         hostParty: mapHostParty(action.party),
+        hostTeams: [],
+        selectedHostTeamId: undefined,
         isCreatingHostParty: false,
         hostPartyError: undefined,
       };
     case 'createHostPartyFailure':
       return { ...state, isCreatingHostParty: false, hostPartyError: action.error };
+    case 'loadHostTeamsStart':
+      return { ...state, isLoadingHostTeams: true, hostTeamError: undefined };
+    case 'loadHostTeamsSuccess':
+      return {
+        ...state,
+        hostTeams: action.teams.map((team) => ({ ...team, isSelected: team.id === state.selectedHostTeamId })),
+        isLoadingHostTeams: false,
+        hostTeamError: undefined,
+      };
+    case 'loadHostTeamsFailure':
+      return { ...state, isLoadingHostTeams: false, hostTeamError: action.error };
+    case 'createHostTeamStart':
+      return { ...state, isCreatingHostTeam: true, hostTeamError: undefined };
+    case 'createHostTeamSuccess':
+      return {
+        ...state,
+        hostTeams: [
+          ...state.hostTeams.map((team) => ({ ...team, isSelected: false })),
+          { ...action.team, isSelected: true },
+        ],
+        selectedHostTeamId: action.team.id,
+        isCreatingHostTeam: false,
+        hostTeamError: undefined,
+      };
+    case 'createHostTeamFailure':
+      return { ...state, isCreatingHostTeam: false, hostTeamError: action.error };
+    case 'selectHostTeam':
+      return {
+        ...state,
+        selectedHostTeamId: action.teamId,
+        hostTeams: state.hostTeams.map((team) => ({ ...team, isSelected: team.id === action.teamId })),
+      };
     case 'selectTeam': {
       if (state.checkedInTeamId) {
         return state;
@@ -536,6 +591,52 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     [state.hostToken],
   );
 
+  const refreshHostTeams = useCallback(async () => {
+    if (!state.hostParty) {
+      return;
+    }
+
+    dispatch({ type: 'loadHostTeamsStart' });
+
+    try {
+      const apiTeams = await getPartyTeams(state.hostParty.joinCode);
+      const mappedTeams = apiTeams.map((team) =>
+        mapHostTeam(team, state.hostParty?.maxPerTeam ?? 0, state.selectedHostTeamId),
+      );
+      dispatch({ type: 'loadHostTeamsSuccess', teams: mappedTeams });
+    } catch (error) {
+      dispatch({ type: 'loadHostTeamsFailure', error: getPlayerError(error) });
+    }
+  }, [state.hostParty, state.selectedHostTeamId]);
+
+  const createHostTeam = useCallback(
+    async (name: string, color: string) => {
+      const trimmedName = name.trim();
+
+      if (!state.hostParty || !state.hostToken) {
+        dispatch({ type: 'createHostTeamFailure', error: 'Create a host party before adding teams.' });
+        return false;
+      }
+
+      if (!trimmedName) {
+        dispatch({ type: 'createHostTeamFailure', error: 'Enter a team name.' });
+        return false;
+      }
+
+      dispatch({ type: 'createHostTeamStart' });
+
+      try {
+        const team = await createTeam(state.hostParty.joinCode, { name: trimmedName, color }, state.hostToken);
+        dispatch({ type: 'createHostTeamSuccess', team: mapHostTeam(team, state.hostParty.maxPerTeam, team.id) });
+        return true;
+      } catch (error) {
+        dispatch({ type: 'createHostTeamFailure', error: getPlayerError(error) });
+        return false;
+      }
+    },
+    [state.hostParty, state.hostToken],
+  );
+
   const checkInSelectedTeam = useCallback(
     async (nickname: string) => {
       const trimmedNickname = nickname.trim();
@@ -665,6 +766,9 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       loginHostAccount,
       registerHostAccount,
       createHostParty,
+      refreshHostTeams,
+      createHostTeam,
+      selectHostTeam: (teamId) => dispatch({ type: 'selectHostTeam', teamId }),
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
@@ -695,7 +799,16 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
         }
       },
     };
-  }, [checkInSelectedTeam, createHostParty, loadPlayerParty, loginHostAccount, registerHostAccount, state]);
+  }, [
+    checkInSelectedTeam,
+    createHostParty,
+    createHostTeam,
+    loadPlayerParty,
+    loginHostAccount,
+    refreshHostTeams,
+    registerHostAccount,
+    state,
+  ]);
 
   return <PartyStateContext.Provider value={value}>{children}</PartyStateContext.Provider>;
 }

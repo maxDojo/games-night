@@ -202,10 +202,10 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: create parties from mobile using the host token.
     - Done: show join code, party name/status, and basic capacity settings after creation.
     - Done: keep future theming hooks in the screen structure without implementing uploads yet.
-  - **M2.3 Host lobby/team setup**
-    - Create/select teams from the host flow when the required API support exists.
-    - Show team capacity and player check-ins clearly.
-    - Leave host move/override flows as placeholders unless the API slice is ready.
+  - **M2.3 Host lobby/team setup** - done
+    - Done: create/select teams from the host flow using existing API support.
+    - Done: show team capacity and player check-ins clearly.
+    - Done: leave host move/override flows as placeholders until the API slice is ready.
   - **M2.4 Round queue/config**
     - Use game discovery to list built-in games.
     - Queue rounds and expose per-game config for points/timers using backend defaults.
