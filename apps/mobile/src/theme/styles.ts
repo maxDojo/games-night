@@ -16,7 +16,7 @@ export function createStyles(p: ThemePalette) {
       gap: 14,
       paddingHorizontal: 18,
       paddingTop: 8,
-      paddingBottom: 20,
+      paddingBottom: 224,
     },
     header: {
       gap: 3,

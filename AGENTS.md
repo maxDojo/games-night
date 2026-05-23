@@ -134,7 +134,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 | Milestone | What | Status |
 | --------- | ---- | ------ |
-| **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | In progress |
+| **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Done |
 | **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Planned |
 | **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Planned |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
@@ -158,7 +158,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Score corrections and audit trails are first-class because manual scorekeeping causes wrong awards and disputes.
   - Host/period/party theming should let a host brand the room, for example `Greg's House`, with a cover photo and safe generated palette.
   - Basic games-night hosting remains free; monetisation should target depth, content, organizations, or marketplace features later.
-- **Mobile M0** - in progress
+- **Mobile M0** - done
   - Done: choose Expo/React Native in `apps/mobile`.
   - Done: create app shell and navigation split for host/player modes.
   - Done: wire generated API type usage and Socket.IO lifecycle helper.
@@ -166,7 +166,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add local secure session persistence for host token, join code, team selection, and last party.
   - Done: add placeholder screens for the agreed M1-M5 flows.
   - Done: add local stateful shell flows for capacity-aware player check-in, hidden player scores, host bonus award, host score reveal, and post-reveal score reporting.
-  - Verify the shell on a simulator/device before marking M0 complete.
+  - Done: verify the shell on Android emulator with Expo Go, including player check-in guard, player answer flow, host lobby controls, hidden player scores, score reveal, and bottom-nav spacing.
 
 ### Cross-project coordination
 
@@ -298,7 +298,7 @@ No active in-repo feature work is assumed from this file. The next direction sho
 11. **PR #2: remove mobile scaffold** - deleted `apps/mobile` and related scripts/lockfile entries. The user intends to rebuild mobile deliberately, step by step.
 12. **API client contract hardening** - added game discovery, typed OpenAPI built-in config alternatives, typed Socket.IO event contracts, generated API client types, a compile-only client usage fixture, and mobile integration notes.
 13. **Games-night field notes** - observed weekly lounge play with month-long teams, manual scorekeeping errors, heated point disputes, team-first scoring, Kahoot-style phone trivia, shared screens, and many custom/manual games. This promoted persistent teams, custom games, score audit, team capacity, optional location verification, and flexible trivia display into planned work.
-14. **Mobile M0 shell started** - rebuilt `apps/mobile` as an Expo app shell with arcade-first styling, host/player mode routing, local session persistence helpers, API type import, Socket.IO client helper, and placeholder screens for check-in, host controls, private prompt play, persistent teams, custom games, venue display, and theming.
+14. **Mobile M0 shell completed** - rebuilt `apps/mobile` as an Expo app shell with arcade-first styling, host/player mode routing, local session persistence helpers, API type import, Socket.IO client helper, placeholder screens for check-in, host controls, private prompt play, persistent teams, custom games, venue display, and theming, then verified it in Expo Go on Android.
 
 ---
 
@@ -401,7 +401,7 @@ pnpm dev:mobile
 
 ## 11. Open questions / decisions waiting on the user
 
-- **Mobile runtime verification** - `apps/mobile` now lives in this monorepo as an Expo app shell. Before marking M0 fully done, verify it in Expo Go, an emulator, or a device against the desired local API URL.
+- **Mobile live API wiring** - `apps/mobile` now has a verified Expo shell, but real API-backed host/player workflows remain M1+ work.
 - **Content sourcing strategy for production** - free Open Trivia DB seed works for dev but is CC-BY-SA. The Trivia API has a paid commercial tier; Kaggle bulk imports are another option. Taboo-style content is trickier because of trademark/content concerns, so AI-generation + curation is probably the play.
 - **Push notifications** - backend prep deferred to M4. Will need a `DeviceToken` model + push provider abstraction.
 - **OTP / passwordless auth** - better for mobile than passwords. Probably M4.
