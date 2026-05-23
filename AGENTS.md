@@ -189,9 +189,10 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: show submitted/locked answer state.
     - Done: avoid exposing live scoring details on player devices.
     - Follow-up: backend/mobile currently do not replay the active Trivia question to a player who reconnects after `prompt:next`; they receive the next question instead.
-  - **M1.5 Optional location verification placeholder**
-    - Add the UI permission/request path for venue-only join/check-in.
-    - Keep backend enforcement and host override wiring for a later API-backed slice if the required backend contract is not ready.
+  - **M1.5 Optional location verification placeholder** - done
+    - Done: add the UI request path for venue-only join/check-in when future party settings require it.
+    - Done: show failed-check and host-override placeholder states without continuous player tracking.
+    - Done: keep backend enforcement, real device location capture, and host override persistence for a later API-backed slice.
   - Recommended first implementation PR: combine M1.1 and M1.2 as one vertical slice covering join code, party lookup, team list, and player check-in.
 
 ### Cross-project coordination

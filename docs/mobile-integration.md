@@ -467,7 +467,7 @@ Mobile guidance:
 - No rich config-form metadata endpoint yet.
 - No persistent period/season model yet.
 - No team capacity enforcement yet.
-- No optional location verification yet.
+- Mobile has a placeholder optional location verification path; real device location capture, backend enforcement, and persistent host override are not implemented yet.
 - No custom-game template API yet.
 - No score event/correction audit log yet.
 - No host-only Charades/Taboo prompt delivery yet.
