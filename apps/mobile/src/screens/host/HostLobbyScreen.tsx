@@ -30,7 +30,7 @@ export function HostLobbyScreen() {
   const [partyName, setPartyName] = useState(hostUser ? `${hostUser.displayName}'s House` : 'Games Night');
   const [maxTeams, setMaxTeams] = useState('4');
   const [maxPerTeam, setMaxPerTeam] = useState('8');
-  const nextRound = queuedRounds[queuedRounds.length - 1];
+  const nextRound = queuedRounds.find((round) => round.status === 'PENDING') ?? queuedRounds[0];
   const bonusLabel = awardedBonusIds.length >= bonusAwards.length ? 'Bonuses done' : 'Award bonus';
   const roomCode = hostParty?.joinCode ?? '------';
   const roomName = hostParty?.name ?? theme.displayName;
@@ -130,11 +130,11 @@ export function HostLobbyScreen() {
       <View style={styles.card}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
-          <Text style={styles.positiveText}>{nextRound.points} pts</Text>
+          <Text style={styles.positiveText}>{nextRound ? `${nextRound.points} pts` : 'Queue empty'}</Text>
         </View>
-        <Text style={styles.cardTitle}>{nextRound.label}</Text>
+        <Text style={styles.cardTitle}>{nextRound?.label ?? 'Build the queue'}</Text>
         <Text style={styles.bodyText}>
-          Manual score round. Corrections and special bonuses require a reason and stay visible in the final audit.
+          Queue rounds from the host phone. Corrections and special bonuses require a reason and stay visible in the final audit.
         </Text>
       </View>
       <View style={styles.card}>

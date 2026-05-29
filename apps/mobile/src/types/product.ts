@@ -42,6 +42,8 @@ export interface QueuedRoundSummary {
   detail: string;
   points: number;
   kind: 'trivia' | 'charades' | 'taboo' | 'custom';
+  status?: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'SKIPPED';
+  gameSlug?: string | null;
 }
 
 export interface BonusAwardSummary {

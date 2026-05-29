@@ -903,6 +903,13 @@ export interface paths {
                             id: string;
                             partyId: string;
                             gameDefinitionId: string;
+                            gameDefinition?: {
+                                id: string;
+                                slug: string;
+                                name: string;
+                                /** @enum {string} */
+                                type: "TRIVIA" | "CHARADES" | "TABOO" | "CUSTOM";
+                            };
                             order: number;
                             /** @enum {string} */
                             status: "PENDING" | "ACTIVE" | "COMPLETED" | "SKIPPED";
@@ -1022,6 +1029,13 @@ export interface paths {
                             id: string;
                             partyId: string;
                             gameDefinitionId: string;
+                            gameDefinition?: {
+                                id: string;
+                                slug: string;
+                                name: string;
+                                /** @enum {string} */
+                                type: "TRIVIA" | "CHARADES" | "TABOO" | "CUSTOM";
+                            };
                             order: number;
                             /** @enum {string} */
                             status: "PENDING" | "ACTIVE" | "COMPLETED" | "SKIPPED";
@@ -1117,6 +1131,13 @@ export interface paths {
                             id: string;
                             partyId: string;
                             gameDefinitionId: string;
+                            gameDefinition?: {
+                                id: string;
+                                slug: string;
+                                name: string;
+                                /** @enum {string} */
+                                type: "TRIVIA" | "CHARADES" | "TABOO" | "CUSTOM";
+                            };
                             order: number;
                             /** @enum {string} */
                             status: "PENDING" | "ACTIVE" | "COMPLETED" | "SKIPPED";
@@ -1213,6 +1234,13 @@ export interface paths {
                                 id: string;
                                 partyId: string;
                                 gameDefinitionId: string;
+                                gameDefinition?: {
+                                    id: string;
+                                    slug: string;
+                                    name: string;
+                                    /** @enum {string} */
+                                    type: "TRIVIA" | "CHARADES" | "TABOO" | "CUSTOM";
+                                };
                                 order: number;
                                 /** @enum {string} */
                                 status: "PENDING" | "ACTIVE" | "COMPLETED" | "SKIPPED";
@@ -1317,6 +1345,13 @@ export interface paths {
                             id: string;
                             partyId: string;
                             gameDefinitionId: string;
+                            gameDefinition?: {
+                                id: string;
+                                slug: string;
+                                name: string;
+                                /** @enum {string} */
+                                type: "TRIVIA" | "CHARADES" | "TABOO" | "CUSTOM";
+                            };
                             order: number;
                             /** @enum {string} */
                             status: "PENDING" | "ACTIVE" | "COMPLETED" | "SKIPPED";

@@ -5,6 +5,7 @@ import {
   createParty,
   createPartySocket,
   createTeam,
+  getGames,
   getPartyByJoinCode,
   getPartyTeams,
   getPartyRounds,
@@ -14,11 +15,14 @@ import {
   joinTeam,
   loginHost,
   normalizeJoinCode,
+  queueRound,
   registerHost,
   submitRoundEvent,
   type AuthResponse,
   type CreatePartyResponse,
+  type GameDefinitionResponse,
   type PartyByCodeResponse,
+  type QueueRoundRequest,
   type RoundEndedPayload,
   type RoundStartedPayload,
 } from '../api/client';
@@ -29,6 +33,7 @@ import {
   mapHostTeam,
   mapPartyRound,
   mapPartyTeams,
+  mapQueuedRound,
   mapStartedRound,
   mapTriviaQuestion,
   mapTriviaReveal,
@@ -40,6 +45,7 @@ import type {
   PlayerRoundStatus,
   PlayerTriviaQuestion,
   PlayerTriviaReveal,
+  QueuedRoundSummary,
   ScoreEventSummary,
   TeamSummary,
 } from '../types/product';
@@ -54,9 +60,14 @@ interface PartyState {
   isCreatingHostParty: boolean;
   isLoadingHostTeams: boolean;
   isCreatingHostTeam: boolean;
+  isLoadingHostGames: boolean;
+  isLoadingHostRounds: boolean;
+  isQueueingHostRound: boolean;
   hostAuthError?: string;
   hostPartyError?: string;
   hostTeamError?: string;
+  hostQueueError?: string;
+  hostGames: GameDefinitionResponse[];
   selectedHostTeamId?: string;
   joinCode: string;
   partyId?: string;
@@ -66,7 +77,7 @@ interface PartyState {
   period: typeof period;
   teams: TeamSummary[];
   playerRounds: PlayerRoundStatus[];
-  queuedRounds: typeof queuedRounds;
+  queuedRounds: QueuedRoundSummary[];
   bonusAwards: BonusAwardSummary[];
   scoreEvents: ScoreEventSummary[];
   selectedTeamId?: string;
@@ -102,6 +113,8 @@ interface PartyStateContextValue extends PartyState {
   refreshHostTeams: () => Promise<void>;
   createHostTeam: (name: string, color: string) => Promise<boolean>;
   selectHostTeam: (teamId: string) => void;
+  refreshHostRoundSetup: () => Promise<void>;
+  queueHostRound: (request: QueueRoundRequest) => Promise<boolean>;
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
@@ -127,6 +140,15 @@ type PartyAction =
   | { type: 'createHostTeamSuccess'; team: TeamSummary }
   | { type: 'createHostTeamFailure'; error: string }
   | { type: 'selectHostTeam'; teamId: string }
+  | { type: 'loadHostGamesStart' }
+  | { type: 'loadHostGamesSuccess'; games: GameDefinitionResponse[] }
+  | { type: 'loadHostGamesFailure'; error: string }
+  | { type: 'loadHostRoundsStart' }
+  | { type: 'loadHostRoundsSuccess'; rounds: QueuedRoundSummary[] }
+  | { type: 'loadHostRoundsFailure'; error: string }
+  | { type: 'queueHostRoundStart' }
+  | { type: 'queueHostRoundSuccess'; rounds: QueuedRoundSummary[] }
+  | { type: 'queueHostRoundFailure'; error: string }
   | { type: 'selectTeam'; teamId: string }
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
@@ -157,6 +179,10 @@ const initialState: PartyState = {
   isCreatingHostParty: false,
   isLoadingHostTeams: false,
   isCreatingHostTeam: false,
+  isLoadingHostGames: false,
+  isLoadingHostRounds: false,
+  isQueueingHostRound: false,
+  hostGames: [],
   hostTeams: [],
   joinCode,
   partyName: period.name,
@@ -213,9 +239,11 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         ...state,
         hostParty: mapHostParty(action.party),
         hostTeams: [],
+        queuedRounds: [],
         selectedHostTeamId: undefined,
         isCreatingHostParty: false,
         hostPartyError: undefined,
+        hostQueueError: undefined,
       };
     case 'createHostPartyFailure':
       return { ...state, isCreatingHostParty: false, hostPartyError: action.error };
@@ -251,6 +279,34 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         selectedHostTeamId: action.teamId,
         hostTeams: state.hostTeams.map((team) => ({ ...team, isSelected: team.id === action.teamId })),
       };
+    case 'loadHostGamesStart':
+      return { ...state, isLoadingHostGames: true, hostQueueError: undefined };
+    case 'loadHostGamesSuccess':
+      return { ...state, hostGames: action.games, isLoadingHostGames: false, hostQueueError: undefined };
+    case 'loadHostGamesFailure':
+      return { ...state, isLoadingHostGames: false, hostQueueError: action.error };
+    case 'loadHostRoundsStart':
+      return { ...state, isLoadingHostRounds: true, hostQueueError: undefined };
+    case 'loadHostRoundsSuccess':
+      return {
+        ...state,
+        queuedRounds: action.rounds,
+        isLoadingHostRounds: false,
+        hostQueueError: undefined,
+      };
+    case 'loadHostRoundsFailure':
+      return { ...state, isLoadingHostRounds: false, hostQueueError: action.error };
+    case 'queueHostRoundStart':
+      return { ...state, isQueueingHostRound: true, hostQueueError: undefined };
+    case 'queueHostRoundSuccess':
+      return {
+        ...state,
+        queuedRounds: action.rounds,
+        isQueueingHostRound: false,
+        hostQueueError: undefined,
+      };
+    case 'queueHostRoundFailure':
+      return { ...state, isQueueingHostRound: false, hostQueueError: action.error };
     case 'selectTeam': {
       if (state.checkedInTeamId) {
         return state;
@@ -609,6 +665,52 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     }
   }, [state.hostParty, state.selectedHostTeamId]);
 
+  const refreshHostRoundSetup = useCallback(async () => {
+    dispatch({ type: 'loadHostGamesStart' });
+
+    try {
+      const games = await getGames();
+      dispatch({ type: 'loadHostGamesSuccess', games });
+    } catch (error) {
+      dispatch({ type: 'loadHostGamesFailure', error: getPlayerError(error) });
+    }
+
+    if (!state.hostParty) {
+      return;
+    }
+
+    dispatch({ type: 'loadHostRoundsStart' });
+
+    try {
+      const rounds = await getPartyRounds(state.hostParty.joinCode);
+      dispatch({ type: 'loadHostRoundsSuccess', rounds: rounds.map(mapQueuedRound) });
+    } catch (error) {
+      dispatch({ type: 'loadHostRoundsFailure', error: getPlayerError(error) });
+    }
+  }, [state.hostParty]);
+
+  const queueHostRound = useCallback(
+    async (request: QueueRoundRequest) => {
+      if (!state.hostParty || !state.hostToken) {
+        dispatch({ type: 'queueHostRoundFailure', error: 'Create a host party before queueing rounds.' });
+        return false;
+      }
+
+      dispatch({ type: 'queueHostRoundStart' });
+
+      try {
+        await queueRound(state.hostParty.joinCode, request, state.hostToken);
+        const rounds = await getPartyRounds(state.hostParty.joinCode);
+        dispatch({ type: 'queueHostRoundSuccess', rounds: rounds.map(mapQueuedRound) });
+        return true;
+      } catch (error) {
+        dispatch({ type: 'queueHostRoundFailure', error: getPlayerError(error) });
+        return false;
+      }
+    },
+    [state.hostParty, state.hostToken],
+  );
+
   const createHostTeam = useCallback(
     async (name: string, color: string) => {
       const trimmedName = name.trim();
@@ -769,6 +871,8 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       refreshHostTeams,
       createHostTeam,
       selectHostTeam: (teamId) => dispatch({ type: 'selectHostTeam', teamId }),
+      refreshHostRoundSetup,
+      queueHostRound,
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
@@ -805,6 +909,8 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     createHostTeam,
     loadPlayerParty,
     loginHostAccount,
+    queueHostRound,
+    refreshHostRoundSetup,
     refreshHostTeams,
     registerHostAccount,
     state,

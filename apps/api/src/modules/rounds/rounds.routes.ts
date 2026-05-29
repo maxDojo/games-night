@@ -15,10 +15,18 @@ import { QueueRoundBodySchema } from '../../games/config-contracts.js';
 
 const RoundStatusSchema = z.enum(['PENDING', 'ACTIVE', 'COMPLETED', 'SKIPPED']);
 
+const RoundGameDefinitionSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  type: z.enum(['TRIVIA', 'CHARADES', 'TABOO', 'CUSTOM']),
+});
+
 const RoundSchema = z.object({
   id: z.string(),
   partyId: z.string(),
   gameDefinitionId: z.string(),
+  gameDefinition: RoundGameDefinitionSchema.optional(),
   order: z.number(),
   status: RoundStatusSchema,
   config: z.unknown(),
@@ -71,7 +79,12 @@ const roundsRoutes: FastifyPluginAsyncZod = async (app) => {
     async (req, reply) => {
       const party = await app.prisma.party.findUnique({
         where: { joinCode: req.params.joinCode },
-        include: { rounds: { orderBy: { order: 'asc' } } },
+        include: {
+          rounds: {
+            orderBy: { order: 'asc' },
+            include: { gameDefinition: { select: { id: true, slug: true, name: true, type: true } } },
+          },
+        },
       });
       if (!party) return reply.code(404).send({ error: 'Party not found' });
       return party.rounds;
