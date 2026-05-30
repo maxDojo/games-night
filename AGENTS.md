@@ -140,6 +140,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Done |
 | **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Done |
 | **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Done |
+| **Mobile M2.7** Motion system | Shared animation primitives, tactile press feedback, gameplay state motion, and reveal/score feedback | Planned |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
@@ -223,6 +224,13 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: add minimal durable score event history for bonus reports.
     - Done: add host-controlled score reveal so players only see standings after reveal.
     - Done: keep full correction/dispute history for the later Custom Games + Score Audit milestone.
+- **Mobile M2.7 Motion system** - planned
+  - Add shared animated primitives before Mobile M3 so motion is not implemented ad hoc inside each host game screen.
+  - Start with built-in React Native `Animated` and `Pressable` to avoid dependency risk; consider `react-native-reanimated` only if future gestures or complex shared transitions justify it.
+  - Add tactile press feedback for buttons, bottom nav items, team cards, game picker items, and answer choices.
+  - Add lightweight entrance/exit transitions for route panels, cards, and live game sections.
+  - Add gameplay-specific feedback: Trivia answer lock, active-round pulse/countdown energy, bonus point toast, and score reveal animation.
+  - Keep motion accessible, short, and functional; avoid distracting loops during reading or host moderation.
 
 ### Cross-project coordination
 
