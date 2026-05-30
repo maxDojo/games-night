@@ -6,7 +6,13 @@ import type {
   TriviaQuestionPayload,
   TriviaRevealPayload,
 } from '../api/client';
-import type { PlayerRoundStatus, PlayerTriviaQuestion, PlayerTriviaReveal, TeamSummary } from '../types/product';
+import type {
+  PlayerRoundStatus,
+  PlayerTriviaQuestion,
+  PlayerTriviaReveal,
+  QueuedRoundSummary,
+  TeamSummary,
+} from '../types/product';
 
 export function getTeamShortName(name: string) {
   const initials = name
@@ -92,12 +98,35 @@ function getRoundDetail(status: PlayerRoundStatus['status']) {
 }
 
 export function mapPartyRound(round: PartyRoundResponse): PlayerRoundStatus {
+  const gameSlug = round.gameDefinition?.slug;
+
   return {
     id: round.id,
     order: round.order,
     status: round.status,
-    label: `${getRoundLabel()} ${round.order}`,
+    label: `${getRoundLabel(gameSlug)} ${round.order}`,
     detail: getRoundDetail(round.status),
+    gameSlug,
+  };
+}
+
+export function mapQueuedRound(round: PartyRoundResponse): QueuedRoundSummary {
+  const gameSlug = round.gameDefinition?.slug;
+  const label = `${getRoundLabel(gameSlug)} ${round.order}`;
+  const config = getConfigObject(round.config);
+  const points = getRoundPoints(gameSlug, config);
+  const timer = getRoundTimer(gameSlug, config);
+  const status = getRoundDetail(round.status);
+
+  return {
+    id: round.id,
+    order: round.order,
+    label,
+    detail: timer ? `${status} / ${timer}` : status,
+    points,
+    kind: getRoundKind(gameSlug),
+    status: round.status,
+    gameSlug,
   };
 }
 
@@ -134,4 +163,45 @@ export function mapTriviaReveal(payload: TriviaRevealPayload, teamId?: string): 
     selectedChoice: teamResult?.choice ?? undefined,
     wasCorrect: teamResult?.correct,
   };
+}
+
+function getConfigObject(config: unknown): Record<string, unknown> {
+  return config && typeof config === 'object' && !Array.isArray(config) ? (config as Record<string, unknown>) : {};
+}
+
+function getConfigNumber(config: Record<string, unknown>, key: string, fallback: number) {
+  const value = config[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function getRoundPoints(gameSlug: string | null | undefined, config: Record<string, unknown>) {
+  if (gameSlug === 'trivia') {
+    return getConfigNumber(config, 'basePoints', 100);
+  }
+
+  if (gameSlug === 'charades' || gameSlug === 'taboo') {
+    return getConfigNumber(config, 'basePointsPerCorrect', 100);
+  }
+
+  return getConfigNumber(config, 'points', 0);
+}
+
+function getRoundTimer(gameSlug: string | null | undefined, config: Record<string, unknown>) {
+  if (gameSlug === 'trivia') {
+    return `${getConfigNumber(config, 'secondsPerQuestion', 20)}s/question`;
+  }
+
+  if (gameSlug === 'charades' || gameSlug === 'taboo') {
+    return `${getConfigNumber(config, 'secondsPerTurn', 60)}s/turn`;
+  }
+
+  return undefined;
+}
+
+function getRoundKind(gameSlug: string | null | undefined): QueuedRoundSummary['kind'] {
+  if (gameSlug === 'trivia' || gameSlug === 'charades' || gameSlug === 'taboo') {
+    return gameSlug;
+  }
+
+  return 'custom';
 }

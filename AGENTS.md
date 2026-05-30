@@ -138,7 +138,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | --------- | ---- | ------ |
 | **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Done |
 | **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Done |
-| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Next |
+| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | In progress |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
@@ -193,7 +193,7 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: add the UI request path for venue-only join/check-in when future party settings require it.
     - Done: show failed-check and host-override placeholder states without continuous player tracking.
     - Done: keep backend enforcement, real device location capture, and host override persistence for a later API-backed slice.
-- **Mobile M2** - next
+- **Mobile M2** - in progress
   - **M2.1 Host auth/session** - done
     - Done: add API-backed host register/login from mobile.
     - Done: persist and restore host token through the existing session store.
@@ -206,11 +206,13 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: create/select teams from the host flow using existing API support.
     - Done: show team capacity and player check-ins clearly.
     - Done: leave host move/override flows as placeholders until the API slice is ready.
-  - **M2.4 Round queue/config**
-    - Use game discovery to list built-in games.
-    - Queue rounds and expose per-game config for points/timers using backend defaults.
-    - Keep Custom Games as a visible planned path, not a full editor in this milestone.
-  - **M2.5 Round controls**
+  - **M2.4 Round queue/config** - done
+    - Done: use game discovery to list built-in games.
+    - Done: queue rounds from mobile and refresh the backend queue.
+    - Done: expose basic per-game config for points/timers using backend defaults.
+    - Done: include game slug/name in the public rounds response so mobile can label queued rounds after refresh.
+    - Done: keep Custom Games as a visible planned path, not a full editor in this milestone.
+  - **M2.5 Round controls** - next
     - Start, end, and skip rounds from the host phone.
     - Add manual score adjustment controls for active rounds.
     - Keep Charades/Taboo private prompt control for Mobile M3.

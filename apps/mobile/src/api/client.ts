@@ -13,13 +13,19 @@ export type AuthResponse =
 export type TeamListResponse =
   paths['/v1/parties/{joinCode}/teams']['get']['responses'][200]['content']['application/json'];
 export type TeamResponse = TeamListResponse[number];
+export type GameListResponse = paths['/v1/games']['get']['responses'][200]['content']['application/json'];
+export type GameDefinitionResponse = GameListResponse[number];
 export type JoinPlayerResponse =
   paths['/v1/teams/{teamId}/players']['post']['responses'][201]['content']['application/json'];
 export type RoundListResponse =
   paths['/v1/parties/{joinCode}/rounds']['get']['responses'][200]['content']['application/json'];
 export type PartyRoundResponse = RoundListResponse[number];
+export type QueueRoundResponse =
+  paths['/v1/parties/{joinCode}/rounds']['post']['responses'][201]['content']['application/json'];
 type JoinPlayerRequest =
   paths['/v1/teams/{teamId}/players']['post']['requestBody']['content']['application/json'];
+export type QueueRoundRequest =
+  NonNullable<paths['/v1/parties/{joinCode}/rounds']['post']['requestBody']>['content']['application/json'];
 type HostLoginRequest =
   paths['/v1/auth/login']['post']['requestBody']['content']['application/json'];
 type HostRegisterRequest =
@@ -158,6 +164,10 @@ export async function getHealth(): Promise<HealthResponse> {
   return requestJson<HealthResponse>('/health');
 }
 
+export async function getGames(): Promise<GameListResponse> {
+  return requestJson<GameListResponse>('/games');
+}
+
 export async function loginHost(body: HostLoginRequest): Promise<AuthResponse> {
   return requestJson<AuthResponse>('/auth/login', {
     method: 'POST',
@@ -202,6 +212,18 @@ export async function createTeam(joinCode: string, body: CreateTeamRequest, toke
 
 export async function getPartyRounds(joinCode: string): Promise<RoundListResponse> {
   return requestJson<RoundListResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/rounds`);
+}
+
+export async function queueRound(
+  joinCode: string,
+  body: QueueRoundRequest,
+  token: string,
+): Promise<QueueRoundResponse> {
+  return requestJson<QueueRoundResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/rounds`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
 }
 
 export async function joinTeam(teamId: string, body: JoinPlayerRequest): Promise<JoinPlayerResponse> {

@@ -445,13 +445,45 @@ describe('rounds routes', () => {
       mocks.party.findUnique.mockResolvedValue({
         ...partyFixture(),
         rounds: [
-          { id: 'r1', partyId: 'party_1', gameDefinitionId: 'gd', order: 1, status: 'COMPLETED', config: {}, startedAt: null, endedAt: null },
-          { id: 'r2', partyId: 'party_1', gameDefinitionId: 'gd', order: 2, status: 'ACTIVE', config: {}, startedAt: null, endedAt: null },
+          {
+            id: 'r1',
+            partyId: 'party_1',
+            gameDefinitionId: 'gd_trivia',
+            gameDefinition: { id: 'gd_trivia', slug: 'trivia', name: 'Trivia', type: 'TRIVIA' },
+            order: 1,
+            status: 'COMPLETED',
+            config: { basePoints: 100, secondsPerQuestion: 20 },
+            startedAt: null,
+            endedAt: null,
+          },
+          {
+            id: 'r2',
+            partyId: 'party_1',
+            gameDefinitionId: 'gd_taboo',
+            gameDefinition: { id: 'gd_taboo', slug: 'taboo', name: 'Taboo', type: 'TABOO' },
+            order: 2,
+            status: 'ACTIVE',
+            config: { basePointsPerCorrect: 100, secondsPerTurn: 60 },
+            startedAt: null,
+            endedAt: null,
+          },
         ],
       });
       const res = await app.inject({ method: 'GET', url: '/v1/parties/ABCDEF/rounds' });
       expect(res.statusCode).toBe(200);
-      expect(res.json()).toHaveLength(2);
+      expect(res.json()).toMatchObject([
+        { gameDefinition: { slug: 'trivia', name: 'Trivia' } },
+        { gameDefinition: { slug: 'taboo', name: 'Taboo' } },
+      ]);
+      expect(mocks.party.findUnique).toHaveBeenCalledWith({
+        where: { joinCode: 'ABCDEF' },
+        include: {
+          rounds: {
+            orderBy: { order: 'asc' },
+            include: { gameDefinition: { select: { id: true, slug: true, name: true, type: true } } },
+          },
+        },
+      });
     });
   });
 });
