@@ -28,12 +28,22 @@ export type EndRoundResponse =
   paths['/v1/rounds/{roundId}/end']['post']['responses'][200]['content']['application/json'];
 export type WriteScoreResponse =
   paths['/v1/rounds/{roundId}/score']['post']['responses'][200]['content']['application/json'];
+export type LeaderboardResponse =
+  paths['/v1/parties/{joinCode}/leaderboard']['get']['responses'][200]['content']['application/json'];
+export type ScoreEventsResponse =
+  paths['/v1/parties/{joinCode}/score-events']['get']['responses'][200]['content']['application/json'];
+export type AwardBonusResponse =
+  paths['/v1/parties/{joinCode}/score-events/bonus']['post']['responses'][201]['content']['application/json'];
+export type RevealScoresResponse =
+  paths['/v1/parties/{joinCode}/reveal']['post']['responses'][200]['content']['application/json'];
 type JoinPlayerRequest =
   paths['/v1/teams/{teamId}/players']['post']['requestBody']['content']['application/json'];
 export type QueueRoundRequest =
   NonNullable<paths['/v1/parties/{joinCode}/rounds']['post']['requestBody']>['content']['application/json'];
 type WriteScoreRequest =
   paths['/v1/rounds/{roundId}/score']['post']['requestBody']['content']['application/json'];
+export type AwardBonusRequest =
+  paths['/v1/parties/{joinCode}/score-events/bonus']['post']['requestBody']['content']['application/json'];
 type HostLoginRequest =
   paths['/v1/auth/login']['post']['requestBody']['content']['application/json'];
 type HostRegisterRequest =
@@ -220,6 +230,36 @@ export async function createTeam(joinCode: string, body: CreateTeamRequest, toke
 
 export async function getPartyRounds(joinCode: string): Promise<RoundListResponse> {
   return requestJson<RoundListResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/rounds`);
+}
+
+export async function getLeaderboard(joinCode: string): Promise<LeaderboardResponse> {
+  return requestJson<LeaderboardResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/leaderboard`);
+}
+
+export async function getScoreEvents(joinCode: string): Promise<ScoreEventsResponse> {
+  return requestJson<ScoreEventsResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/score-events`);
+}
+
+export async function awardBonus(
+  joinCode: string,
+  body: AwardBonusRequest,
+  token: string,
+): Promise<AwardBonusResponse> {
+  return requestJson<AwardBonusResponse>(
+    `/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/score-events/bonus`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export async function revealPartyScores(joinCode: string, token: string): Promise<RevealScoresResponse> {
+  return requestJson<RevealScoresResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/reveal`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 export async function queueRound(

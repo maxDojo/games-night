@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { EyeOff, Lock, ShieldCheck } from 'lucide-react-native';
 
@@ -10,8 +11,12 @@ import { useAppStyles } from '../../theme/useAppStyles';
 
 export function PlayerReportScreen() {
   const { styles, theme } = useAppStyles();
-  const { scoreEvents, scoresRevealed, teams } = usePartyState();
+  const { isLoadingScoreReport, refreshScoreReport, scoreEvents, scoresRevealed, teams } = usePartyState();
   const rankedTeams = [...teams].sort((a, b) => b.points - a.points);
+
+  useEffect(() => {
+    void refreshScoreReport();
+  }, [refreshScoreReport]);
 
   if (!scoresRevealed) {
     return (
@@ -19,7 +24,7 @@ export function PlayerReportScreen() {
         <InfoBanner
           icon={Lock}
           title="Host reveal pending"
-          subtitle="Live team totals are hidden until the host opens the reveal."
+          subtitle={isLoadingScoreReport ? 'Checking reveal status.' : 'Live team totals are hidden until the host opens the reveal.'}
           color={theme.palette.accent}
         />
         <View style={styles.card}>

@@ -45,6 +45,7 @@ export interface PartyStatePayload {
   hostId: string;
   maxTeams: number;
   maxPerTeam: number;
+  scoresRevealed: boolean;
   settings: unknown;
   createdAt: string | Date;
   startedAt: string | Date | null;
@@ -66,7 +67,7 @@ export interface RoundEndedPayload {
 }
 
 export interface ScoreUpdatedPayload {
-  roundId: string;
+  roundId?: string;
   teamId: string;
   points?: number;
   delta?: number;

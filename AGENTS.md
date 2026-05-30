@@ -86,6 +86,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Add integration coverage for persistent team check-in and period leaderboard aggregation.
 - **Custom Games + Score Audit** - planned
   - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
+  - Done: add minimal durable score events and host score reveal support for Mobile M2.6 bonuses/reveal.
   - Keep Trivia, Charades, and Taboo as polished first-class built-ins rather than narrowing the product to Trivia-only.
   - Define a generic custom-game model for host-authored games with name, rules, scoring mode, default points, penalties, and optional timer.
   - Support reusable custom-game templates that can be saved in plans and queued like built-in games.
@@ -138,7 +139,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | --------- | ---- | ------ |
 | **Mobile M0** App shell + API contract | Recreate mobile app shell, generated API client usage, Socket.IO lifecycle, host/player mode routing, local session persistence | Done |
 | **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Done |
-| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | In progress |
+| **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Done |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
@@ -193,7 +194,7 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: add the UI request path for venue-only join/check-in when future party settings require it.
     - Done: show failed-check and host-override placeholder states without continuous player tracking.
     - Done: keep backend enforcement, real device location capture, and host override persistence for a later API-backed slice.
-- **Mobile M2** - in progress
+- **Mobile M2** - done
   - **M2.1 Host auth/session** - done
     - Done: add API-backed host register/login from mobile.
     - Done: persist and restore host token through the existing session store.
@@ -217,10 +218,11 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: refresh host queue state after round lifecycle actions.
     - Done: add manual score adjustment controls for active rounds.
     - Done: keep Charades/Taboo private prompt control for Mobile M3.
-  - **M2.6 Bonuses/reveal** - next
-    - Add special bonus award controls.
-    - Show score log/correction placeholders until the score event audit API exists.
-    - Add host-controlled score reveal so players only see standings after reveal.
+  - **M2.6 Bonuses/reveal** - done
+    - Done: add API-backed special bonus award controls.
+    - Done: add minimal durable score event history for bonus reports.
+    - Done: add host-controlled score reveal so players only see standings after reveal.
+    - Done: keep full correction/dispute history for the later Custom Games + Score Audit milestone.
 
 ### Cross-project coordination
 

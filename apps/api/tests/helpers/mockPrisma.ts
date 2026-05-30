@@ -63,6 +63,10 @@ export function makeMockPrisma(): {
       upsert: vi.fn(),
       findMany: vi.fn(),
     },
+    scoreEvent: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
   };
 
   // $transaction(callback): pass the same stub through so route handlers

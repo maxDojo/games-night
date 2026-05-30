@@ -30,6 +30,7 @@ import roundsRoutes from './modules/rounds/rounds.routes.js';
 import plansRoutes from './modules/plans/plans.routes.js';
 import gamesRoutes from './modules/games/games.routes.js';
 import leaderboardRoutes from './modules/leaderboard/leaderboard.routes.js';
+import scoreEventsRoutes from './modules/score-events/score-events.routes.js';
 
 export interface BuildAppOptions {
   /** Inject a (possibly mocked) Prisma client. */
@@ -150,6 +151,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
       await api.register(roundsRoutes);
       await api.register(plansRoutes);
       await api.register(leaderboardRoutes);
+      await api.register(scoreEventsRoutes);
     },
     { prefix: '/v1' },
   );
