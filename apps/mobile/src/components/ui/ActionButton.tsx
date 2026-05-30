@@ -1,6 +1,7 @@
-import { Pressable, Text } from 'react-native';
+import { Text } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
+import { AnimatedPressable } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 interface ActionButtonProps {
@@ -25,13 +26,13 @@ export function ActionButton({ label, icon: Icon, onPress, primary, danger, succ
   const color = primary || success ? theme.palette.ink : theme.palette.foreground;
 
   return (
-    <Pressable
+    <AnimatedPressable
       disabled={disabled}
       style={[styles.actionButton, { backgroundColor }, disabled && styles.disabledCard]}
       onPress={onPress}
     >
       <Icon color={color} size={18} />
       <Text style={[styles.actionButtonText, { color }]}>{label}</Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }

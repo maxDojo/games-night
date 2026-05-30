@@ -23,6 +23,7 @@ export function PlayerReportScreen() {
       <Screen eyebrow="REVEAL LOCKED" title="Scores stay sealed">
         <InfoBanner
           icon={Lock}
+          live={isLoadingScoreReport}
           title="Host reveal pending"
           subtitle={isLoadingScoreReport ? 'Checking reveal status.' : 'Live team totals are hidden until the host opens the reveal.'}
           color={theme.palette.accent}

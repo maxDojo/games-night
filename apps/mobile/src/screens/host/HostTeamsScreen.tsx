@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 import { Plus, RefreshCw, Shuffle, Users } from 'lucide-react-native';
 
 import { TeamCard } from '../../components/game/TeamCard';
 import { Screen } from '../../components/layout/Screen';
+import { AnimatedPressable } from '../../components/motion';
 import { ActionButton } from '../../components/ui/ActionButton';
 import { InfoBanner } from '../../components/ui/InfoBanner';
 import { usePartyState } from '../../state/PartyState';
@@ -71,7 +72,7 @@ export function HostTeamsScreen() {
           </View>
           <View style={styles.threeColumn}>
             {teamColors.slice(0, 3).map((color) => (
-              <Pressable
+              <AnimatedPressable
                 key={color}
                 disabled={isCreatingHostTeam || teamLimitReached}
                 onPress={() => setTeamColor(color)}
@@ -84,7 +85,7 @@ export function HostTeamsScreen() {
           </View>
           <View style={styles.threeColumn}>
             {teamColors.slice(3).map((color) => (
-              <Pressable
+              <AnimatedPressable
                 key={color}
                 disabled={isCreatingHostTeam || teamLimitReached}
                 onPress={() => setTeamColor(color)}

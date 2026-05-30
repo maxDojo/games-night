@@ -166,6 +166,13 @@ export function createStyles(p: ThemePalette) {
       padding: 14,
       borderRadius: 8,
     },
+    infoIconWrap: {
+      width: 32,
+      minHeight: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 3,
+    },
     flex: {
       flex: 1,
     },
@@ -372,6 +379,34 @@ export function createStyles(p: ThemePalette) {
     },
     scoreLogDelta: {
       fontSize: 14,
+      fontWeight: '900',
+      letterSpacing: 0,
+    },
+    scoreToast: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderRadius: 8,
+      backgroundColor: p.ink,
+    },
+    scoreToastDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: p.accent,
+    },
+    scoreToastLabel: {
+      flex: 1,
+      color: p.foreground,
+      fontSize: 12,
+      fontWeight: '900',
+      letterSpacing: 0,
+    },
+    scoreToastDelta: {
+      fontSize: 16,
       fontWeight: '900',
       letterSpacing: 0,
     },
