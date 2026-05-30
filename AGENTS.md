@@ -212,11 +212,12 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Done: expose basic per-game config for points/timers using backend defaults.
     - Done: include game slug/name in the public rounds response so mobile can label queued rounds after refresh.
     - Done: keep Custom Games as a visible planned path, not a full editor in this milestone.
-  - **M2.5 Round controls** - next
-    - Start, end, and skip rounds from the host phone.
-    - Add manual score adjustment controls for active rounds.
-    - Keep Charades/Taboo private prompt control for Mobile M3.
-  - **M2.6 Bonuses/reveal**
+  - **M2.5 Round controls** - done
+    - Done: start, end, and skip rounds from the host phone.
+    - Done: refresh host queue state after round lifecycle actions.
+    - Done: add manual score adjustment controls for active rounds.
+    - Done: keep Charades/Taboo private prompt control for Mobile M3.
+  - **M2.6 Bonuses/reveal** - next
     - Add special bonus award controls.
     - Show score log/correction placeholders until the score event audit API exists.
     - Add host-controlled score reveal so players only see standings after reveal.

@@ -22,10 +22,18 @@ export type RoundListResponse =
 export type PartyRoundResponse = RoundListResponse[number];
 export type QueueRoundResponse =
   paths['/v1/parties/{joinCode}/rounds']['post']['responses'][201]['content']['application/json'];
+export type RoundActionResponse =
+  paths['/v1/rounds/{roundId}/start']['post']['responses'][200]['content']['application/json'];
+export type EndRoundResponse =
+  paths['/v1/rounds/{roundId}/end']['post']['responses'][200]['content']['application/json'];
+export type WriteScoreResponse =
+  paths['/v1/rounds/{roundId}/score']['post']['responses'][200]['content']['application/json'];
 type JoinPlayerRequest =
   paths['/v1/teams/{teamId}/players']['post']['requestBody']['content']['application/json'];
 export type QueueRoundRequest =
   NonNullable<paths['/v1/parties/{joinCode}/rounds']['post']['requestBody']>['content']['application/json'];
+type WriteScoreRequest =
+  paths['/v1/rounds/{roundId}/score']['post']['requestBody']['content']['application/json'];
 type HostLoginRequest =
   paths['/v1/auth/login']['post']['requestBody']['content']['application/json'];
 type HostRegisterRequest =
@@ -220,6 +228,39 @@ export async function queueRound(
   token: string,
 ): Promise<QueueRoundResponse> {
   return requestJson<QueueRoundResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/rounds`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function startRound(roundId: string, token: string): Promise<RoundActionResponse> {
+  return requestJson<RoundActionResponse>(`/rounds/${encodeURIComponent(roundId)}/start`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function endRound(roundId: string, token: string): Promise<EndRoundResponse> {
+  return requestJson<EndRoundResponse>(`/rounds/${encodeURIComponent(roundId)}/end`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function skipRound(roundId: string, token: string): Promise<RoundActionResponse> {
+  return requestJson<RoundActionResponse>(`/rounds/${encodeURIComponent(roundId)}/skip`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function writeRoundScore(
+  roundId: string,
+  body: WriteScoreRequest,
+  token: string,
+): Promise<WriteScoreResponse> {
+  return requestJson<WriteScoreResponse>(`/rounds/${encodeURIComponent(roundId)}/score`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
