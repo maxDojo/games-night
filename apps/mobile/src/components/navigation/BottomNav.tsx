@@ -1,6 +1,7 @@
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
+import { AnimatedPressable, MotionView } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 interface BottomNavProps<T extends string> {
@@ -19,14 +20,16 @@ export function BottomNav<T extends string>({ items, active, onChange }: BottomN
           const Icon = item.icon;
           const isActive = item.route === active;
           return (
-            <Pressable
-              key={item.route}
-              style={[styles.navItem, isActive && styles.navItemActive]}
-              onPress={() => onChange(item.route)}
-            >
-              <Icon color={isActive ? theme.palette.ink : theme.palette.muted} size={18} />
-              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{item.label}</Text>
-            </Pressable>
+            <MotionView key={item.route} style={styles.flex} variant="pop" delay={isActive ? 0 : 25}>
+              <AnimatedPressable
+                style={[styles.navItem, isActive && styles.navItemActive]}
+                onPress={() => onChange(item.route)}
+                pressedScale={0.94}
+              >
+                <Icon color={isActive ? theme.palette.ink : theme.palette.muted} size={18} />
+                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{item.label}</Text>
+              </AnimatedPressable>
+            </MotionView>
           );
         })}
       </View>

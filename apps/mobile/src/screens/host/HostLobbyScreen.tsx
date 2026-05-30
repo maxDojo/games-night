@@ -3,6 +3,7 @@ import { Text, TextInput, View } from 'react-native';
 import { Award, ClipboardList, Gift, Play, Plus, Sparkles } from 'lucide-react-native';
 
 import { Screen } from '../../components/layout/Screen';
+import { ScoreDeltaToast } from '../../components/motion';
 import { ActionButton } from '../../components/ui/ActionButton';
 import { InfoBanner } from '../../components/ui/InfoBanner';
 import { Pill } from '../../components/ui/Badges';
@@ -38,6 +39,10 @@ export function HostLobbyScreen() {
   const [maxPerTeam, setMaxPerTeam] = useState('8');
   const nextRound = queuedRounds.find((round) => round.status === 'PENDING') ?? queuedRounds[0];
   const bonusLabel = awardedBonusIds.length >= bonusAwards.length ? 'Bonuses done' : 'Award bonus';
+  const latestBonus = [...awardedBonusIds]
+    .reverse()
+    .map((bonusId) => bonusAwards.find((bonus) => bonus.id === bonusId))
+    .find(Boolean);
   const bonusTarget = hostTeams.find((team) => team.id === selectedHostTeamId) ?? hostTeams[0];
   const roomCode = hostParty?.joinCode ?? '------';
   const roomName = hostParty?.name ?? theme.displayName;
@@ -171,6 +176,11 @@ export function HostLobbyScreen() {
         </View>
       </View>
       {hostBonusError ? <Text style={styles.errorText}>{hostBonusError}</Text> : null}
+      <ScoreDeltaToast
+        label={latestBonus ? `${latestBonus.label} awarded` : 'Bonus awarded'}
+        delta={latestBonus?.points ?? 0}
+        visible={Boolean(latestBonus)}
+      />
       <View style={styles.twoColumn}>
         <ActionButton label="Start" icon={Play} onPress={() => undefined} primary />
         <ActionButton

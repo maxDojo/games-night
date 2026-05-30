@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text } from 'react-native';
 
+import { MotionView } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 interface ScreenProps {
@@ -15,12 +16,14 @@ export function Screen({ eyebrow, title, children }: ScreenProps) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.screenContent}>
       {eyebrow || title ? (
-        <View style={styles.header}>
+        <MotionView style={styles.header}>
           {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
           {title ? <Text style={styles.title}>{title}</Text> : null}
-        </View>
+        </MotionView>
       ) : null}
-      {children}
+      <MotionView delay={70} style={styles.stack}>
+        {children}
+      </MotionView>
     </ScrollView>
   );
 }

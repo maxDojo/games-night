@@ -1,6 +1,7 @@
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { Crown } from 'lucide-react-native';
 
+import { MotionView } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 interface PodiumCardProps {
@@ -15,7 +16,7 @@ export function PodiumCard({ rank, name, points, color, winner }: PodiumCardProp
   const { styles, theme } = useAppStyles();
 
   return (
-    <View style={[styles.podiumCard, winner && styles.podiumWinner]}>
+    <MotionView variant={winner ? 'pop' : 'fade-up'} style={[styles.podiumCard, winner && styles.podiumWinner]}>
       {winner ? (
         <Crown color={theme.palette.ink} size={22} />
       ) : (
@@ -23,6 +24,6 @@ export function PodiumCard({ rank, name, points, color, winner }: PodiumCardProp
       )}
       <Text style={[styles.podiumName, winner && styles.podiumTextDark]}>{name}</Text>
       <Text style={[styles.podiumPoints, winner && styles.podiumTextDark]}>{points}</Text>
-    </View>
+    </MotionView>
   );
 }
