@@ -11,13 +11,17 @@ import {
   getPartyRounds,
   isTriviaQuestionPayload,
   isTriviaRevealPayload,
+  endRound,
   joinPartyRoom,
   joinTeam,
   loginHost,
   normalizeJoinCode,
   queueRound,
   registerHost,
+  skipRound,
+  startRound,
   submitRoundEvent,
+  writeRoundScore,
   type AuthResponse,
   type CreatePartyResponse,
   type GameDefinitionResponse,
@@ -63,10 +67,14 @@ interface PartyState {
   isLoadingHostGames: boolean;
   isLoadingHostRounds: boolean;
   isQueueingHostRound: boolean;
+  isControllingHostRound: boolean;
+  isWritingHostScore: boolean;
   hostAuthError?: string;
   hostPartyError?: string;
   hostTeamError?: string;
   hostQueueError?: string;
+  hostStageError?: string;
+  hostStageMessage?: string;
   hostGames: GameDefinitionResponse[];
   selectedHostTeamId?: string;
   joinCode: string;
@@ -115,6 +123,10 @@ interface PartyStateContextValue extends PartyState {
   selectHostTeam: (teamId: string) => void;
   refreshHostRoundSetup: () => Promise<void>;
   queueHostRound: (request: QueueRoundRequest) => Promise<boolean>;
+  startHostRound: (roundId: string) => Promise<boolean>;
+  endHostRound: (roundId: string) => Promise<boolean>;
+  skipHostRound: (roundId: string) => Promise<boolean>;
+  writeHostScore: (roundId: string, teamId: string, points: number) => Promise<boolean>;
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
@@ -149,6 +161,12 @@ type PartyAction =
   | { type: 'queueHostRoundStart' }
   | { type: 'queueHostRoundSuccess'; rounds: QueuedRoundSummary[] }
   | { type: 'queueHostRoundFailure'; error: string }
+  | { type: 'hostRoundControlStart' }
+  | { type: 'hostRoundControlSuccess'; rounds: QueuedRoundSummary[]; message: string }
+  | { type: 'hostRoundControlFailure'; error: string }
+  | { type: 'hostScoreWriteStart' }
+  | { type: 'hostScoreWriteSuccess'; message: string }
+  | { type: 'hostScoreWriteFailure'; error: string }
   | { type: 'selectTeam'; teamId: string }
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
@@ -182,6 +200,8 @@ const initialState: PartyState = {
   isLoadingHostGames: false,
   isLoadingHostRounds: false,
   isQueueingHostRound: false,
+  isControllingHostRound: false,
+  isWritingHostScore: false,
   hostGames: [],
   hostTeams: [],
   joinCode,
@@ -307,6 +327,49 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       };
     case 'queueHostRoundFailure':
       return { ...state, isQueueingHostRound: false, hostQueueError: action.error };
+    case 'hostRoundControlStart':
+      return {
+        ...state,
+        isControllingHostRound: true,
+        hostStageError: undefined,
+        hostStageMessage: undefined,
+      };
+    case 'hostRoundControlSuccess':
+      return {
+        ...state,
+        queuedRounds: action.rounds,
+        isControllingHostRound: false,
+        hostStageError: undefined,
+        hostStageMessage: action.message,
+      };
+    case 'hostRoundControlFailure':
+      return {
+        ...state,
+        isControllingHostRound: false,
+        hostStageError: action.error,
+        hostStageMessage: undefined,
+      };
+    case 'hostScoreWriteStart':
+      return {
+        ...state,
+        isWritingHostScore: true,
+        hostStageError: undefined,
+        hostStageMessage: undefined,
+      };
+    case 'hostScoreWriteSuccess':
+      return {
+        ...state,
+        isWritingHostScore: false,
+        hostStageError: undefined,
+        hostStageMessage: action.message,
+      };
+    case 'hostScoreWriteFailure':
+      return {
+        ...state,
+        isWritingHostScore: false,
+        hostStageError: action.error,
+        hostStageMessage: undefined,
+      };
     case 'selectTeam': {
       if (state.checkedInTeamId) {
         return state;
@@ -711,6 +774,112 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     [state.hostParty, state.hostToken],
   );
 
+  const refreshHostRounds = useCallback(async () => {
+    if (!state.hostParty) {
+      return [];
+    }
+
+    const rounds = await getPartyRounds(state.hostParty.joinCode);
+    return rounds.map(mapQueuedRound);
+  }, [state.hostParty]);
+
+  const startHostRound = useCallback(
+    async (roundId: string) => {
+      if (!state.hostParty || !state.hostToken) {
+        dispatch({ type: 'hostRoundControlFailure', error: 'Create a host party before controlling rounds.' });
+        return false;
+      }
+
+      dispatch({ type: 'hostRoundControlStart' });
+
+      try {
+        await startRound(roundId, state.hostToken);
+        const rounds = await refreshHostRounds();
+        dispatch({ type: 'hostRoundControlSuccess', rounds, message: 'Round started.' });
+        return true;
+      } catch (error) {
+        dispatch({ type: 'hostRoundControlFailure', error: getPlayerError(error) });
+        return false;
+      }
+    },
+    [refreshHostRounds, state.hostParty, state.hostToken],
+  );
+
+  const endHostRound = useCallback(
+    async (roundId: string) => {
+      if (!state.hostParty || !state.hostToken) {
+        dispatch({ type: 'hostRoundControlFailure', error: 'Create a host party before controlling rounds.' });
+        return false;
+      }
+
+      dispatch({ type: 'hostRoundControlStart' });
+
+      try {
+        await endRound(roundId, state.hostToken);
+        const rounds = await refreshHostRounds();
+        dispatch({ type: 'hostRoundControlSuccess', rounds, message: 'Round ended.' });
+        return true;
+      } catch (error) {
+        dispatch({ type: 'hostRoundControlFailure', error: getPlayerError(error) });
+        return false;
+      }
+    },
+    [refreshHostRounds, state.hostParty, state.hostToken],
+  );
+
+  const skipHostRound = useCallback(
+    async (roundId: string) => {
+      if (!state.hostParty || !state.hostToken) {
+        dispatch({ type: 'hostRoundControlFailure', error: 'Create a host party before controlling rounds.' });
+        return false;
+      }
+
+      dispatch({ type: 'hostRoundControlStart' });
+
+      try {
+        await skipRound(roundId, state.hostToken);
+        const rounds = await refreshHostRounds();
+        dispatch({ type: 'hostRoundControlSuccess', rounds, message: 'Round skipped.' });
+        return true;
+      } catch (error) {
+        dispatch({ type: 'hostRoundControlFailure', error: getPlayerError(error) });
+        return false;
+      }
+    },
+    [refreshHostRounds, state.hostParty, state.hostToken],
+  );
+
+  const writeHostScore = useCallback(
+    async (roundId: string, teamId: string, points: number) => {
+      if (!state.hostToken) {
+        dispatch({ type: 'hostScoreWriteFailure', error: 'Login as host before scoring rounds.' });
+        return false;
+      }
+
+      dispatch({ type: 'hostScoreWriteStart' });
+
+      try {
+        await writeRoundScore(
+          roundId,
+          {
+            teamId,
+            points,
+            breakdown: {
+              source: 'mobile-host-manual',
+            },
+          },
+          state.hostToken,
+        );
+        dispatch({ type: 'hostScoreWriteSuccess', message: 'Manual score saved.' });
+        return true;
+      } catch (error) {
+        dispatch({ type: 'hostScoreWriteFailure', error: getPlayerError(error) });
+        return false;
+      }
+    },
+    [state.hostToken],
+  );
+
   const createHostTeam = useCallback(
     async (name: string, color: string) => {
       const trimmedName = name.trim();
@@ -873,6 +1042,10 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       selectHostTeam: (teamId) => dispatch({ type: 'selectHostTeam', teamId }),
       refreshHostRoundSetup,
       queueHostRound,
+      startHostRound,
+      endHostRound,
+      skipHostRound,
+      writeHostScore,
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
@@ -907,13 +1080,17 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     checkInSelectedTeam,
     createHostParty,
     createHostTeam,
+    endHostRound,
     loadPlayerParty,
     loginHostAccount,
     queueHostRound,
     refreshHostRoundSetup,
     refreshHostTeams,
     registerHostAccount,
+    skipHostRound,
+    startHostRound,
     state,
+    writeHostScore,
   ]);
 
   return <PartyStateContext.Provider value={value}>{children}</PartyStateContext.Provider>;

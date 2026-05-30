@@ -5,7 +5,7 @@ import type { QueuedRoundSummary } from '../../types/product';
 
 export function QueuedRoundCard({ round }: { round: QueuedRoundSummary }) {
   const { styles } = useAppStyles();
-  const selected = round.order === 1;
+  const selected = round.status === 'ACTIVE' || round.order === 1;
 
   return (
     <View style={[styles.roundCard, selected && styles.roundSelected]}>
