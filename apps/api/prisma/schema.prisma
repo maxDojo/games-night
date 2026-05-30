@@ -24,6 +24,7 @@ model User {
   hostedParties Party[]      @relation("PartyHost")
   customGames   CustomGame[]
   partyPlans    PartyPlan[]
+  scoreEvents   ScoreEvent[]
 }
 
 // ---------- Party (a games-night session) ----------
@@ -45,13 +46,15 @@ model Party {
   host        User        @relation("PartyHost", fields: [hostId], references: [id])
   maxTeams    Int         @default(8)
   maxPerTeam  Int         @default(10)
+  scoresRevealed Boolean  @default(false)
   settings    Json        @default("{}") // per-party tunables (timers, point multipliers, etc.)
   createdAt   DateTime    @default(now())
   startedAt   DateTime?
   finishedAt  DateTime?
 
-  teams  Team[]
-  rounds Round[]
+  teams       Team[]
+  rounds      Round[]
+  scoreEvents ScoreEvent[]
 
   @@index([status])
   @@index([hostId])
@@ -68,8 +71,9 @@ model Team {
   position  Int      // ordering 1..8 within a party
   createdAt DateTime @default(now())
 
-  players Player[]
-  scores  Score[]
+  players     Player[]
+  scores      Score[]
+  scoreEvents ScoreEvent[]
 
   @@unique([partyId, position])
   @@index([partyId])
@@ -224,4 +228,33 @@ model Score {
 
   @@unique([roundId, teamId])
   @@index([teamId])
+}
+
+enum ScoreEventSource {
+  ENGINE
+  MANUAL
+  CORRECTION
+  PENALTY
+  BONUS
+}
+
+model ScoreEvent {
+  id        String           @id @default(cuid())
+  partyId   String
+  party     Party            @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  teamId    String
+  team      Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  roundId   String?
+  actorId   String?
+  actor     User?            @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  label     String
+  delta     Int
+  source    ScoreEventSource
+  reason    String?
+  createdAt DateTime         @default(now())
+
+  @@index([partyId, createdAt])
+  @@index([teamId])
+  @@index([roundId])
+  @@index([actorId])
 }

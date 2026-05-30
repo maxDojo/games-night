@@ -19,6 +19,7 @@ const LeaderboardEntrySchema = z.object({
 const LeaderboardSchema = z.object({
   partyId: z.string(),
   partyStatus: z.enum(['LOBBY', 'IN_PROGRESS', 'PAUSED', 'FINISHED', 'CANCELLED']),
+  scoresRevealed: z.boolean(),
   entries: z.array(LeaderboardEntrySchema),
 });
 
@@ -32,7 +33,7 @@ const leaderboardRoutes: FastifyPluginAsyncZod = async (app) => {
         tags: ['leaderboard'],
         summary: 'Current standings for a party',
         description:
-          'Sums Score.points per team across all rounds. Includes zero-score teams. Ties share a rank.',
+          'Returns standings only after the host reveals scores. Sums Score.points per team across all rounds, includes zero-score teams, and shares ranks for ties.',
         params: JoinCodeParam,
         response: { 200: LeaderboardSchema, 404: ErrorSchema },
       },
@@ -43,6 +44,7 @@ const leaderboardRoutes: FastifyPluginAsyncZod = async (app) => {
         include: {
           teams: { orderBy: { position: 'asc' } },
           rounds: { include: { scores: true } },
+          scoreEvents: true,
         },
       });
       if (!party) return reply.code(404).send({ error: 'Party not found' });
@@ -50,18 +52,25 @@ const leaderboardRoutes: FastifyPluginAsyncZod = async (app) => {
       const allScores = party.rounds.flatMap((r) =>
         r.scores.map((s) => ({ teamId: s.teamId, points: s.points })),
       );
+      const eventScores = party.scoreEvents.map((event) => ({
+        teamId: event.teamId,
+        points: event.delta,
+        countsAsRound: false,
+      }));
 
-      const entries = tallyLeaderboard(
-        party.teams.map((t) => ({
-          id: t.id,
-          name: t.name,
-          color: t.color,
-          position: t.position,
-        })),
-        allScores,
-      );
+      const entries = party.scoresRevealed
+        ? tallyLeaderboard(
+            party.teams.map((t) => ({
+              id: t.id,
+              name: t.name,
+              color: t.color,
+              position: t.position,
+            })),
+            [...allScores, ...eventScores],
+          )
+        : [];
 
-      return { partyId: party.id, partyStatus: party.status, entries };
+      return { partyId: party.id, partyStatus: party.status, scoresRevealed: party.scoresRevealed, entries };
     },
   );
 };

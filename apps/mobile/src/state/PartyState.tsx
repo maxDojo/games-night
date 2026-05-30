@@ -2,13 +2,16 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 import type { Socket } from 'socket.io-client';
 
 import {
+  awardBonus,
   createParty,
   createPartySocket,
   createTeam,
   getGames,
+  getLeaderboard,
   getPartyByJoinCode,
   getPartyTeams,
   getPartyRounds,
+  getScoreEvents,
   isTriviaQuestionPayload,
   isTriviaRevealPayload,
   endRound,
@@ -17,6 +20,7 @@ import {
   loginHost,
   normalizeJoinCode,
   queueRound,
+  revealPartyScores,
   registerHost,
   skipRound,
   startRound,
@@ -25,6 +29,7 @@ import {
   type AuthResponse,
   type CreatePartyResponse,
   type GameDefinitionResponse,
+  type LeaderboardResponse,
   type PartyByCodeResponse,
   type QueueRoundRequest,
   type RoundEndedPayload,
@@ -32,12 +37,14 @@ import {
 } from '../api/client';
 import { bonusAwards, joinCode, period, queuedRounds, scoreEvents, teams } from '../data/mockState';
 import {
+  applyLeaderboardToTeams,
   getFirstAvailableTeamId,
   getPlayerError,
   mapHostTeam,
   mapPartyRound,
   mapPartyTeams,
   mapQueuedRound,
+  mapScoreEvents,
   mapStartedRound,
   mapTriviaQuestion,
   mapTriviaReveal,
@@ -69,12 +76,16 @@ interface PartyState {
   isQueueingHostRound: boolean;
   isControllingHostRound: boolean;
   isWritingHostScore: boolean;
+  isAwardingBonus: boolean;
+  isRevealingScores: boolean;
+  isLoadingScoreReport: boolean;
   hostAuthError?: string;
   hostPartyError?: string;
   hostTeamError?: string;
   hostQueueError?: string;
   hostStageError?: string;
   hostStageMessage?: string;
+  hostBonusError?: string;
   hostGames: GameDefinitionResponse[];
   selectedHostTeamId?: string;
   joinCode: string;
@@ -133,8 +144,9 @@ interface PartyStateContextValue extends PartyState {
   requestLocationVerification: () => void;
   markLocationOverride: () => void;
   submitTriviaAnswer: (choice: string) => void;
-  revealScores: () => void;
-  awardNextBonus: () => void;
+  refreshScoreReport: () => Promise<void>;
+  revealScores: () => Promise<boolean>;
+  awardNextBonus: () => Promise<boolean>;
 }
 
 type PartyAction =
@@ -167,6 +179,15 @@ type PartyAction =
   | { type: 'hostScoreWriteStart' }
   | { type: 'hostScoreWriteSuccess'; message: string }
   | { type: 'hostScoreWriteFailure'; error: string }
+  | { type: 'scoreReportStart' }
+  | { type: 'scoreReportSuccess'; scoresRevealed: boolean; leaderboard: LeaderboardResponse; events: ScoreEventSummary[] }
+  | { type: 'scoreReportFailure' }
+  | { type: 'hostBonusStart' }
+  | { type: 'hostBonusSuccess'; bonusId: string; event: ScoreEventSummary; teamId: string; points: number }
+  | { type: 'hostBonusFailure'; error: string }
+  | { type: 'revealScoresStart' }
+  | { type: 'revealScoresSuccess' }
+  | { type: 'revealScoresFailure'; error: string }
   | { type: 'selectTeam'; teamId: string }
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
@@ -185,9 +206,7 @@ type PartyAction =
   | { type: 'triviaQuestion'; question: PlayerTriviaQuestion }
   | { type: 'triviaAnswerSubmitted'; choice: string }
   | { type: 'triviaReveal'; reveal: PlayerTriviaReveal }
-  | { type: 'triviaSubmitFailure'; error: string }
-  | { type: 'revealScores' }
-  | { type: 'awardBonus'; bonusId: string; teamId: string };
+  | { type: 'triviaSubmitFailure'; error: string };
 
 const firstAvailableTeam = teams.find((team) => team.checkedIn < team.capacity);
 
@@ -202,6 +221,9 @@ const initialState: PartyState = {
   isQueueingHostRound: false,
   isControllingHostRound: false,
   isWritingHostScore: false,
+  isAwardingBonus: false,
+  isRevealingScores: false,
+  isLoadingScoreReport: false,
   hostGames: [],
   hostTeams: [],
   joinCode,
@@ -370,6 +392,47 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         hostStageError: action.error,
         hostStageMessage: undefined,
       };
+    case 'scoreReportStart':
+      return { ...state, isLoadingScoreReport: true };
+    case 'scoreReportSuccess': {
+      const teams = applyLeaderboardToTeams(state.teams, action.leaderboard);
+      const hostTeams = applyLeaderboardToTeams(state.hostTeams, action.leaderboard);
+
+      return {
+        ...state,
+        isLoadingScoreReport: false,
+        scoresRevealed: action.scoresRevealed,
+        teams,
+        hostTeams,
+        scoreEvents: action.events,
+      };
+    }
+    case 'scoreReportFailure':
+      return { ...state, isLoadingScoreReport: false };
+    case 'hostBonusStart':
+      return { ...state, isAwardingBonus: true, hostBonusError: undefined };
+    case 'hostBonusSuccess':
+      return {
+        ...state,
+        isAwardingBonus: false,
+        hostBonusError: undefined,
+        awardedBonusIds: [...state.awardedBonusIds, action.bonusId],
+        scoreEvents: [...state.scoreEvents, action.event],
+        teams: state.teams.map((team) =>
+          team.id === action.teamId ? { ...team, points: team.points + action.points } : team,
+        ),
+        hostTeams: state.hostTeams.map((team) =>
+          team.id === action.teamId ? { ...team, points: team.points + action.points } : team,
+        ),
+      };
+    case 'hostBonusFailure':
+      return { ...state, isAwardingBonus: false, hostBonusError: action.error };
+    case 'revealScoresStart':
+      return { ...state, isRevealingScores: true, hostBonusError: undefined };
+    case 'revealScoresSuccess':
+      return { ...state, isRevealingScores: false, scoresRevealed: true, hostBonusError: undefined };
+    case 'revealScoresFailure':
+      return { ...state, isRevealingScores: false, hostBonusError: action.error };
     case 'selectTeam': {
       if (state.checkedInTeamId) {
         return state;
@@ -408,6 +471,7 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         partyName: action.party.name,
         partyStatus: action.party.status,
         partySource: 'api',
+        scoresRevealed: action.party.scoresRevealed,
         teams: mappedTeams.map((team) => ({ ...team, isSelected: team.id === selectedTeamId })),
         selectedTeamId,
         checkedInTeamId: persistedTeamId,
@@ -517,36 +581,6 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       };
     case 'triviaSubmitFailure':
       return { ...state, triviaError: action.error };
-    case 'revealScores':
-      return { ...state, scoresRevealed: true };
-    case 'awardBonus': {
-      if (state.awardedBonusIds.includes(action.bonusId)) {
-        return state;
-      }
-
-      const bonus = state.bonusAwards.find((item) => item.id === action.bonusId);
-      const team = state.teams.find((item) => item.id === action.teamId);
-      if (!bonus || !team) {
-        return state;
-      }
-
-      const event: ScoreEventSummary = {
-        id: `score-${bonus.id}`,
-        label: `Bonus: ${bonus.label.toLowerCase()}`,
-        delta: bonus.points,
-        teamName: team.name,
-        source: 'bonus',
-      };
-
-      return {
-        ...state,
-        awardedBonusIds: [...state.awardedBonusIds, bonus.id],
-        scoreEvents: [...state.scoreEvents, event],
-        teams: state.teams.map((item) =>
-          item.id === action.teamId ? { ...item, points: item.points + bonus.points } : item,
-        ),
-      };
-    }
     default:
       return state;
   }
@@ -880,6 +914,108 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     [state.hostToken],
   );
 
+  const refreshScoreReport = useCallback(async () => {
+    const reportJoinCode = state.hostParty?.joinCode ?? (state.partySource === 'api' ? state.joinCode : undefined);
+    if (!reportJoinCode) {
+      return;
+    }
+
+    dispatch({ type: 'scoreReportStart' });
+
+    try {
+      const [leaderboard, events] = await Promise.all([
+        getLeaderboard(reportJoinCode),
+        getScoreEvents(reportJoinCode),
+      ]);
+      dispatch({
+        type: 'scoreReportSuccess',
+        scoresRevealed: leaderboard.scoresRevealed || events.scoresRevealed,
+        leaderboard,
+        events: mapScoreEvents(events),
+      });
+    } catch {
+      dispatch({ type: 'scoreReportFailure' });
+    }
+  }, [state.hostParty, state.joinCode, state.partySource]);
+
+  const revealScores = useCallback(async () => {
+    if (!state.hostParty || !state.hostToken) {
+      dispatch({ type: 'revealScoresFailure', error: 'Create a host party before revealing scores.' });
+      return false;
+    }
+
+    dispatch({ type: 'revealScoresStart' });
+
+    try {
+      await revealPartyScores(state.hostParty.joinCode, state.hostToken);
+      dispatch({ type: 'revealScoresSuccess' });
+      await refreshScoreReport();
+      return true;
+    } catch (error) {
+      dispatch({ type: 'revealScoresFailure', error: getPlayerError(error) });
+      return false;
+    }
+  }, [refreshScoreReport, state.hostParty, state.hostToken]);
+
+  const awardNextBonus = useCallback(async () => {
+    const bonus = state.bonusAwards.find((item) => !state.awardedBonusIds.includes(item.id));
+    const targetTeam =
+      state.hostTeams.find((team) => team.id === state.selectedHostTeamId) ??
+      state.hostTeams[0] ??
+      state.teams.find((team) => team.id === state.checkedInTeamId) ??
+      state.teams[0];
+
+    if (!bonus || !targetTeam) {
+      return false;
+    }
+
+    if (!state.hostParty || !state.hostToken) {
+      dispatch({ type: 'hostBonusFailure', error: 'Create a host party before awarding bonuses.' });
+      return false;
+    }
+
+    dispatch({ type: 'hostBonusStart' });
+
+    try {
+      const event = await awardBonus(
+        state.hostParty.joinCode,
+        {
+          teamId: targetTeam.id,
+          label: bonus.label,
+          points: bonus.points,
+          reason: bonus.reason,
+        },
+        state.hostToken,
+      );
+      dispatch({
+        type: 'hostBonusSuccess',
+        bonusId: bonus.id,
+        teamId: targetTeam.id,
+        points: event.delta,
+        event: {
+          id: event.id,
+          label: event.reason ? `${event.label}: ${event.reason}` : event.label,
+          delta: event.delta,
+          teamName: event.team?.name ?? targetTeam.name,
+          source: event.source,
+        },
+      });
+      return true;
+    } catch (error) {
+      dispatch({ type: 'hostBonusFailure', error: getPlayerError(error) });
+      return false;
+    }
+  }, [
+    state.awardedBonusIds,
+    state.bonusAwards,
+    state.checkedInTeamId,
+    state.hostParty,
+    state.hostTeams,
+    state.hostToken,
+    state.selectedHostTeamId,
+    state.teams,
+  ]);
+
   const createHostTeam = useCallback(
     async (name: string, color: string) => {
       const trimmedName = name.trim();
@@ -1066,15 +1202,9 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
         submitRoundEvent(socket, activeQuestion.roundId, 'answer', { choice });
         dispatch({ type: 'triviaAnswerSubmitted', choice });
       },
-      revealScores: () => dispatch({ type: 'revealScores' }),
-      awardNextBonus: () => {
-        const bonus = state.bonusAwards.find((item) => !state.awardedBonusIds.includes(item.id));
-        const targetTeam = state.teams.find((team) => team.id === state.checkedInTeamId) ?? state.teams[0];
-
-        if (bonus && targetTeam) {
-          dispatch({ type: 'awardBonus', bonusId: bonus.id, teamId: targetTeam.id });
-        }
-      },
+      refreshScoreReport,
+      revealScores,
+      awardNextBonus,
     };
   }, [
     checkInSelectedTeam,
@@ -1084,9 +1214,12 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     loadPlayerParty,
     loginHostAccount,
     queueHostRound,
+    awardNextBonus,
+    refreshScoreReport,
     refreshHostRoundSetup,
     refreshHostTeams,
     registerHostAccount,
+    revealScores,
     skipHostRound,
     startHostRound,
     state,

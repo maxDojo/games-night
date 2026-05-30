@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import { Award, ClipboardList, Gift, Play, Plus, Sparkles } from 'lucide-react-native';
 
@@ -19,11 +19,17 @@ export function HostLobbyScreen() {
     createHostParty,
     hostParty,
     hostPartyError,
+    hostBonusError,
+    hostTeams,
     hostUser,
+    isAwardingBonus,
     isCreatingHostParty,
+    isRevealingScores,
     queuedRounds,
+    refreshHostTeams,
     revealScores,
     scoresRevealed,
+    selectedHostTeamId,
     teams,
     totalPlayers,
   } = usePartyState();
@@ -32,6 +38,7 @@ export function HostLobbyScreen() {
   const [maxPerTeam, setMaxPerTeam] = useState('8');
   const nextRound = queuedRounds.find((round) => round.status === 'PENDING') ?? queuedRounds[0];
   const bonusLabel = awardedBonusIds.length >= bonusAwards.length ? 'Bonuses done' : 'Award bonus';
+  const bonusTarget = hostTeams.find((team) => team.id === selectedHostTeamId) ?? hostTeams[0];
   const roomCode = hostParty?.joinCode ?? '------';
   const roomName = hostParty?.name ?? theme.displayName;
   const roomStatus = hostParty?.status ?? 'DRAFT';
@@ -41,6 +48,10 @@ export function HostLobbyScreen() {
   const handleCreateParty = () => {
     void createHostParty(partyName, Number(maxTeams), Number(maxPerTeam));
   };
+
+  useEffect(() => {
+    void refreshHostTeams();
+  }, [refreshHostTeams]);
 
   return (
     <Screen eyebrow={hostUser ? `HOST: ${hostUser.displayName}` : 'THEMED ROOM'} title={roomName}>
@@ -143,7 +154,7 @@ export function HostLobbyScreen() {
           <Gift color={theme.palette.info} size={18} />
         </View>
         <Text style={styles.bodyText}>
-          Award room-energy points without exposing the live leaderboard to players.
+          Award room-energy points to {bonusTarget?.name ?? 'the selected team'} without exposing the live leaderboard to players.
         </Text>
         <View style={styles.stack}>
           {bonusAwards.map((bonus) => (
@@ -159,13 +170,14 @@ export function HostLobbyScreen() {
           ))}
         </View>
       </View>
+      {hostBonusError ? <Text style={styles.errorText}>{hostBonusError}</Text> : null}
       <View style={styles.twoColumn}>
         <ActionButton label="Start" icon={Play} onPress={() => undefined} primary />
         <ActionButton
-          label={bonusLabel}
+          label={isAwardingBonus ? 'Awarding...' : bonusLabel}
           icon={Award}
-          onPress={awardNextBonus}
-          disabled={awardedBonusIds.length >= bonusAwards.length}
+          onPress={() => void awardNextBonus()}
+          disabled={!hostParty || !bonusTarget || isAwardingBonus || awardedBonusIds.length >= bonusAwards.length}
           success
         />
       </View>
@@ -174,8 +186,8 @@ export function HostLobbyScreen() {
         <ActionButton
           label={scoresRevealed ? 'Revealed' : 'Reveal'}
           icon={Gift}
-          onPress={revealScores}
-          disabled={scoresRevealed}
+          onPress={() => void revealScores()}
+          disabled={!hostParty || scoresRevealed || isRevealingScores}
         />
       </View>
     </Screen>

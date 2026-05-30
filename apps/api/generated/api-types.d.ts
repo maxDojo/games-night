@@ -267,6 +267,7 @@ export interface paths {
                             hostId: string;
                             maxTeams: number;
                             maxPerTeam: number;
+                            scoresRevealed: boolean;
                             settings?: unknown;
                             createdAt: string;
                             startedAt: (string) | null;
@@ -330,6 +331,7 @@ export interface paths {
                             hostId: string;
                             maxTeams: number;
                             maxPerTeam: number;
+                            scoresRevealed: boolean;
                             settings?: unknown;
                             createdAt: string;
                             startedAt: (string) | null;
@@ -2004,7 +2006,7 @@ export interface paths {
         };
         /**
          * Current standings for a party
-         * @description Sums Score.points per team across all rounds. Includes zero-score teams. Ties share a rank.
+         * @description Returns standings only after the host reveals scores. Sums Score.points per team across all rounds, includes zero-score teams, and shares ranks for ties.
          */
         get: {
             parameters: {
@@ -2027,6 +2029,7 @@ export interface paths {
                             partyId: string;
                             /** @enum {string} */
                             partyStatus: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                            scoresRevealed: boolean;
                             entries: {
                                 teamId: string;
                                 name: string;
@@ -2054,6 +2057,256 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/parties/{joinCode}/score-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List revealed score events for a party
+         * @description Public. Events are hidden until the host reveals scores.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    joinCode: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            partyId: string;
+                            scoresRevealed: boolean;
+                            events: {
+                                id: string;
+                                partyId: string;
+                                teamId: string;
+                                roundId: string | null;
+                                actorId: string | null;
+                                label: string;
+                                delta: number;
+                                /** @enum {string} */
+                                source: "engine" | "manual" | "correction" | "penalty" | "bonus";
+                                reason: string | null;
+                                createdAt: string;
+                                team?: {
+                                    id: string;
+                                    name: string;
+                                    color: string;
+                                };
+                            }[];
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/parties/{joinCode}/score-events/bonus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Award a host bonus to a team
+         * @description Host-only. Creates an auditable bonus score event that contributes to standings.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    joinCode: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        teamId: string;
+                        label: string;
+                        points: number;
+                        reason?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            partyId: string;
+                            teamId: string;
+                            roundId: string | null;
+                            actorId: string | null;
+                            label: string;
+                            delta: number;
+                            /** @enum {string} */
+                            source: "engine" | "manual" | "correction" | "penalty" | "bonus";
+                            reason: string | null;
+                            createdAt: string;
+                            team?: {
+                                id: string;
+                                name: string;
+                                color: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/parties/{joinCode}/reveal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reveal party scores to players
+         * @description Host-only. Marks score reports and score events visible to player devices.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    joinCode: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            partyId: string;
+                            scoresRevealed: boolean;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;

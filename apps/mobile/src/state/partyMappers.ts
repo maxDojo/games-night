@@ -1,6 +1,8 @@
 import type {
   PartyByCodeResponse,
   PartyRoundResponse,
+  ScoreEventsResponse,
+  LeaderboardResponse,
   RoundStartedPayload,
   TeamResponse,
   TriviaQuestionPayload,
@@ -11,6 +13,7 @@ import type {
   PlayerTriviaQuestion,
   PlayerTriviaReveal,
   QueuedRoundSummary,
+  ScoreEventSummary,
   TeamSummary,
 } from '../types/product';
 
@@ -39,6 +42,26 @@ export function mapPartyTeams(party: PartyByCodeResponse, selectedTeamId?: strin
       isSelected: team.id === selectedTeamId,
     };
   });
+}
+
+export function applyLeaderboardToTeams(
+  teams: TeamSummary[],
+  leaderboard: LeaderboardResponse,
+): TeamSummary[] {
+  return teams.map((team) => {
+    const entry = leaderboard.entries.find((item) => item.teamId === team.id);
+    return entry ? { ...team, points: entry.totalPoints } : team;
+  });
+}
+
+export function mapScoreEvents(response: ScoreEventsResponse): ScoreEventSummary[] {
+  return response.events.map((event) => ({
+    id: event.id,
+    label: event.reason ? `${event.label}: ${event.reason}` : event.label,
+    delta: event.delta,
+    teamName: event.team?.name ?? 'Team',
+    source: event.source,
+  }));
 }
 
 export function mapHostTeam(team: TeamResponse, capacity: number, selectedTeamId?: string): TeamSummary {

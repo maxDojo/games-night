@@ -93,6 +93,7 @@ export interface LeaderboardTeam {
 export interface LeaderboardScore {
   teamId: string;
   points: number;
+  countsAsRound?: boolean;
 }
 
 export interface LeaderboardEntry {
@@ -114,7 +115,7 @@ export function tallyLeaderboard(
   for (const s of scores) {
     const cur = agg.get(s.teamId) ?? { points: 0, rounds: 0 };
     cur.points += s.points;
-    cur.rounds += 1;
+    cur.rounds += s.countsAsRound === false ? 0 : 1;
     agg.set(s.teamId, cur);
   }
 

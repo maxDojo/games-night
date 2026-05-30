@@ -23,6 +23,7 @@ const PartySchema = z.object({
   hostId: z.string(),
   maxTeams: z.number(),
   maxPerTeam: z.number(),
+  scoresRevealed: z.boolean(),
   settings: z.unknown(),
   createdAt: z.string().or(z.date()),
   startedAt: z.string().or(z.date()).nullable(),
