@@ -36,6 +36,8 @@ export type AwardBonusResponse =
   paths['/v1/parties/{joinCode}/score-events/bonus']['post']['responses'][201]['content']['application/json'];
 export type RevealScoresResponse =
   paths['/v1/parties/{joinCode}/reveal']['post']['responses'][200]['content']['application/json'];
+export type EndPartyResponse =
+  paths['/v1/parties/{joinCode}/end']['post']['responses'][200]['content']['application/json'];
 type JoinPlayerRequest =
   paths['/v1/teams/{teamId}/players']['post']['requestBody']['content']['application/json'];
 export type QueueRoundRequest =
@@ -322,6 +324,13 @@ export async function awardBonus(
 
 export async function revealPartyScores(joinCode: string, token: string): Promise<RevealScoresResponse> {
   return requestJson<RevealScoresResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/reveal`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function endParty(joinCode: string, token: string): Promise<EndPartyResponse> {
+  return requestJson<EndPartyResponse>(`/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/end`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   });

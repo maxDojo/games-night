@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
-import { ClipboardList, Gift, Play, Plus, Sparkles } from 'lucide-react-native';
+import { Alert, Text, TextInput, View } from 'react-native';
+import { ClipboardList, Flag, Gift, Play, Plus, Sparkles } from 'lucide-react-native';
 
 import { HostBonusAwardsCard } from '../../components/host/HostBonusAwardsCard';
 import { Screen } from '../../components/layout/Screen';
@@ -19,6 +19,7 @@ export function HostLobbyScreen() {
     awardedBonusIds,
     bonusAwards,
     createHostParty,
+    endNight,
     hostParty,
     hostPartyError,
     hostBonusError,
@@ -26,6 +27,7 @@ export function HostLobbyScreen() {
     hostUser,
     isAwardingBonus,
     isCreatingHostParty,
+    isEndingNight,
     isRevealingScores,
     queuedRounds,
     refreshHostTeams,
@@ -50,9 +52,22 @@ export function HostLobbyScreen() {
   const roomStatus = hostParty?.status ?? 'DRAFT';
   const teamCapacity = hostParty ? `${hostParty.maxTeams} x ${hostParty.maxPerTeam}` : `${maxTeams} x ${maxPerTeam}`;
   const playerCount = hostParty ? 0 : totalPlayers;
+  const isNightFinished = roomStatus === 'FINISHED';
+  const hasActiveRound = queuedRounds.some((round) => round.status === 'ACTIVE');
 
   const handleCreateParty = () => {
     void createHostParty(partyName, Number(maxTeams), Number(maxPerTeam));
+  };
+
+  const handleEndNight = () => {
+    Alert.alert(
+      'End night?',
+      'Scores will be revealed and this party will stop accepting joins, check-ins, and new rounds.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'End night', style: 'destructive', onPress: () => void endNight() },
+      ],
+    );
   };
 
   useEffect(() => {
@@ -150,6 +165,15 @@ export function HostLobbyScreen() {
           <Stat value={teamCapacity} label="capacity" accent={Boolean(hostParty)} />
         </View>
       </View>
+      {hostParty && hostPartyError ? <Text style={styles.errorText}>{hostPartyError}</Text> : null}
+      {isNightFinished ? (
+        <InfoBanner
+          icon={Flag}
+          title="Night ended"
+          subtitle="Scores are revealed. Start Next Week stays separate for the persistent-teams slice."
+          color={theme.palette.success}
+        />
+      ) : null}
       <View style={styles.card}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
@@ -163,7 +187,7 @@ export function HostLobbyScreen() {
       <HostBonusAwardsCard
         awardedBonusIds={awardedBonusIds}
         bonuses={bonusAwards}
-        disabled={!hostParty}
+        disabled={!hostParty || isNightFinished}
         isAwarding={isAwardingBonus}
         onAward={(bonusId, teamId) => void awardBonusToTeam(bonusId, teamId)}
         onSelectBonus={setSelectedBonusId}
@@ -179,7 +203,7 @@ export function HostLobbyScreen() {
         visible={Boolean(latestBonus)}
       />
       <View style={styles.twoColumn}>
-        <ActionButton label="Start" icon={Play} onPress={() => undefined} primary />
+        <ActionButton label="Start" icon={Play} onPress={() => undefined} disabled={isNightFinished} primary />
         <ActionButton label="Score log" icon={ClipboardList} onPress={() => undefined} />
       </View>
       <View style={styles.twoColumn}>
@@ -188,6 +212,21 @@ export function HostLobbyScreen() {
           icon={Gift}
           onPress={() => void revealScores()}
           disabled={!hostParty || scoresRevealed || isRevealingScores}
+        />
+        <ActionButton
+          label={
+            isNightFinished
+              ? 'Night ended'
+              : hasActiveRound
+                ? 'End active first'
+                : isEndingNight
+                  ? 'Ending...'
+                  : 'End night'
+          }
+          icon={Flag}
+          onPress={handleEndNight}
+          disabled={!hostParty || isNightFinished || isEndingNight || hasActiveRound}
+          danger
         />
       </View>
     </Screen>

@@ -51,6 +51,13 @@ const PartyWithTeamsSchema = PartySchema.extend({
   teams: z.array(TeamSchema),
 });
 
+const EndPartyResponseSchema = z.object({
+  partyId: z.string(),
+  status: PartyStatusSchema,
+  scoresRevealed: z.boolean(),
+  finishedAt: z.string().or(z.date()).nullable(),
+});
+
 const NotFoundSchema = z.object({ error: z.string() });
 
 const JoinCodeParam = z.object({
@@ -102,6 +109,69 @@ const partiesRoutes: FastifyPluginAsyncZod = async (app) => {
       });
       if (!party) return reply.code(404).send({ error: 'Party not found' });
       return party;
+    },
+  );
+
+  app.post(
+    '/parties/:joinCode/end',
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        tags: ['parties'],
+        summary: 'End a party',
+        description:
+          'Host-only. Marks the party as FINISHED, reveals scores, and blocks future joins or round starts. Active rounds must be ended before the night can be finished.',
+        security: [{ bearerAuth: [] }],
+        params: JoinCodeParam,
+        response: {
+          200: EndPartyResponseSchema,
+          401: NotFoundSchema,
+          403: NotFoundSchema,
+          404: NotFoundSchema,
+          409: NotFoundSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const party = await app.prisma.party.findUnique({
+        where: { joinCode: req.params.joinCode },
+        select: { id: true, hostId: true, status: true, scoresRevealed: true, finishedAt: true },
+      });
+      if (!party) return reply.code(404).send({ error: 'Party not found' });
+      if (party.hostId !== req.user.sub)
+        return reply.code(403).send({ error: 'Only the host can end this party' });
+
+      if (party.status === 'CANCELLED') {
+        return reply.code(409).send({ error: 'Party is cancelled' });
+      }
+
+      if (party.status !== 'FINISHED') {
+        const activeRoundCount = await app.prisma.round.count({
+          where: { partyId: party.id, status: 'ACTIVE' },
+        });
+        if (activeRoundCount > 0) {
+          return reply.code(409).send({ error: 'End the active round before ending the night' });
+        }
+      }
+
+      const updated = await app.prisma.party.update({
+        where: { id: party.id },
+        data: {
+          status: 'FINISHED',
+          scoresRevealed: true,
+          finishedAt: party.finishedAt ?? new Date(),
+        },
+        select: { id: true, status: true, scoresRevealed: true, finishedAt: true },
+      });
+
+      app.broadcastPartyState(updated.id).catch(() => undefined);
+
+      return {
+        partyId: updated.id,
+        status: updated.status,
+        scoresRevealed: updated.scoresRevealed,
+        finishedAt: updated.finishedAt,
+      };
     },
   );
 };
