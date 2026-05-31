@@ -142,6 +142,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Done |
 | **Mobile M2.7** Motion system | Shared animation primitives, tactile press feedback, gameplay state motion, and reveal/score feedback | Done |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Done |
+| **Mobile M3.5** UX cleanup + party management planning | First-run join flow, explicit bonus targeting, host party list/settings, and big-screen join-code display planning | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
 
@@ -239,6 +240,15 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add host-only Charades phrase display with correct and skip controls.
   - Done: add host-only Taboo card/forbidden-word display with correct, skip, and forbidden-word penalty controls.
   - Follow-up: run the M3 flow on a device/emulator with a seeded Charades/Taboo round before treating prompt timing and host handoff ergonomics as final.
+- **Mobile M3.5 UX cleanup + party management planning** - planned
+  - First implementation task: redesign the landing screen around an editable join-code input and primary player join action, with host entry as a less prominent secondary action.
+  - Remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
+  - Make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
+  - Add host party management planning: hosts can create more than one party, switch between parties, and see which party is active/current.
+  - Clarify join-code lifecycle: player join codes should work only for joinable active parties, such as `LOBBY` or `IN_PROGRESS`, and should reject finished/cancelled parties.
+  - Add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
+  - Add big-screen join-code display planning, likely as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
+  - Avoid deep visual polish until the default design direction is confirmed; prioritize flow correctness, component boundaries, and API/mobile contracts.
 
 ### Cross-project coordination
 
