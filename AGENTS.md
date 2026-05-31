@@ -253,7 +253,12 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Active party rule: only one party should be treated as the current joinable party for a host/period unless the host explicitly switches context.
     - Recurring-party note: `Next week` / `New night` should only appear when the host enables recurring parties for that specific party or future persistent period; one-off parties should not show the action.
   - Done: clarify join-code lifecycle. Player-entered join codes are accepted only for active `LOBBY` or `IN_PROGRESS` parties, while finished/cancelled/paused codes show clear rejection messages; team check-in remains allowed only in `LOBBY`.
-  - Add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
+  - Done: add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
+    - Planned settings scope: party name, max teams, max players per team, recurring-party toggle, join/check-in availability, optional location verification, trivia display mode, and theme attachment.
+    - Safety rules: reducing max teams or max players per team must be blocked or require an explicit host resolution when existing teams/check-ins would exceed the new limits.
+    - Lifecycle rules: settings that affect joining/check-in should be editable only before or during `LOBBY` unless a future host override flow explicitly supports mid-night changes.
+    - Mobile shape: add a host settings screen reachable from the host lobby/party switcher with grouped sections, inline validation, clear disabled states, and no hidden destructive changes.
+    - API shape: add host-only party settings update endpoints with server-side validation; avoid relying on mobile-only guards for capacity, recurring, or location behavior.
   - Add big-screen join-code display planning, likely as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
   - Avoid deep visual polish until the default design direction is confirmed; prioritize flow correctness, component boundaries, and API/mobile contracts.
 
