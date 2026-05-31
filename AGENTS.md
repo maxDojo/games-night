@@ -244,7 +244,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 - **Mobile M3.5 UX cleanup + party management planning** - planned
   - Done: redesign the landing screen around an editable join-code input and primary player join action, with host entry as a less prominent secondary action.
   - Done: remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
-  - Make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
+  - Done: make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
   - Add host End Night confirmation flow after bonus targeting. End Night should reveal scores if needed, mark the current party finished, preserve score history, and block new joins/check-ins or round starts.
   - Keep Start Next Week/New Night separate from End Night. It should create a new party under the future persistent period/season, reuse teams when enabled, and start fresh party scores without deleting prior history.
   - Add host party management planning: hosts can create more than one party, switch between parties, and see which party is active/current.

@@ -157,7 +157,7 @@ interface PartyStateContextValue extends PartyState {
   submitTriviaAnswer: (choice: string) => void;
   refreshScoreReport: () => Promise<void>;
   revealScores: () => Promise<boolean>;
-  awardNextBonus: () => Promise<boolean>;
+  awardBonusToTeam: (bonusId: string, teamId: string) => Promise<boolean>;
 }
 
 type PartyAction =
@@ -1057,15 +1057,16 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     }
   }, [refreshScoreReport, state.hostParty, state.hostToken]);
 
-  const awardNextBonus = useCallback(async () => {
-    const bonus = state.bonusAwards.find((item) => !state.awardedBonusIds.includes(item.id));
-    const targetTeam =
-      state.hostTeams.find((team) => team.id === state.selectedHostTeamId) ??
-      state.hostTeams[0] ??
-      state.teams.find((team) => team.id === state.checkedInTeamId) ??
-      state.teams[0];
-
+  const awardBonusToTeam = useCallback(async (bonusId: string, teamId: string) => {
+    const bonus = state.bonusAwards.find((item) => item.id === bonusId);
+    const targetTeam = state.hostTeams.find((team) => team.id === teamId);
     if (!bonus || !targetTeam) {
+      dispatch({ type: 'hostBonusFailure', error: 'Choose a bonus and target team before awarding.' });
+      return false;
+    }
+
+    if (state.awardedBonusIds.includes(bonus.id)) {
+      dispatch({ type: 'hostBonusFailure', error: 'This bonus has already been awarded.' });
       return false;
     }
 
@@ -1108,12 +1109,9 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
   }, [
     state.awardedBonusIds,
     state.bonusAwards,
-    state.checkedInTeamId,
     state.hostParty,
     state.hostTeams,
     state.hostToken,
-    state.selectedHostTeamId,
-    state.teams,
   ]);
 
   const createHostTeam = useCallback(
@@ -1321,7 +1319,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       },
       refreshScoreReport,
       revealScores,
-      awardNextBonus,
+      awardBonusToTeam,
     };
   }, [
     checkInSelectedTeam,
@@ -1331,7 +1329,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     loadPlayerParty,
     loginHostAccount,
     queueHostRound,
-    awardNextBonus,
+    awardBonusToTeam,
     refreshScoreReport,
     refreshHostRoundSetup,
     refreshHostTeams,
