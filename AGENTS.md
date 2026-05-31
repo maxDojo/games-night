@@ -257,7 +257,7 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Planned settings scope: party name, max teams, max players per team, recurring-party toggle, join/check-in availability, optional location verification, trivia display mode, and theme attachment.
     - Safety rules: reducing max teams or max players per team must be blocked or require an explicit host resolution when existing teams/check-ins would exceed the new limits.
     - Lifecycle rules: settings that affect joining/check-in should be editable only before or during `LOBBY` unless a future host override flow explicitly supports mid-night changes.
-    - Mobile shape: add a host settings screen reachable from the host lobby/party switcher with grouped sections, inline validation, clear disabled states, and no hidden destructive changes.
+    - Done: add a host settings screen shell reachable from the host lobby with grouped sections, clear disabled states, and no hidden destructive changes.
     - API shape: add host-only party settings update endpoints with server-side validation; avoid relying on mobile-only guards for capacity, recurring, or location behavior.
   - Done: add big-screen join-code display planning as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
     - Product shape: host can open a display-safe view for TVs/projectors showing the active party name/theme, join code, join status, team names/colors, and current public round/status.

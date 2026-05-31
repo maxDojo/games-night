@@ -9,6 +9,8 @@ interface HostNavProps {
 }
 
 export function HostNav({ active, onChange }: HostNavProps) {
+  const activeTab = active === 'settings' ? 'lobby' : active;
+
   return (
     <BottomNav
       items={[
@@ -17,7 +19,7 @@ export function HostNav({ active, onChange }: HostNavProps) {
         { route: 'teams', label: 'TEAMS', icon: Users },
         { route: 'stage', label: 'LIVE', icon: Timer },
       ]}
-      active={active}
+      active={activeTab}
       onChange={onChange}
     />
   );

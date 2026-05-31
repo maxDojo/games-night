@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { Plus, Sparkles } from 'lucide-react-native';
+import { router } from 'expo-router';
+import { Plus, Settings, Sparkles } from 'lucide-react-native';
 
 import { HostBonusAwardsCard } from '../../components/host/HostBonusAwardsCard';
 import { HostNightActionsCard } from '../../components/host/HostNightActionsCard';
@@ -156,6 +157,9 @@ export function HostLobbyScreen() {
         </View>
       </View>
       {hostParty && hostPartyError ? <Text style={styles.errorText}>{hostPartyError}</Text> : null}
+      {hostParty ? (
+        <ActionButton label="Party settings" icon={Settings} onPress={() => router.push('/host/settings')} />
+      ) : null}
       <View style={styles.card}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
