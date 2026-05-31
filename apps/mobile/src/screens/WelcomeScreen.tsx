@@ -1,30 +1,30 @@
-import { Text, View } from 'react-native';
-import { ArrowRight, BadgeAlert, Brain, Crown, Drama, Sparkles, Users } from 'lucide-react-native';
+import { useState } from 'react';
+import { Text, TextInput, View } from 'react-native';
+import { BadgeAlert, Brain, Crown, Drama, Search } from 'lucide-react-native';
 
 import { Screen } from '../components/layout/Screen';
 import { ActionButton } from '../components/ui/ActionButton';
-import { Pill, Token } from '../components/ui/Badges';
+import { Token } from '../components/ui/Badges';
 import { useAppStyles } from '../theme/useAppStyles';
 
 interface WelcomeScreenProps {
   onHost: () => void;
-  onPlayer: () => void;
+  onPlayer: (joinCode: string) => void;
 }
 
 export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
   const { styles, theme } = useAppStyles();
+  const [joinCode, setJoinCode] = useState('');
+  const normalizedJoinCode = joinCode.trim().toUpperCase();
 
   return (
     <Screen>
       <View style={styles.poster}>
-        <View style={styles.rowBetween}>
-          <Text style={styles.eyebrow}>{theme.displayName.toUpperCase()}</Text>
-          <Pill label="THEMED" icon={Sparkles} />
-        </View>
         <View style={styles.heroCopy}>
-          <Text style={styles.heroTitle}>{theme.displayName}</Text>
+          <Text style={styles.eyebrow}>GAMES NIGHT</Text>
+          <Text style={styles.heroTitle}>Join the room</Text>
           <Text style={styles.bodyText}>
-            Friday league, custom games, team chaos, and every point on the record.
+            Enter the host code, pick your team, and keep the scores sealed until the reveal.
           </Text>
         </View>
         <View style={styles.tokenRow}>
@@ -34,18 +34,32 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
         </View>
       </View>
 
-      <View style={styles.cardCompact}>
-        <View>
-          <Text style={styles.metaLabel}>JOIN {theme.displayName.toUpperCase()}</Text>
-          <Text style={styles.codeText}>ENTER CODE</Text>
+      <View style={styles.card}>
+        <View style={styles.inputGroup}>
+          <Text style={styles.metaLabelAccent}>ROOM CODE</Text>
+          <TextInput
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={6}
+            onChangeText={(value) => setJoinCode(value.toUpperCase().replace(/[^A-Z2-9]/gu, ''))}
+            onSubmitEditing={() => normalizedJoinCode.length === 6 && onPlayer(normalizedJoinCode)}
+            placeholder="LUCKY7"
+            placeholderTextColor={theme.palette.muted}
+            returnKeyType="join"
+            style={styles.textInput}
+            value={joinCode}
+          />
         </View>
-        <ArrowRight color={theme.palette.info} size={22} />
+        <ActionButton
+          label="Join party"
+          icon={Search}
+          onPress={() => onPlayer(normalizedJoinCode)}
+          disabled={normalizedJoinCode.length !== 6}
+          primary
+        />
       </View>
 
-      <View style={styles.twoColumn}>
-        <ActionButton label="Host" icon={Crown} onPress={onHost} primary />
-        <ActionButton label="Player" icon={Users} onPress={onPlayer} />
-      </View>
+      <ActionButton label="Host login" icon={Crown} onPress={onHost} />
     </Screen>
   );
 }

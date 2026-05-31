@@ -241,8 +241,8 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add host-only Taboo card/forbidden-word display with correct, skip, and forbidden-word penalty controls.
   - Follow-up: run the M3 flow on a device/emulator with a seeded Charades/Taboo round before treating prompt timing and host handoff ergonomics as final.
 - **Mobile M3.5 UX cleanup + party management planning** - planned
-  - First implementation task: redesign the landing screen around an editable join-code input and primary player join action, with host entry as a less prominent secondary action.
-  - Remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
+  - Done: redesign the landing screen around an editable join-code input and primary player join action, with host entry as a less prominent secondary action.
+  - Done: remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
   - Make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
   - Add host party management planning: hosts can create more than one party, switch between parties, and see which party is active/current.
   - Clarify join-code lifecycle: player join codes should work only for joinable active parties, such as `LOBBY` or `IN_PROGRESS`, and should reject finished/cancelled parties.

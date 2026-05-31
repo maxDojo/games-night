@@ -7,8 +7,8 @@ import { useAppStyles } from '../src/theme/useAppStyles';
 export default function HomeRoute() {
   const { styles } = useAppStyles();
 
-  const enterPlayer = () => {
-    router.push('/player/check-in');
+  const enterPlayer = (joinCode: string) => {
+    router.push({ pathname: '/player/check-in', params: { joinCode } });
   };
 
   const enterHost = () => {

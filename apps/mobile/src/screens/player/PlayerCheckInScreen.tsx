@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import { BadgeCheck, LocateFixed, MapPinCheck, MapPinOff, Search, ShieldAlert, Ticket } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { TeamCard } from '../../components/game/TeamCard';
 import { Screen } from '../../components/layout/Screen';
@@ -12,6 +12,7 @@ import { useAppStyles } from '../../theme/useAppStyles';
 
 export function PlayerCheckInScreen() {
   const { styles, theme } = useAppStyles();
+  const params = useLocalSearchParams<{ joinCode?: string }>();
   const {
     checkInSelectedTeam,
     isCheckingIn,
@@ -35,12 +36,22 @@ export function PlayerCheckInScreen() {
   const [joinCodeInput, setJoinCodeInput] = useState(partySource === 'api' ? joinCode : '');
   const [nickname, setNickname] = useState(playerNickname ?? '');
   const showTeams = partySource === 'api';
+  const initialJoinCode = typeof params.joinCode === 'string'
+    ? params.joinCode.toUpperCase().replace(/[^A-Z2-9]/gu, '').slice(0, 6)
+    : '';
 
   useEffect(() => {
     if (partySource === 'api') {
       setJoinCodeInput(joinCode);
     }
   }, [joinCode, partySource]);
+
+  useEffect(() => {
+    if (initialJoinCode.length === 6 && partySource !== 'api') {
+      setJoinCodeInput(initialJoinCode);
+      void loadPlayerParty(initialJoinCode);
+    }
+  }, [initialJoinCode, loadPlayerParty, partySource]);
 
   useEffect(() => {
     if (playerNickname) {
