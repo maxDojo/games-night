@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { Award, ClipboardList, Gift, Play, Plus, Sparkles } from 'lucide-react-native';
+import { ClipboardList, Gift, Play, Plus, Sparkles } from 'lucide-react-native';
 
+import { HostBonusAwardsCard } from '../../components/host/HostBonusAwardsCard';
 import { Screen } from '../../components/layout/Screen';
 import { ScoreDeltaToast } from '../../components/motion';
 import { ActionButton } from '../../components/ui/ActionButton';
@@ -14,7 +15,7 @@ import { useAppStyles } from '../../theme/useAppStyles';
 export function HostLobbyScreen() {
   const { styles, theme } = useAppStyles();
   const {
-    awardNextBonus,
+    awardBonusToTeam,
     awardedBonusIds,
     bonusAwards,
     createHostParty,
@@ -30,6 +31,7 @@ export function HostLobbyScreen() {
     refreshHostTeams,
     revealScores,
     scoresRevealed,
+    selectHostTeam,
     selectedHostTeamId,
     teams,
     totalPlayers,
@@ -37,13 +39,12 @@ export function HostLobbyScreen() {
   const [partyName, setPartyName] = useState(hostUser ? `${hostUser.displayName}'s House` : 'Games Night');
   const [maxTeams, setMaxTeams] = useState('4');
   const [maxPerTeam, setMaxPerTeam] = useState('8');
+  const [selectedBonusId, setSelectedBonusId] = useState<string | undefined>(bonusAwards[0]?.id);
   const nextRound = queuedRounds.find((round) => round.status === 'PENDING') ?? queuedRounds[0];
-  const bonusLabel = awardedBonusIds.length >= bonusAwards.length ? 'Bonuses done' : 'Award bonus';
   const latestBonus = [...awardedBonusIds]
     .reverse()
     .map((bonusId) => bonusAwards.find((bonus) => bonus.id === bonusId))
     .find(Boolean);
-  const bonusTarget = hostTeams.find((team) => team.id === selectedHostTeamId) ?? hostTeams[0];
   const roomCode = hostParty?.joinCode ?? '------';
   const roomName = hostParty?.name ?? theme.displayName;
   const roomStatus = hostParty?.status ?? 'DRAFT';
@@ -57,6 +58,12 @@ export function HostLobbyScreen() {
   useEffect(() => {
     void refreshHostTeams();
   }, [refreshHostTeams]);
+
+  useEffect(() => {
+    if (!selectedBonusId || awardedBonusIds.includes(selectedBonusId)) {
+      setSelectedBonusId(bonusAwards.find((bonus) => !awardedBonusIds.includes(bonus.id))?.id);
+    }
+  }, [awardedBonusIds, bonusAwards, selectedBonusId]);
 
   return (
     <Screen eyebrow={hostUser ? `HOST: ${hostUser.displayName}` : 'THEMED ROOM'} title={roomName}>
@@ -153,28 +160,18 @@ export function HostLobbyScreen() {
           Queue rounds from the host phone. Corrections and special bonuses require a reason and stay visible in the final audit.
         </Text>
       </View>
-      <View style={styles.card}>
-        <View style={styles.rowBetween}>
-          <Text style={styles.metaLabelAccent}>SPECIAL BONUSES</Text>
-          <Gift color={theme.palette.info} size={18} />
-        </View>
-        <Text style={styles.bodyText}>
-          Award room-energy points to {bonusTarget?.name ?? 'the selected team'} without exposing the live leaderboard to players.
-        </Text>
-        <View style={styles.stack}>
-          {bonusAwards.map((bonus) => (
-            <View key={bonus.id} style={styles.scoreLogItem}>
-              <View style={styles.flex}>
-                <Text style={styles.scoreLogLabel}>{bonus.label}</Text>
-                <Text style={styles.teamMeta}>{bonus.reason}</Text>
-              </View>
-              <Text style={[styles.scoreLogDelta, { color: theme.palette.success }]}>
-                {awardedBonusIds.includes(bonus.id) ? 'Awarded' : `+${bonus.points}`}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
+      <HostBonusAwardsCard
+        awardedBonusIds={awardedBonusIds}
+        bonuses={bonusAwards}
+        disabled={!hostParty}
+        isAwarding={isAwardingBonus}
+        onAward={(bonusId, teamId) => void awardBonusToTeam(bonusId, teamId)}
+        onSelectBonus={setSelectedBonusId}
+        onSelectTeam={selectHostTeam}
+        selectedBonusId={selectedBonusId}
+        selectedTeamId={selectedHostTeamId}
+        teams={hostTeams}
+      />
       {hostBonusError ? <Text style={styles.errorText}>{hostBonusError}</Text> : null}
       <ScoreDeltaToast
         label={latestBonus ? `${latestBonus.label} awarded` : 'Bonus awarded'}
@@ -183,16 +180,9 @@ export function HostLobbyScreen() {
       />
       <View style={styles.twoColumn}>
         <ActionButton label="Start" icon={Play} onPress={() => undefined} primary />
-        <ActionButton
-          label={isAwardingBonus ? 'Awarding...' : bonusLabel}
-          icon={Award}
-          onPress={() => void awardNextBonus()}
-          disabled={!hostParty || !bonusTarget || isAwardingBonus || awardedBonusIds.length >= bonusAwards.length}
-          success
-        />
+        <ActionButton label="Score log" icon={ClipboardList} onPress={() => undefined} />
       </View>
       <View style={styles.twoColumn}>
-        <ActionButton label="Score log" icon={ClipboardList} onPress={() => undefined} />
         <ActionButton
           label={scoresRevealed ? 'Revealed' : 'Reveal'}
           icon={Gift}
