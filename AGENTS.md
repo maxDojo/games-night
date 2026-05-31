@@ -259,7 +259,12 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Lifecycle rules: settings that affect joining/check-in should be editable only before or during `LOBBY` unless a future host override flow explicitly supports mid-night changes.
     - Mobile shape: add a host settings screen reachable from the host lobby/party switcher with grouped sections, inline validation, clear disabled states, and no hidden destructive changes.
     - API shape: add host-only party settings update endpoints with server-side validation; avoid relying on mobile-only guards for capacity, recurring, or location behavior.
-  - Add big-screen join-code display planning, likely as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
+  - Done: add big-screen join-code display planning as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
+    - Product shape: host can open a display-safe view for TVs/projectors showing the active party name/theme, join code, join status, team names/colors, and current public round/status.
+    - Privacy rule: display mode must never show host-only Charades/Taboo prompts, forbidden words, hidden score totals before reveal, private player data, auth controls, or moderation controls.
+    - API/socket shape: display clients should subscribe to a public party/display state with payload gating based on party status, trivia display mode, and score reveal state.
+    - QR code note: add QR as a convenience later; the large alphanumeric code must remain the primary fallback for lounges where scanning a TV is awkward.
+    - Platform direction: likely belongs in a future `apps/web` display surface first, with mobile host controls providing an "Open display" / "Cast code" entry point.
   - Avoid deep visual polish until the default design direction is confirmed; prioritize flow correctness, component boundaries, and API/mobile contracts.
 
 ### Cross-project coordination
@@ -269,6 +274,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 - Work from agreed phases/trees for API, mobile, and web. Plan phases with the user, then record the agreed milestones and task lists in this file before executing substantial work.
 - Progress through each project's agreed plan in sequence unless the user explicitly reprioritizes.
 - For each milestone, agree on a concrete task list before implementation. Each task should have a descriptive branch name and, when ready, a descriptive PR.
+- Batch planning-only updates into a single planning PR per milestone/phase instead of opening separate PRs for each planning bullet. After the planning batch lands, prefer implementation PRs unless the user explicitly asks for more planning.
 
 ### What's in flight
 
