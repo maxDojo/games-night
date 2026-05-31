@@ -14,6 +14,7 @@ import {
   getScoreEvents,
   isTriviaQuestionPayload,
   isTriviaRevealPayload,
+  endParty,
   endRound,
   joinPartyRoom,
   joinTeam,
@@ -83,6 +84,7 @@ interface PartyState {
   isControllingHostRound: boolean;
   isWritingHostScore: boolean;
   isAwardingBonus: boolean;
+  isEndingNight: boolean;
   isRevealingScores: boolean;
   isLoadingScoreReport: boolean;
   isHostSocketConnected: boolean;
@@ -157,6 +159,7 @@ interface PartyStateContextValue extends PartyState {
   submitTriviaAnswer: (choice: string) => void;
   refreshScoreReport: () => Promise<void>;
   revealScores: () => Promise<boolean>;
+  endNight: () => Promise<boolean>;
   awardBonusToTeam: (bonusId: string, teamId: string) => Promise<boolean>;
 }
 
@@ -208,6 +211,9 @@ type PartyAction =
   | { type: 'revealScoresStart' }
   | { type: 'revealScoresSuccess' }
   | { type: 'revealScoresFailure'; error: string }
+  | { type: 'endNightStart' }
+  | { type: 'endNightSuccess' }
+  | { type: 'endNightFailure'; error: string }
   | { type: 'selectTeam'; teamId: string }
   | { type: 'loadPartyStart'; joinCode: string }
   | { type: 'loadPartySuccess'; party: PartyByCodeResponse; session?: MobileSession }
@@ -242,6 +248,7 @@ const initialState: PartyState = {
   isControllingHostRound: false,
   isWritingHostScore: false,
   isAwardingBonus: false,
+  isEndingNight: false,
   isRevealingScores: false,
   isLoadingScoreReport: false,
   isHostSocketConnected: false,
@@ -490,6 +497,19 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
       return { ...state, isRevealingScores: false, scoresRevealed: true, hostBonusError: undefined };
     case 'revealScoresFailure':
       return { ...state, isRevealingScores: false, hostBonusError: action.error };
+    case 'endNightStart':
+      return { ...state, isEndingNight: true, hostPartyError: undefined };
+    case 'endNightSuccess':
+      return {
+        ...state,
+        isEndingNight: false,
+        scoresRevealed: true,
+        partyStatus: 'FINISHED',
+        hostParty: state.hostParty ? { ...state.hostParty, status: 'FINISHED' } : state.hostParty,
+        hostPartyError: undefined,
+      };
+    case 'endNightFailure':
+      return { ...state, isEndingNight: false, hostPartyError: action.error };
     case 'selectTeam': {
       if (state.checkedInTeamId) {
         return state;
@@ -1057,6 +1077,26 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     }
   }, [refreshScoreReport, state.hostParty, state.hostToken]);
 
+  const endNight = useCallback(async () => {
+    if (!state.hostParty || !state.hostToken) {
+      dispatch({ type: 'endNightFailure', error: 'Create a host party before ending the night.' });
+      return false;
+    }
+
+    dispatch({ type: 'endNightStart' });
+
+    try {
+      const endedParty = await endParty(state.hostParty.joinCode, state.hostToken);
+      await saveSession({ hostParty: { ...state.hostParty, status: endedParty.status } });
+      dispatch({ type: 'endNightSuccess' });
+      await refreshScoreReport();
+      return true;
+    } catch (error) {
+      dispatch({ type: 'endNightFailure', error: getPlayerError(error) });
+      return false;
+    }
+  }, [refreshScoreReport, state.hostParty, state.hostToken]);
+
   const awardBonusToTeam = useCallback(async (bonusId: string, teamId: string) => {
     const bonus = state.bonusAwards.find((item) => item.id === bonusId);
     const targetTeam = state.hostTeams.find((team) => team.id === teamId);
@@ -1319,12 +1359,14 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       },
       refreshScoreReport,
       revealScores,
+      endNight,
       awardBonusToTeam,
     };
   }, [
     checkInSelectedTeam,
     createHostParty,
     createHostTeam,
+    endNight,
     endHostRound,
     loadPlayerParty,
     loginHostAccount,

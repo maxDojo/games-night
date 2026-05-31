@@ -170,4 +170,84 @@ describe('parties routes', () => {
       expect(mocks.party.findUnique).not.toHaveBeenCalled();
     });
   });
+
+  describe('POST /v1/parties/:joinCode/end', () => {
+    it('finishes a party and reveals scores for the host', async () => {
+      mocks.party.findUnique.mockResolvedValue({
+        id: 'party_123',
+        hostId: 'host_1',
+        status: 'IN_PROGRESS',
+        scoresRevealed: false,
+        finishedAt: null,
+      });
+      mocks.round.count.mockResolvedValue(0);
+      mocks.party.update.mockResolvedValue({
+        id: 'party_123',
+        status: 'FINISHED',
+        scoresRevealed: true,
+        finishedAt: new Date('2026-05-31T18:00:00.000Z'),
+      });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/parties/ABC234/end',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        partyId: 'party_123',
+        status: 'FINISHED',
+        scoresRevealed: true,
+      });
+      expect(mocks.party.update).toHaveBeenCalledWith({
+        where: { id: 'party_123' },
+        data: expect.objectContaining({
+          status: 'FINISHED',
+          scoresRevealed: true,
+        }),
+        select: { id: true, status: true, scoresRevealed: true, finishedAt: true },
+      });
+    });
+
+    it('rejects non-host users', async () => {
+      mocks.party.findUnique.mockResolvedValue({
+        id: 'party_123',
+        hostId: 'someone_else',
+        status: 'LOBBY',
+        scoresRevealed: false,
+        finishedAt: null,
+      });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/parties/ABC234/end',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(403);
+      expect(mocks.party.update).not.toHaveBeenCalled();
+    });
+
+    it('requires active rounds to be ended first', async () => {
+      mocks.party.findUnique.mockResolvedValue({
+        id: 'party_123',
+        hostId: 'host_1',
+        status: 'IN_PROGRESS',
+        scoresRevealed: false,
+        finishedAt: null,
+      });
+      mocks.round.count.mockResolvedValue(1);
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/parties/ABC234/end',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'End the active round before ending the night' });
+      expect(mocks.party.update).not.toHaveBeenCalled();
+    });
+  });
 });
