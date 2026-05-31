@@ -733,6 +733,12 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
 
     try {
       const party = await getPartyByJoinCode(normalizedJoinCode);
+      const joinCodeError = getJoinCodeLifecycleError(party.status);
+      if (joinCodeError) {
+        dispatch({ type: 'loadPartyFailure', error: joinCodeError });
+        return;
+      }
+
       await saveSession({ joinCode: party.joinCode, lastPartyId: party.id });
       dispatch({ type: 'loadPartySuccess', party });
       void refreshPlayerRounds(party.joinCode);
@@ -1407,6 +1413,20 @@ function isLocationVerificationRequired(settings: unknown) {
   }
 
   return false;
+}
+
+function getJoinCodeLifecycleError(status: PartyByCodeResponse['status']) {
+  switch (status) {
+    case 'LOBBY':
+    case 'IN_PROGRESS':
+      return undefined;
+    case 'FINISHED':
+      return 'This party has ended. Ask the host for the next active room code.';
+    case 'CANCELLED':
+      return 'This party was cancelled. Ask the host for the active room code.';
+    case 'PAUSED':
+      return 'This party is paused. Ask the host when check-in reopens.';
+  }
 }
 
 function mapHostParty(party: CreatePartyResponse | PartyByCodeResponse): NonNullable<MobileSession['hostParty']> {
