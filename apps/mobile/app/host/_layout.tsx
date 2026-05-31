@@ -7,7 +7,7 @@ import { usePartyState } from '../../src/state/PartyState';
 import { useAppStyles } from '../../src/theme/useAppStyles';
 import type { HostRoute } from '../../src/types/product';
 
-const hostRoutes: HostRoute[] = ['lobby', 'queue', 'teams', 'stage'];
+const hostRoutes: HostRoute[] = ['lobby', 'queue', 'teams', 'stage', 'settings'];
 
 export default function HostLayout() {
   const pathname = usePathname();
