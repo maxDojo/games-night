@@ -252,7 +252,7 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Planned mobile shape: add a party switcher/management surface before or near the host lobby so the host can create a new party, resume an existing one, or inspect finished parties without overwriting local session state.
     - Active party rule: only one party should be treated as the current joinable party for a host/period unless the host explicitly switches context.
     - Recurring-party note: `Next week` / `New night` should only appear when the host enables recurring parties for that specific party or future persistent period; one-off parties should not show the action.
-  - Clarify join-code lifecycle: player join codes should work only for joinable active parties, such as `LOBBY` or `IN_PROGRESS`, and should reject finished/cancelled parties.
+  - Done: clarify join-code lifecycle. Player-entered join codes are accepted only for active `LOBBY` or `IN_PROGRESS` parties, while finished/cancelled/paused codes show clear rejection messages; team check-in remains allowed only in `LOBBY`.
   - Add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
   - Add big-screen join-code display planning, likely as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
   - Avoid deep visual polish until the default design direction is confirmed; prioritize flow correctness, component boundaries, and API/mobile contracts.

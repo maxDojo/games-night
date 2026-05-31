@@ -89,7 +89,7 @@ describe('players routes', () => {
       expect(mocks.player.create).not.toHaveBeenCalled();
     });
 
-    it("rejects when party isn't in LOBBY", async () => {
+    it('rejects when the party is already in progress', async () => {
       mocks.team.findUnique.mockResolvedValue(teamFixture({ status: 'IN_PROGRESS' }));
       const res = await app.inject({
         method: 'POST',
@@ -97,6 +97,29 @@ describe('players routes', () => {
         payload: { nickname: 'Late' },
       });
       expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'Party has already started; ask the host to add you' });
+    });
+
+    it('rejects when the party has ended', async () => {
+      mocks.team.findUnique.mockResolvedValue(teamFixture({ status: 'FINISHED' }));
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/teams/team_1/players',
+        payload: { nickname: 'Late' },
+      });
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'Party has ended' });
+    });
+
+    it('rejects when the party was cancelled', async () => {
+      mocks.team.findUnique.mockResolvedValue(teamFixture({ status: 'CANCELLED' }));
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/teams/team_1/players',
+        payload: { nickname: 'Late' },
+      });
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'Party was cancelled' });
     });
 
     it('returns 404 for an unknown team', async () => {

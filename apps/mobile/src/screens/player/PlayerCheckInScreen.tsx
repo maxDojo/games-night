@@ -25,6 +25,7 @@ export function PlayerCheckInScreen() {
     markLocationOverride,
     partyName,
     partySource,
+    partyStatus,
     period,
     playerError,
     playerNickname,
@@ -36,6 +37,8 @@ export function PlayerCheckInScreen() {
   const [joinCodeInput, setJoinCodeInput] = useState(partySource === 'api' ? joinCode : '');
   const [nickname, setNickname] = useState(playerNickname ?? '');
   const showTeams = partySource === 'api';
+  const canCheckIn = partyStatus === 'LOBBY';
+  const checkInClosedMessage = getCheckInClosedMessage(partyStatus);
   const initialJoinCode = typeof params.joinCode === 'string'
     ? params.joinCode.toUpperCase().replace(/[^A-Z2-9]/gu, '').slice(0, 6)
     : '';
@@ -117,8 +120,8 @@ export function PlayerCheckInScreen() {
           <InfoBanner
             icon={locationBanner.icon}
             title={partyName}
-            subtitle={locationBanner.subtitle}
-            color={locationBanner.color}
+            subtitle={checkInClosedMessage ?? locationBanner.subtitle}
+            color={checkInClosedMessage ? theme.palette.accent : locationBanner.color}
           />
           {locationVerificationRequired && !locationGateSatisfied ? (
             <View style={styles.twoColumn}>
@@ -159,7 +162,7 @@ export function PlayerCheckInScreen() {
                 team={team}
                 selected={team.id === selectedTeam?.id}
                 showPoints={false}
-                disabled={team.checkedIn >= team.capacity || isCheckingIn}
+                disabled={!canCheckIn || team.checkedIn >= team.capacity || isCheckingIn}
                 onPress={() => selectTeam(team.id)}
               />
             ))}
@@ -168,19 +171,36 @@ export function PlayerCheckInScreen() {
             label={
               isCheckingIn
                 ? 'Checking in...'
+                : !canCheckIn
+                  ? 'Check-in closed'
                 : selectedTeam
                   ? `Check in to ${selectedTeam.name}`
                   : 'Choose an open team'
             }
             icon={BadgeCheck}
             onPress={handleCheckIn}
-            disabled={!selectedTeam || !nickname.trim() || !locationGateSatisfied || isCheckingIn}
+            disabled={!canCheckIn || !selectedTeam || !nickname.trim() || !locationGateSatisfied || isCheckingIn}
             danger
           />
         </>
       ) : null}
     </Screen>
   );
+}
+
+function getCheckInClosedMessage(status: string | undefined) {
+  switch (status) {
+    case 'IN_PROGRESS':
+      return 'This code is active, but team check-in is closed because the party has already started.';
+    case 'PAUSED':
+      return 'This party is paused. Ask the host when check-in reopens.';
+    case 'FINISHED':
+      return 'This party has ended. Ask the host for the next active room code.';
+    case 'CANCELLED':
+      return 'This party was cancelled. Ask the host for the active room code.';
+    default:
+      return undefined;
+  }
 }
 
 function getLocationBanner(

@@ -54,6 +54,12 @@ const playersRoutes: FastifyPluginAsyncZod = async (app) => {
         },
       });
       if (!team) return reply.code(404).send({ error: 'Team not found' });
+      if (team.party.status === 'IN_PROGRESS')
+        return reply.code(409).send({ error: 'Party has already started; ask the host to add you' });
+      if (team.party.status === 'FINISHED')
+        return reply.code(409).send({ error: 'Party has ended' });
+      if (team.party.status === 'CANCELLED')
+        return reply.code(409).send({ error: 'Party was cancelled' });
       if (team.party.status !== 'LOBBY')
         return reply.code(409).send({ error: 'Party is not accepting new players' });
       if (team._count.players >= team.party.maxPerTeam)
