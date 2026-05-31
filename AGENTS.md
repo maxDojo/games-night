@@ -74,6 +74,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 - **Persistent Teams + Mobile Host Controls** - planned
   - Done: spec the API/mobile contract direction for persistent periods, capacity-aware teams, check-in, score audit, custom games, venue controls, and trivia display modes in `docs/mobile-integration.md`.
   - Done: change Charades and Taboo private prompt delivery so prompts/forbidden words are host-control-device only, not team-room broadcasts.
+  - Add host-only party end endpoint that reveals scores, marks the party `FINISHED`, blocks further check-ins/round starts, and preserves score history.
   - Spec the product model for persistent host-owned periods, such as event, season, league, weekend, or trip.
   - Add a persistent container above `Party` so a host can group multiple parties under one scoring period.
   - Allow teams to belong either to a single party or to the persistent container.
@@ -244,6 +245,8 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: redesign the landing screen around an editable join-code input and primary player join action, with host entry as a less prominent secondary action.
   - Done: remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
   - Make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
+  - Add host End Night confirmation flow after bonus targeting. End Night should reveal scores if needed, mark the current party finished, preserve score history, and block new joins/check-ins or round starts.
+  - Keep Start Next Week/New Night separate from End Night. It should create a new party under the future persistent period/season, reuse teams when enabled, and start fresh party scores without deleting prior history.
   - Add host party management planning: hosts can create more than one party, switch between parties, and see which party is active/current.
   - Clarify join-code lifecycle: player join codes should work only for joinable active parties, such as `LOBBY` or `IN_PROGRESS`, and should reject finished/cancelled parties.
   - Add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
