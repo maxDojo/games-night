@@ -15,7 +15,7 @@ import type {
 } from '../sockets/contracts.js';
 
 export interface PartyEmitter {
-  /** Emit any event to a party id or explicit Socket.IO room such as team:<id>. */
+  /** Emit any event to a party id or explicit Socket.IO room such as team:<id> or host:<partyId>. */
   <E extends ServerToClientEventName>(
     partyId: string,
     event: E,

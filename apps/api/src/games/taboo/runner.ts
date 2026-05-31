@@ -150,12 +150,9 @@ export class TabooRoundRunner implements RoundRunner {
       category: card.payload.category ?? null,
     };
 
-    // Acting team gets the card privately. Opposing team rooms also get it so
-    // their clients can show a challenge button for forbidden-word calls.
-    this.deps.emit(`team:${this.turn.team.id}`, 'prompt:next', payload);
-    for (const opponent of this.turn.opponents) {
-      this.deps.emit(`team:${opponent.id}`, 'prompt:challenge', payload);
-    }
+    // The host phone is the only private prompt surface. The host can hand it
+    // to the active player while keeping other player devices blind.
+    this.deps.emit(`host:${this.partyId}`, 'prompt:next', payload);
   }
 
   private async recordCorrect() {

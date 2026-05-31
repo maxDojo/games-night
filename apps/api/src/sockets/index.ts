@@ -1,6 +1,7 @@
 import type { Server as SocketIOServer, Socket } from 'socket.io';
 import type { FastifyInstance } from 'fastify';
 import {
+  HostJoinPayloadSchema,
   PartyJoinPayloadSchema,
   RoundEventPayloadSchema,
   type ClientToServerEvents,
@@ -43,6 +44,36 @@ export function registerSocketHandlers(io: GamesNightSocketServer, app: FastifyI
     const runner = app.games.get(roundId);
     if (!runner) return; // round has no engine (manual-scoring mode), ignore.
 
+    if (socket.data.hostId && socket.data.hostPartyId) {
+      const round = await app.prisma.round.findUnique({
+        where: { id: roundId },
+        select: { partyId: true },
+      });
+      if (!round || round.partyId !== socket.data.hostPartyId) {
+        return emitSocketError(socket, 'Forbidden', 'Host cannot control this round');
+      }
+
+      const teamId = parsed.data.teamId;
+      if (!teamId) {
+        return emitSocketError(socket, 'ValidationError', 'Host round events require a teamId');
+      }
+
+      const team = await app.prisma.team.findFirst({
+        where: { id: teamId, partyId: socket.data.hostPartyId },
+        select: { id: true },
+      });
+      if (!team) {
+        return emitSocketError(socket, 'NotFound', 'Team not found in this party');
+      }
+
+      await runner.handleEvent(type, {
+        playerId: `host:${socket.data.hostId}`,
+        teamId: team.id,
+        payload,
+      });
+      return;
+    }
+
     const player = await app.prisma.player.findFirst({
       where: { socketId: socket.id },
       select: { id: true, teamId: true },
@@ -82,6 +113,30 @@ export function registerSocketHandlers(io: GamesNightSocketServer, app: FastifyI
       } catch (err) {
         app.log.error({ err }, 'party:join failed');
         emitSocketError(socket, 'JoinFailed', 'Could not join party');
+      }
+    });
+
+    socket.on('host:join', async (payload) => {
+      try {
+        const parsed = HostJoinPayloadSchema.safeParse(payload);
+        if (!parsed.success) {
+          return emitSocketError(socket, 'ValidationError', 'Invalid host join payload', parsed.error.flatten());
+        }
+
+        const decoded = app.jwt.verify<{ sub: string }>(parsed.data.token);
+        const party = await app.prisma.party.findUnique({ where: { joinCode: parsed.data.joinCode } });
+        if (!party) return emitSocketError(socket, 'NotFound', 'Party not found');
+        if (party.hostId !== decoded.sub) {
+          return emitSocketError(socket, 'Forbidden', 'Only the host can join host controls');
+        }
+
+        socket.data.hostId = decoded.sub;
+        socket.data.hostPartyId = party.id;
+        socket.join(`party:${party.id}`);
+        socket.join(`host:${party.id}`);
+      } catch (err) {
+        app.log.error({ err }, 'host:join failed');
+        emitSocketError(socket, 'JoinFailed', 'Could not join host controls');
       }
     });
 

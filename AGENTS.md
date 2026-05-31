@@ -37,9 +37,9 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **M1.5** Provider abstraction              | Open Trivia DB + AI(disabled) seam, free defaults, idempotent seed pipeline           | Done   |
 | **M2 foundation**                          | Round state machine, manual scoring, leaderboard, `emitToParty`                       | Done   |
 | **M2 Trivia engine**                       | Server-side timer, time bonus, streak bonus, auto-end                                 | Done   |
-| **M2 Charades engine**                     | Turn-based host-judged phrase play, team-private phrase emission                      | Done   |
+| **M2 Charades engine**                     | Turn-based host-judged phrase play, host-private phrase emission                      | Done   |
 | **M2 config/content filters**              | Per-game Zod config schemas, categories, difficulty filters                           | Done   |
-| **M2 Taboo engine**                        | Turn-based clue play, forbidden-word penalties, challenger flow                       | Done   |
+| **M2 Taboo engine**                        | Turn-based clue play, host-private cards, forbidden-word penalties                    | Done   |
 | **Host planning**                          | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem`         | Done   |
 | **API Client Contract + Mobile Readiness** | REST/socket contract hardening, generated client guardrails, mobile integration notes | Done   |
 | **Operational Polish**                     | CI, coverage, integration checks, deploy readiness, production seams                  | Next   |
@@ -73,6 +73,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Decide whether OTP/passwordless auth belongs before or after the first rebuilt mobile scaffold.
 - **Persistent Teams + Mobile Host Controls** - planned
   - Done: spec the API/mobile contract direction for persistent periods, capacity-aware teams, check-in, score audit, custom games, venue controls, and trivia display modes in `docs/mobile-integration.md`.
+  - Done: change Charades and Taboo private prompt delivery so prompts/forbidden words are host-control-device only, not team-room broadcasts.
   - Spec the product model for persistent host-owned periods, such as event, season, league, weekend, or trip.
   - Add a persistent container above `Party` so a host can group multiple parties under one scoring period.
   - Allow teams to belong either to a single party or to the persistent container.
@@ -81,7 +82,6 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Add host override flows for moving players or allowing exceptions.
   - Add leaderboard aggregation modes: current party only and persistent period.
   - Review `Round.config` and scoring inputs so the host can set points per round/game from mobile.
-  - Change Charades and Taboo private prompt delivery so prompts/forbidden words are host-control-device only, not team-room broadcasts.
   - Update REST/OpenAPI/socket contracts and mobile integration notes for the new flows.
   - Add integration coverage for persistent team check-in and period leaderboard aggregation.
 - **Custom Games + Score Audit** - planned
@@ -141,7 +141,8 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Mobile M1** Player join/check-in | Join by code, choose/check into team, capacity-aware check-in, optional location verification prompt, view party status without live standings, answer Trivia when active | Done |
 | **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Done |
 | **Mobile M2.7** Motion system | Shared animation primitives, tactile press feedback, gameplay state motion, and reveal/score feedback | Done |
-| **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Planned |
+| **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Done |
+| **Mobile M3.5** UX cleanup + party management planning | First-run join flow, explicit bonus targeting, host party list/settings, and big-screen join-code display planning | Planned |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
 
@@ -231,6 +232,23 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add lightweight entrance transitions for route panels, cards, and live game sections.
   - Done: add gameplay-specific feedback for Trivia answer lock, reveal/report surfaces, live status pulse, and bonus point toast.
   - Done: keep motion accessible, short, and functional with reduced-motion handling.
+- **Mobile M3 Host game control screens** - done
+  - Done: add authenticated host socket join support so the host device can receive host-control game events.
+  - Done: allow host-originated socket `round:event` actions with explicit team context for active game control.
+  - Done: split the host stage UI into lifecycle controls, manual scoring, and game-specific control components.
+  - Done: add Trivia host status/control surface for server-timed rounds.
+  - Done: add host-only Charades phrase display with correct and skip controls.
+  - Done: add host-only Taboo card/forbidden-word display with correct, skip, and forbidden-word penalty controls.
+  - Follow-up: run the M3 flow on a device/emulator with a seeded Charades/Taboo round before treating prompt timing and host handoff ergonomics as final.
+- **Mobile M3.5 UX cleanup + party management planning** - planned
+  - First implementation task: redesign the landing screen around an editable join-code input and primary player join action, with host entry as a less prominent secondary action.
+  - Remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
+  - Make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
+  - Add host party management planning: hosts can create more than one party, switch between parties, and see which party is active/current.
+  - Clarify join-code lifecycle: player join codes should work only for joinable active parties, such as `LOBBY` or `IN_PROGRESS`, and should reject finished/cancelled parties.
+  - Add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
+  - Add big-screen join-code display planning, likely as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
+  - Avoid deep visual polish until the default design direction is confirmed; prioritize flow correctness, component boundaries, and API/mobile contracts.
 
 ### Cross-project coordination
 
@@ -332,8 +350,8 @@ No active in-repo feature work is assumed from this file. The next direction sho
 | **`Round.config` is stored fully-resolved**                   | Defaults merge with overrides at queue time. Historical rounds stay replayable even if `GameDefinition.defaults` changes later.                                                                                            |
 | **`Round` rows are the concrete party queue**                 | Saved plans are reusable templates; applying a plan appends concrete `Round` rows to the target party.                                                                                                                     |
 | **`PartyPlan` / `PartyPlanItem` are host-authored templates** | The host can prepare a games-night sequence on mobile and reuse it later without making the saved template itself an active party.                                                                                         |
-| **One generic socket event for game actions**                 | `round:event { roundId, type, payload? }`. Trivia -> `answer`; Charades -> `correct` / `skip`; Taboo -> `correct` / `skip` / `taboo` / `challenge`. Engines branch on type. `round:answer` remains as a back-compat alias. |
-| **Team rooms for private prompts**                            | `party:join` subscribes sockets to both `party:<id>` and `team:<teamId>`. Charades and Taboo can emit cards/phrases only to the acting or challenger team room.                                                            |
+| **One generic socket event for game actions**                 | `round:event { roundId, type, teamId?, payload? }`. Trivia -> `answer`; Charades -> `correct` / `skip`; Taboo -> `correct` / `skip` / `taboo` / `challenge`. Host-originated game controls pass explicit `teamId`. `round:answer` remains as a back-compat alias. |
+| **Host room for private prompts**                             | `host:join` authenticates the host socket and subscribes it to `host:<partyId>`. Charades and Taboo private prompts/cards are emitted only to that host room so player devices cannot peek.                                |
 | **Server-side timers are authoritative**                      | Clients suggest, server decides. Otherwise leaderboards become contestable.                                                                                                                                                |
 | **Provider abstraction added before M2**                      | Engines call provider interfaces, not inlined API clients. Upgrading to paid tiers later should be a config change.                                                                                                        |
 | **First-answer-per-team locking (Trivia)**                    | Otherwise teammates could spam answers. Server timestamps the first answer; later answers from the same team are ignored.                                                                                                  |

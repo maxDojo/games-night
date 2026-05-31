@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  HostJoinPayloadSchema,
   PartyJoinPayloadSchema,
   RoundEventPayloadSchema,
   type PromptNextPayload,
@@ -15,9 +16,15 @@ describe('socket contracts', () => {
       .toBe(false);
   });
 
+  it('validates host join payloads at the socket boundary', () => {
+    expect(HostJoinPayloadSchema.safeParse({ joinCode: 'ABCDEF', token: 'jwt' }).success).toBe(true);
+    expect(HostJoinPayloadSchema.safeParse({ joinCode: 'ABCDEF' }).success).toBe(false);
+  });
+
   it('validates round event payloads while preserving engine-specific payloads', () => {
     const parsed = RoundEventPayloadSchema.safeParse({
       roundId: 'round_1',
+      teamId: 'team_1',
       type: 'answer',
       payload: { choice: 'A' },
     });

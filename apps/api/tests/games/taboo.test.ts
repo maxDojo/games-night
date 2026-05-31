@@ -81,7 +81,7 @@ describe('TabooRoundRunner', () => {
   });
   afterEach(() => vi.restoreAllMocks());
 
-  it('emits the active card to the acting team and challenge cards to opponents', async () => {
+  it('emits the active card only to the host room', async () => {
     const { runner, emit } = setupRunner({
       teams: [
         { id: 't1', position: 1 },
@@ -92,14 +92,13 @@ describe('TabooRoundRunner', () => {
 
     const actingPrompt = emit.mock.calls.find((c) => c[1] === 'prompt:next');
     expect(actingPrompt).toBeTruthy();
-    expect(actingPrompt![0]).toBe('team:t1');
+    expect(actingPrompt![0]).toBe('host:party_1');
     expect((actingPrompt![2] as { kind: string }).kind).toBe('taboo-card');
     expect((actingPrompt![2] as { word: string; forbidden: string[] }).word).toBe('Word 1');
     expect((actingPrompt![2] as { forbidden: string[] }).forbidden).toEqual(['Nope 1']);
 
     const challengePrompt = emit.mock.calls.find((c) => c[1] === 'prompt:challenge');
-    expect(challengePrompt).toBeTruthy();
-    expect(challengePrompt![0]).toBe('team:t2');
+    expect(challengePrompt).toBeUndefined();
   });
 
   it('awards correct answers from the acting team and serves the next card', async () => {
@@ -119,6 +118,7 @@ describe('TabooRoundRunner', () => {
 
     const nextCard = emit.mock.calls.find((c) => c[1] === 'prompt:next');
     expect(nextCard).toBeTruthy();
+    expect(nextCard![0]).toBe('host:party_1');
     expect((nextCard![2] as { word: string }).word).toBe('Word 2');
   });
 

@@ -46,6 +46,33 @@ export interface QueuedRoundSummary {
   gameSlug?: string | null;
 }
 
+export interface HostTurnStatus {
+  roundId: string;
+  teamId: string;
+  turnNumber: number;
+  total: number;
+  deadlineAt: string;
+}
+
+export type HostGamePrompt =
+  | {
+      kind: 'charades-phrase';
+      roundId: string;
+      promptId: string;
+      teamId: string;
+      phrase: string;
+      category?: string | null;
+    }
+  | {
+      kind: 'taboo-card';
+      roundId: string;
+      promptId: string;
+      teamId: string;
+      word: string;
+      forbidden: string[];
+      category?: string | null;
+    };
+
 export interface BonusAwardSummary {
   id: string;
   label: string;
