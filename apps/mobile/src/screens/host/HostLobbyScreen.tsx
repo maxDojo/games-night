@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Alert, Text, TextInput, View } from 'react-native';
-import { ClipboardList, Flag, Gift, Play, Plus, Sparkles } from 'lucide-react-native';
+import { Text, TextInput, View } from 'react-native';
+import { Plus, Sparkles } from 'lucide-react-native';
 
 import { HostBonusAwardsCard } from '../../components/host/HostBonusAwardsCard';
+import { HostNightActionsCard } from '../../components/host/HostNightActionsCard';
 import { Screen } from '../../components/layout/Screen';
 import { ScoreDeltaToast } from '../../components/motion';
 import { ActionButton } from '../../components/ui/ActionButton';
@@ -57,17 +58,6 @@ export function HostLobbyScreen() {
 
   const handleCreateParty = () => {
     void createHostParty(partyName, Number(maxTeams), Number(maxPerTeam));
-  };
-
-  const handleEndNight = () => {
-    Alert.alert(
-      'End night?',
-      'Scores will be revealed and this party will stop accepting joins, check-ins, and new rounds.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'End night', style: 'destructive', onPress: () => void endNight() },
-      ],
-    );
   };
 
   useEffect(() => {
@@ -166,14 +156,6 @@ export function HostLobbyScreen() {
         </View>
       </View>
       {hostParty && hostPartyError ? <Text style={styles.errorText}>{hostPartyError}</Text> : null}
-      {isNightFinished ? (
-        <InfoBanner
-          icon={Flag}
-          title="Night ended"
-          subtitle="Scores are revealed. Start Next Week stays separate for the persistent-teams slice."
-          color={theme.palette.success}
-        />
-      ) : null}
       <View style={styles.card}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
@@ -202,33 +184,16 @@ export function HostLobbyScreen() {
         delta={latestBonus?.points ?? 0}
         visible={Boolean(latestBonus)}
       />
-      <View style={styles.twoColumn}>
-        <ActionButton label="Start" icon={Play} onPress={() => undefined} disabled={isNightFinished} primary />
-        <ActionButton label="Score log" icon={ClipboardList} onPress={() => undefined} />
-      </View>
-      <View style={styles.twoColumn}>
-        <ActionButton
-          label={scoresRevealed ? 'Revealed' : 'Reveal'}
-          icon={Gift}
-          onPress={() => void revealScores()}
-          disabled={!hostParty || scoresRevealed || isRevealingScores}
-        />
-        <ActionButton
-          label={
-            isNightFinished
-              ? 'Night ended'
-              : hasActiveRound
-                ? 'End active first'
-                : isEndingNight
-                  ? 'Ending...'
-                  : 'End night'
-          }
-          icon={Flag}
-          onPress={handleEndNight}
-          disabled={!hostParty || isNightFinished || isEndingNight || hasActiveRound}
-          danger
-        />
-      </View>
+      <HostNightActionsCard
+        canEndNight={Boolean(hostParty)}
+        hasActiveRound={hasActiveRound}
+        isEndingNight={isEndingNight}
+        isNightFinished={isNightFinished}
+        isRevealingScores={isRevealingScores}
+        onEndNight={() => void endNight()}
+        onRevealScores={() => void revealScores()}
+        scoresRevealed={scoresRevealed}
+      />
     </Screen>
   );
 }
