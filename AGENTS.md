@@ -246,7 +246,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
   - Done: make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
   - Done: add host End Night confirmation flow after bonus targeting. End Night reveals scores, marks the current party finished, preserves score history, and blocks new joins/check-ins or round starts.
-  - Keep Start Next Week/New Night separate from End Night. It should create a new party under the future persistent period/season, reuse teams when enabled, and start fresh party scores without deleting prior history.
+  - Done: keep Start Next Week/New Night separate from End Night. The mobile host flow shows it as a disabled future action so End Night never resets or reuses party state implicitly.
   - Add host party management planning: hosts can create more than one party, switch between parties, and see which party is active/current.
   - Clarify join-code lifecycle: player join codes should work only for joinable active parties, such as `LOBBY` or `IN_PROGRESS`, and should reject finished/cancelled parties.
   - Add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
