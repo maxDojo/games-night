@@ -247,7 +247,11 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: make special bonuses explicitly target a selected team instead of relying on a generic/default award button.
   - Done: add host End Night confirmation flow after bonus targeting. End Night reveals scores, marks the current party finished, preserves score history, and blocks new joins/check-ins or round starts.
   - Done: keep Start Next Week/New Night separate from End Night. The mobile host flow shows it as a disabled future action so End Night never resets or reuses party state implicitly.
-  - Add host party management planning: hosts can create more than one party, switch between parties, and see which party is active/current.
+  - Done: add host party management planning. Future host flows should support multiple host-created parties, switching between parties, and a clear active/current party indicator.
+    - Planned API shape: add host-owned party listing with status filters, active/current marker, and safe summary fields for party name, join code, status, team/player counts, created/started/finished timestamps, and recurring eligibility.
+    - Planned mobile shape: add a party switcher/management surface before or near the host lobby so the host can create a new party, resume an existing one, or inspect finished parties without overwriting local session state.
+    - Active party rule: only one party should be treated as the current joinable party for a host/period unless the host explicitly switches context.
+    - Recurring-party note: `Next week` / `New night` should only appear when the host enables recurring parties for that specific party or future persistent period; one-off parties should not show the action.
   - Clarify join-code lifecycle: player join codes should work only for joinable active parties, such as `LOBBY` or `IN_PROGRESS`, and should reject finished/cancelled parties.
   - Add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
   - Add big-screen join-code display planning, likely as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
