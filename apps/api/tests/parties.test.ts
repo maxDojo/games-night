@@ -171,6 +171,156 @@ describe('parties routes', () => {
     });
   });
 
+  describe('PATCH /v1/parties/:joinCode/settings', () => {
+    const partySettingsFixture = (
+      overrides: Partial<{
+        hostId: string;
+        maxTeams: number;
+        maxPerTeam: number;
+        status: string;
+        teams: Array<{ _count: { players: number } }>;
+      }> = {},
+    ) => ({
+      id: 'party_123',
+      joinCode: 'ABC234',
+      name: 'Friday Night',
+      status: overrides.status ?? 'LOBBY',
+      hostId: overrides.hostId ?? 'host_1',
+      maxTeams: overrides.maxTeams ?? 8,
+      maxPerTeam: overrides.maxPerTeam ?? 10,
+      scoresRevealed: false,
+      settings: {},
+      createdAt: new Date(),
+      startedAt: null,
+      finishedAt: null,
+      teams: overrides.teams ?? [],
+    });
+
+    it('updates safe settings for the host', async () => {
+      mocks.party.findUnique.mockResolvedValue(
+        partySettingsFixture({ teams: [{ _count: { players: 3 } }, { _count: { players: 2 } }] }),
+      );
+      mocks.party.update.mockResolvedValue({
+        ...partySettingsFixture(),
+        name: 'Saturday Night',
+        maxTeams: 4,
+        maxPerTeam: 6,
+      });
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/v1/parties/ABC234/settings',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { name: 'Saturday Night', maxTeams: 4, maxPerTeam: 6 },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({ name: 'Saturday Night', maxTeams: 4, maxPerTeam: 6 });
+      expect(mocks.party.update).toHaveBeenCalledWith({
+        where: { id: 'party_123' },
+        data: { name: 'Saturday Night', maxTeams: 4, maxPerTeam: 6 },
+      });
+    });
+
+    it('allows renaming a party after it has started', async () => {
+      mocks.party.findUnique.mockResolvedValue(partySettingsFixture({ status: 'IN_PROGRESS' }));
+      mocks.party.update.mockResolvedValue({
+        ...partySettingsFixture({ status: 'IN_PROGRESS' }),
+        name: 'Renamed Night',
+      });
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/v1/parties/ABC234/settings',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { name: 'Renamed Night' },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(mocks.party.update).toHaveBeenCalledWith({
+        where: { id: 'party_123' },
+        data: { name: 'Renamed Night' },
+      });
+    });
+
+    it('rejects capacity changes after the party starts', async () => {
+      mocks.party.findUnique.mockResolvedValue(partySettingsFixture({ status: 'IN_PROGRESS' }));
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/v1/parties/ABC234/settings',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { maxTeams: 4 },
+      });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'Capacity settings can only be changed before the party starts' });
+      expect(mocks.party.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects reducing maxTeams below existing team count', async () => {
+      mocks.party.findUnique.mockResolvedValue(
+        partySettingsFixture({
+          teams: [{ _count: { players: 0 } }, { _count: { players: 0 } }, { _count: { players: 0 } }],
+        }),
+      );
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/v1/parties/ABC234/settings',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { maxTeams: 2 },
+      });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'Party already has 3 teams' });
+      expect(mocks.party.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects reducing maxPerTeam below existing check-ins', async () => {
+      mocks.party.findUnique.mockResolvedValue(
+        partySettingsFixture({ teams: [{ _count: { players: 4 } }, { _count: { players: 2 } }] }),
+      );
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/v1/parties/ABC234/settings',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { maxPerTeam: 3 },
+      });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'A team already has 4 players' });
+      expect(mocks.party.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects non-host users', async () => {
+      mocks.party.findUnique.mockResolvedValue(partySettingsFixture({ hostId: 'someone_else' }));
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/v1/parties/ABC234/settings',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { name: 'Hijacked' },
+      });
+
+      expect(res.statusCode).toBe(403);
+      expect(mocks.party.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects empty settings updates', async () => {
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/v1/parties/ABC234/settings',
+        headers: { authorization: `Bearer ${token}` },
+        payload: {},
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(mocks.party.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
   describe('POST /v1/parties/:joinCode/end', () => {
     it('finishes a party and reveals scores for the host', async () => {
       mocks.party.findUnique.mockResolvedValue({

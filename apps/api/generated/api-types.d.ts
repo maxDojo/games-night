@@ -374,6 +374,113 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/parties/{joinCode}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update party settings
+         * @description Host-only. Updates safe party settings. Capacity changes are allowed only while the party is in LOBBY and cannot invalidate existing teams or check-ins.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    joinCode: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        maxTeams?: number;
+                        maxPerTeam?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            joinCode: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                            hostId: string;
+                            maxTeams: number;
+                            maxPerTeam: number;
+                            scoresRevealed: boolean;
+                            settings?: unknown;
+                            createdAt: string;
+                            startedAt: (string) | null;
+                            finishedAt: (string) | null;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/v1/parties/{joinCode}/end": {
         parameters: {
             query?: never;

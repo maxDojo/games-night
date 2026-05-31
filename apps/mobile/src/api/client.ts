@@ -38,6 +38,8 @@ export type RevealScoresResponse =
   paths['/v1/parties/{joinCode}/reveal']['post']['responses'][200]['content']['application/json'];
 export type EndPartyResponse =
   paths['/v1/parties/{joinCode}/end']['post']['responses'][200]['content']['application/json'];
+export type UpdatePartySettingsResponse =
+  paths['/v1/parties/{joinCode}/settings']['patch']['responses'][200]['content']['application/json'];
 type JoinPlayerRequest =
   paths['/v1/teams/{teamId}/players']['post']['requestBody']['content']['application/json'];
 export type QueueRoundRequest =
@@ -52,6 +54,8 @@ type HostRegisterRequest =
   paths['/v1/auth/register']['post']['requestBody']['content']['application/json'];
 type CreatePartyRequest =
   paths['/v1/parties']['post']['requestBody']['content']['application/json'];
+export type UpdatePartySettingsRequest =
+  NonNullable<paths['/v1/parties/{joinCode}/settings']['patch']['requestBody']>['content']['application/json'];
 type CreateTeamRequest =
   paths['/v1/parties/{joinCode}/teams']['post']['requestBody']['content']['application/json'];
 
@@ -334,6 +338,21 @@ export async function endParty(joinCode: string, token: string): Promise<EndPart
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export async function updatePartySettings(
+  joinCode: string,
+  body: UpdatePartySettingsRequest,
+  token: string,
+): Promise<UpdatePartySettingsResponse> {
+  return requestJson<UpdatePartySettingsResponse>(
+    `/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/settings`,
+    {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    },
+  );
 }
 
 export async function queueRound(

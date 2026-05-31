@@ -15,6 +15,14 @@ const CreatePartyBody = z.object({
   maxPerTeam: z.number().int().min(1).max(10).default(10),
 });
 
+const UpdatePartySettingsBody = z
+  .object({
+    name: z.string().min(1).max(80).optional(),
+    maxTeams: z.number().int().min(2).max(8).optional(),
+    maxPerTeam: z.number().int().min(1).max(10).optional(),
+  })
+  .refine((body) => Object.keys(body).length > 0, { message: 'At least one field is required' });
+
 const PartySchema = z.object({
   id: z.string(),
   joinCode: z.string(),
@@ -109,6 +117,72 @@ const partiesRoutes: FastifyPluginAsyncZod = async (app) => {
       });
       if (!party) return reply.code(404).send({ error: 'Party not found' });
       return party;
+    },
+  );
+
+  app.patch(
+    '/parties/:joinCode/settings',
+    {
+      preHandler: [app.authenticate],
+      schema: {
+        tags: ['parties'],
+        summary: 'Update party settings',
+        description:
+          'Host-only. Updates safe party settings. Capacity changes are allowed only while the party is in LOBBY and cannot invalidate existing teams or check-ins.',
+        security: [{ bearerAuth: [] }],
+        params: JoinCodeParam,
+        body: UpdatePartySettingsBody,
+        response: {
+          200: PartySchema,
+          401: NotFoundSchema,
+          403: NotFoundSchema,
+          404: NotFoundSchema,
+          409: NotFoundSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const party = await app.prisma.party.findUnique({
+        where: { joinCode: req.params.joinCode },
+        include: { teams: { include: { _count: { select: { players: true } } } } },
+      });
+      if (!party) return reply.code(404).send({ error: 'Party not found' });
+      if (party.hostId !== req.user.sub)
+        return reply.code(403).send({ error: 'Only the host can update party settings' });
+      if (party.status === 'FINISHED') return reply.code(409).send({ error: 'Party is finished' });
+      if (party.status === 'CANCELLED') return reply.code(409).send({ error: 'Party is cancelled' });
+
+      const capacityChanging =
+        req.body.maxTeams !== undefined || req.body.maxPerTeam !== undefined;
+
+      if (capacityChanging && party.status !== 'LOBBY') {
+        return reply
+          .code(409)
+          .send({ error: 'Capacity settings can only be changed before the party starts' });
+      }
+
+      if (req.body.maxTeams !== undefined && req.body.maxTeams < party.teams.length) {
+        return reply
+          .code(409)
+          .send({ error: `Party already has ${party.teams.length} teams` });
+      }
+
+      if (req.body.maxPerTeam !== undefined) {
+        const fullestTeam = party.teams.reduce(
+          (max, team) => Math.max(max, team._count.players),
+          0,
+        );
+        if (req.body.maxPerTeam < fullestTeam) {
+          return reply.code(409).send({ error: `A team already has ${fullestTeam} players` });
+        }
+      }
+
+      const updated = await app.prisma.party.update({
+        where: { id: party.id },
+        data: req.body,
+      });
+      app.broadcastPartyState(updated.id).catch(() => undefined);
+      return updated;
     },
   );
 
