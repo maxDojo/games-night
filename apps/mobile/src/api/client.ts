@@ -87,12 +87,77 @@ export interface TriviaRevealPayload {
   perTeam: Record<string, { correct: boolean; choice: string | null; points: number }>;
 }
 
+export interface CharadesPromptPayload {
+  kind: 'charades-phrase';
+  roundId: string;
+  promptId: string;
+  teamId: string;
+  phrase: string;
+  category: string | null;
+}
+
+export interface TabooPromptPayload {
+  kind: 'taboo-card';
+  roundId: string;
+  promptId: string;
+  teamId: string;
+  word: string;
+  forbidden: string[];
+  category: string | null;
+}
+
+export interface TurnStartedPayload {
+  roundId: string;
+  teamId: string;
+  turnNumber: number;
+  total: number;
+  deadlineAt: string;
+}
+
+export interface TurnEndedPayload {
+  roundId: string;
+  teamId: string;
+  correct: number;
+  skips: number;
+  taboos?: number;
+  turnPoints: number;
+  totalPoints: number;
+}
+
+export interface ScoreUpdatedPayload {
+  roundId?: string;
+  teamId: string;
+  points?: number;
+  delta?: number;
+  reason?: 'correct' | 'skip' | 'taboo';
+  promptId?: string;
+  forbiddenWord?: string;
+}
+
 export function isTriviaQuestionPayload(payload: unknown): payload is TriviaQuestionPayload {
   return Boolean(
     payload &&
       typeof payload === 'object' &&
       'kind' in payload &&
       (payload as { kind?: unknown }).kind === 'trivia-question',
+  );
+}
+
+export function isCharadesPromptPayload(payload: unknown): payload is CharadesPromptPayload {
+  return Boolean(
+    payload &&
+      typeof payload === 'object' &&
+      'kind' in payload &&
+      (payload as { kind?: unknown }).kind === 'charades-phrase',
+  );
+}
+
+export function isTabooPromptPayload(payload: unknown): payload is TabooPromptPayload {
+  return Boolean(
+    payload &&
+      typeof payload === 'object' &&
+      'kind' in payload &&
+      (payload as { kind?: unknown }).kind === 'taboo-card',
   );
 }
 
@@ -326,6 +391,16 @@ export function joinPartyRoom(socket: Socket, joinCode: string, playerId: string
   socket.emit('party:join', { joinCode: normalizeJoinCode(joinCode), playerId });
 }
 
-export function submitRoundEvent(socket: Socket, roundId: string, type: string, payload?: unknown) {
-  socket.emit('round:event', { roundId, type, payload });
+export function joinHostControls(socket: Socket, joinCode: string, token: string) {
+  socket.emit('host:join', { joinCode: normalizeJoinCode(joinCode), token });
+}
+
+export function submitRoundEvent(
+  socket: Socket,
+  roundId: string,
+  type: string,
+  payload?: unknown,
+  teamId?: string,
+) {
+  socket.emit('round:event', { roundId, teamId, type, payload });
 }

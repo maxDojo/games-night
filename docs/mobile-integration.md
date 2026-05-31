@@ -372,14 +372,17 @@ Mobile guidance:
 
 ## Socket Lifecycle
 
-- Connect once the app has a `joinCode` and `playerId`.
-- Immediately emit:
+- Player socket: connect once the app has a `joinCode` and `playerId`.
+- Player socket immediately emits:
   - `party:join` `{ joinCode, playerId }`
+- Host-control socket: connect once the app has a host token and active host party.
+- Host-control socket immediately emits:
+  - `host:join` `{ joinCode, token }`
 - Handle server events:
   - `party:state` - lobby snapshot with teams and players
   - `round:started` - active round metadata, including `gameSlug`
-  - `prompt:next` - discriminated gameplay prompt
-  - `prompt:challenge` - private Taboo challenger card
+  - `prompt:next` - Trivia player prompt; host sockets also receive host-only Charades/Taboo prompts
+  - `prompt:challenge` - reserved for Taboo challenger cards, not currently used by the mobile player flow
   - `prompt:reveal` - Trivia answer reveal
   - `turn:started` - Charades/Taboo turn start
   - `turn:ended` - Charades/Taboo turn summary
@@ -399,28 +402,25 @@ Mobile guidance:
   - `{ roundId, type: "answer", payload: { choice } }`
   - Only the first answer per team counts.
 - Charades:
-  - `{ roundId, type: "correct" }`
-  - `{ roundId, type: "skip" }`
-  - Only the acting team's players are honored.
+  - Host socket emits `{ roundId, teamId: actingTeamId, type: "correct" }`
+  - Host socket emits `{ roundId, teamId: actingTeamId, type: "skip" }`
+  - Only the acting team context is honored.
 - Taboo:
-  - `{ roundId, type: "correct" }`
-  - `{ roundId, type: "skip" }`
-  - `{ roundId, type: "taboo" }`
-  - `{ roundId, type: "challenge", payload: { forbiddenWord } }`
+  - Host socket emits `{ roundId, teamId: actingTeamId, type: "correct" }`
+  - Host socket emits `{ roundId, teamId: actingTeamId, type: "skip" }`
+  - Host socket emits `{ roundId, teamId: challengerTeamId, type: "taboo", payload: { forbiddenWord } }`
+  - `{ roundId, teamId: challengerTeamId, type: "challenge", payload: { forbiddenWord } }` remains a backend alias.
 - `round:answer` exists only as a back-compat alias for Trivia. New mobile code should use `round:event`.
 
 ## Prompt Privacy
 
 - Current behavior:
   - Trivia prompts are emitted to the full party room.
-  - Charades phrases are emitted only to the acting team room.
-  - Taboo cards are emitted only to the acting team room.
-  - Taboo challenge cards are emitted through `prompt:challenge` for opposing-team challenge UI.
-- Target behavior:
-  - Trivia prompts follow the configured display mode.
-  - Charades phrases are host-control-device only.
-  - Taboo cards and forbidden words are host-control-device only.
+  - Authenticated host sockets emit `host:join` with `{ joinCode, token }` and join `host:<partyId>`.
+  - Charades phrases are emitted only to the host room.
+  - Taboo cards and forbidden words are emitted only to the host room.
   - Player/team devices should see only timer, acting team, score state, and non-secret round status for Charades/Taboo.
+  - Future Trivia prompts should follow the configured display mode.
 - Do not rely on client-side filtering for private prompts; the server is responsible for room scoping.
 
 ## Game Config Guidance
@@ -469,7 +469,6 @@ Mobile guidance:
 - No team capacity enforcement yet.
 - Mobile has a placeholder optional location verification path; real device location capture, backend enforcement, and persistent host override are not implemented yet.
 - No custom-game template API yet.
-- No score event/correction audit log yet.
-- No host-only Charades/Taboo prompt delivery yet.
+- Score events exist for bonuses/reveal, but full correction/dispute audit workflows are still planned.
 - No Trivia player-phone display mode yet.
 - No host/period/party theming or cover image storage flow yet.

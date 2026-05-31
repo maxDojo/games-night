@@ -98,8 +98,8 @@ describe('CharadesRoundRunner', () => {
 
     const promptNext = emit.mock.calls.find((c) => c[1] === 'prompt:next');
     expect(promptNext).toBeTruthy();
-    // Phrase goes to the team room (privacy), not the party room.
-    expect(promptNext![0]).toBe('team:t1');
+    // Phrase goes to the host room so player devices do not receive it.
+    expect(promptNext![0]).toBe('host:party_1');
     expect((promptNext![2] as { kind: string; phrase: string }).kind).toBe('charades-phrase');
     expect((promptNext![2] as { phrase: string }).phrase).toBe('Phrase 1');
   });
@@ -136,9 +136,10 @@ describe('CharadesRoundRunner', () => {
     expect((score![2] as { delta: number; reason: string }).delta).toBe(100);
     expect((score![2] as { reason: string }).reason).toBe('correct');
 
-    // Next phrase should have been served to the team room.
+    // Next phrase should have been served to the host room.
     const nextPhrase = emit.mock.calls.find((c) => c[1] === 'prompt:next');
     expect(nextPhrase).toBeTruthy();
+    expect(nextPhrase![0]).toBe('host:party_1');
     expect((nextPhrase![2] as { phrase: string }).phrase).toBe('Phrase 2');
   });
 

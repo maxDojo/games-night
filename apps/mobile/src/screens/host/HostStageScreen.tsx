@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
-import { Ban, Check, Flag, Play, RefreshCw, Save } from 'lucide-react-native';
+import { Text, View } from 'react-native';
+import { Flag, Play } from 'lucide-react-native';
 
 import { QueuedRoundCard } from '../../components/game/QueuedRoundCard';
-import { TeamCard } from '../../components/game/TeamCard';
+import { HostGameControls } from '../../components/host/stage/HostGameControls';
+import { HostManualScoreCard } from '../../components/host/stage/HostManualScoreCard';
+import { HostRoundLifecycleControls } from '../../components/host/stage/HostRoundLifecycleControls';
 import { Screen } from '../../components/layout/Screen';
-import { ActionButton } from '../../components/ui/ActionButton';
 import { InfoBanner } from '../../components/ui/InfoBanner';
 import { Stat } from '../../components/ui/Stat';
 import { usePartyState } from '../../state/PartyState';
@@ -16,17 +17,22 @@ export function HostStageScreen() {
   const {
     endHostRound,
     hostParty,
+    hostGamePrompt,
     hostStageError,
     hostStageMessage,
     hostTeams,
+    hostTurn,
     isControllingHostRound,
+    isHostSocketConnected,
     isLoadingHostRounds,
+    isSendingHostRoundEvent,
     isWritingHostScore,
     queuedRounds,
     refreshHostRoundSetup,
     refreshHostTeams,
     selectedHostTeamId,
     selectHostTeam,
+    sendHostRoundEvent,
     skipHostRound,
     startHostRound,
     writeHostScore,
@@ -46,16 +52,10 @@ export function HostStageScreen() {
     void refreshHostTeams();
   }, [refreshHostRoundSetup, refreshHostTeams]);
 
-  const handleWriteScore = async () => {
-    if (!activeRound || !selectedTeam) {
-      return;
-    }
-
-    await writeHostScore(activeRound.id, selectedTeam.id, Number(points));
-  };
-
   const controlsDisabled = !hostParty || isControllingHostRound || isLoadingHostRounds;
-  const scoreDisabled = !activeRound || !selectedTeam || isWritingHostScore || Number(points) < 0;
+  const gameControlsDisabled = !activeRound || !isHostSocketConnected || isSendingHostRoundEvent;
+  const promptRoundNeedsHostSocket = nextRound?.kind === 'charades' || nextRound?.kind === 'taboo';
+  const waitingForHostSocket = promptRoundNeedsHostSocket && !isHostSocketConnected;
 
   return (
     <Screen eyebrow="ROUND CONTROL / HOST ONLY" title={activeRound?.label ?? nextRound?.label ?? 'Stage control'}>
@@ -65,11 +65,14 @@ export function HostStageScreen() {
         subtitle={
           activeRound
             ? 'End the active round or save manual scores while it is live.'
+            : waitingForHostSocket
+              ? 'Host-only prompts need the host socket before this round can start.'
             : nextRound
               ? 'Start or skip the next queued round from this phone.'
               : 'Queue rounds before using stage controls.'
         }
         color={activeRound ? theme.palette.success : theme.palette.info}
+        live={Boolean(activeRound)}
       />
 
       <View style={styles.statRow}>
@@ -81,90 +84,47 @@ export function HostStageScreen() {
       {activeRound ? <QueuedRoundCard round={activeRound} /> : null}
       {!activeRound && nextRound ? <QueuedRoundCard round={nextRound} /> : null}
 
-      <View style={styles.twoColumn}>
-        <ActionButton
-          label={activeRound ? 'Already live' : isControllingHostRound ? 'Starting...' : 'Start'}
-          icon={Play}
-          onPress={() => nextRound && void startHostRound(nextRound.id)}
-          disabled={controlsDisabled || Boolean(activeRound) || !nextRound}
-          primary
-        />
-        <ActionButton
-          label={isControllingHostRound ? 'Ending...' : 'End'}
-          icon={Check}
-          onPress={() => activeRound && void endHostRound(activeRound.id)}
-          disabled={controlsDisabled || !activeRound}
-          success
-        />
-      </View>
-
-      <View style={styles.twoColumn}>
-        <ActionButton
-          label={isControllingHostRound ? 'Skipping...' : 'Skip next'}
-          icon={Ban}
-          onPress={() => nextRound && void skipHostRound(nextRound.id)}
-          disabled={controlsDisabled || Boolean(activeRound) || !nextRound}
-          danger
-        />
-        <ActionButton
-          label={isLoadingHostRounds ? 'Refreshing...' : 'Refresh'}
-          icon={RefreshCw}
-          onPress={() => {
+      <HostRoundLifecycleControls
+        activeRound={activeRound}
+        controlsDisabled={controlsDisabled}
+        isControlling={isControllingHostRound}
+        isRefreshing={isLoadingHostRounds}
+        nextRound={nextRound}
+        onEnd={(roundId) => void endHostRound(roundId)}
+        onRefresh={() => {
             void refreshHostRoundSetup();
             void refreshHostTeams();
-          }}
-          disabled={!hostParty || isLoadingHostRounds}
-        />
-      </View>
+        }}
+        onSkip={(roundId) => void skipHostRound(roundId)}
+        onStart={(roundId) => void startHostRound(roundId)}
+        startDisabled={waitingForHostSocket}
+      />
 
-      <View style={styles.card}>
-        <View style={styles.rowBetween}>
-          <Text style={styles.metaLabelAccent}>MANUAL SCORE</Text>
-          <Save color={theme.palette.info} size={18} />
-        </View>
-        <Text style={styles.bodyText}>
-          Saves a team score for the active round. Detailed correction history stays for the score audit API slice.
-        </Text>
-        <View style={styles.inputGroup}>
-          <Text style={styles.metaLabelAccent}>POINTS</Text>
-          <TextInput
-            editable={Boolean(activeRound) && !isWritingHostScore}
-            keyboardType="number-pad"
-            maxLength={5}
-            onChangeText={(value) => setPoints(value.replace(/\D/gu, '').slice(0, 5))}
-            placeholder="100"
-            placeholderTextColor={theme.palette.muted}
-            style={styles.textInput}
-            value={points}
-          />
-        </View>
-        <View style={styles.stack}>
-          {hostTeams.length > 0 ? (
-            hostTeams.map((team) => (
-              <TeamCard
-                key={team.id}
-                team={team}
-                selected={team.id === selectedTeam?.id}
-                showPoints={false}
-                onPress={() => selectHostTeam(team.id)}
-              />
-            ))
-          ) : (
-            <Text style={styles.bodyText}>Create teams before writing manual scores.</Text>
-          )}
-        </View>
-      </View>
+      <HostGameControls
+        connected={isHostSocketConnected}
+        disabled={gameControlsDisabled}
+        onEvent={(type, teamId, payload) => activeRound && void sendHostRoundEvent(activeRound.id, type, teamId, payload)}
+        prompt={hostGamePrompt}
+        round={activeRound}
+        selectedTeam={selectedTeam}
+        teams={hostTeams}
+        turn={hostTurn}
+      />
+
+      <HostManualScoreCard
+        activeRoundId={activeRound?.id}
+        disabled={!hostParty}
+        isWriting={isWritingHostScore}
+        onSelectTeam={selectHostTeam}
+        onSubmit={(roundId, teamId, nextPoints) => void writeHostScore(roundId, teamId, nextPoints)}
+        points={points}
+        selectedTeam={selectedTeam}
+        setPoints={setPoints}
+        teams={hostTeams}
+      />
 
       {hostStageError ? <Text style={styles.errorText}>{hostStageError}</Text> : null}
       {hostStageMessage ? <Text style={styles.positiveText}>{hostStageMessage}</Text> : null}
-
-      <ActionButton
-        label={isWritingHostScore ? 'Saving...' : 'Save score'}
-        icon={Save}
-        onPress={handleWriteScore}
-        disabled={scoreDisabled}
-        primary
-      />
     </Screen>
   );
 }

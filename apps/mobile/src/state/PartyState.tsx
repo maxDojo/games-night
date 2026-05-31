@@ -34,8 +34,12 @@ import {
   type QueueRoundRequest,
   type RoundEndedPayload,
   type RoundStartedPayload,
+  type ScoreUpdatedPayload,
+  type TurnEndedPayload,
+  type TurnStartedPayload,
 } from '../api/client';
 import { bonusAwards, joinCode, period, queuedRounds, scoreEvents, teams } from '../data/mockState';
+import { connectHostControlSocket } from './hostSocket';
 import {
   applyLeaderboardToTeams,
   getFirstAvailableTeamId,
@@ -52,6 +56,8 @@ import {
 import { loadSession, saveSession, type MobileSession } from '../storage/sessionStore';
 import type {
   BonusAwardSummary,
+  HostGamePrompt,
+  HostTurnStatus,
   LocationVerificationStatus,
   PlayerRoundStatus,
   PlayerTriviaQuestion,
@@ -79,6 +85,8 @@ interface PartyState {
   isAwardingBonus: boolean;
   isRevealingScores: boolean;
   isLoadingScoreReport: boolean;
+  isHostSocketConnected: boolean;
+  isSendingHostRoundEvent: boolean;
   hostAuthError?: string;
   hostPartyError?: string;
   hostTeamError?: string;
@@ -86,6 +94,8 @@ interface PartyState {
   hostStageError?: string;
   hostStageMessage?: string;
   hostBonusError?: string;
+  hostTurn?: HostTurnStatus;
+  hostGamePrompt?: HostGamePrompt;
   hostGames: GameDefinitionResponse[];
   selectedHostTeamId?: string;
   joinCode: string;
@@ -138,6 +148,7 @@ interface PartyStateContextValue extends PartyState {
   endHostRound: (roundId: string) => Promise<boolean>;
   skipHostRound: (roundId: string) => Promise<boolean>;
   writeHostScore: (roundId: string, teamId: string, points: number) => Promise<boolean>;
+  sendHostRoundEvent: (roundId: string, type: string, teamId: string, payload?: unknown) => Promise<boolean>;
   selectTeam: (teamId: string) => void;
   loadPlayerParty: (joinCode: string) => Promise<void>;
   checkInSelectedTeam: (nickname: string) => Promise<TeamSummary | undefined>;
@@ -179,6 +190,15 @@ type PartyAction =
   | { type: 'hostScoreWriteStart' }
   | { type: 'hostScoreWriteSuccess'; message: string }
   | { type: 'hostScoreWriteFailure'; error: string }
+  | { type: 'hostSocketConnected' }
+  | { type: 'hostSocketDisconnected' }
+  | { type: 'hostTurnStarted'; turn: HostTurnStatus }
+  | { type: 'hostTurnEnded'; turn: TurnEndedPayload }
+  | { type: 'hostPromptNext'; prompt: HostGamePrompt }
+  | { type: 'hostScoreUpdated'; score: ScoreUpdatedPayload }
+  | { type: 'hostRoundEventStart' }
+  | { type: 'hostRoundEventSuccess'; message: string }
+  | { type: 'hostRoundEventFailure'; error: string }
   | { type: 'scoreReportStart' }
   | { type: 'scoreReportSuccess'; scoresRevealed: boolean; leaderboard: LeaderboardResponse; events: ScoreEventSummary[] }
   | { type: 'scoreReportFailure' }
@@ -224,6 +244,8 @@ const initialState: PartyState = {
   isAwardingBonus: false,
   isRevealingScores: false,
   isLoadingScoreReport: false,
+  isHostSocketConnected: false,
+  isSendingHostRoundEvent: false,
   hostGames: [],
   hostTeams: [],
   joinCode,
@@ -361,6 +383,8 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         ...state,
         queuedRounds: action.rounds,
         isControllingHostRound: false,
+        hostGamePrompt: action.rounds.some((round) => round.status === 'ACTIVE') ? state.hostGamePrompt : undefined,
+        hostTurn: action.rounds.some((round) => round.status === 'ACTIVE') ? state.hostTurn : undefined,
         hostStageError: undefined,
         hostStageMessage: action.message,
       };
@@ -392,6 +416,39 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         hostStageError: action.error,
         hostStageMessage: undefined,
       };
+    case 'hostSocketConnected':
+      return { ...state, isHostSocketConnected: true };
+    case 'hostSocketDisconnected':
+      return { ...state, isHostSocketConnected: false };
+    case 'hostTurnStarted':
+      return {
+        ...state,
+        hostTurn: action.turn,
+        hostGamePrompt: state.hostGamePrompt?.roundId === action.turn.roundId ? state.hostGamePrompt : undefined,
+        hostStageMessage: `Turn ${action.turn.turnNumber} of ${action.turn.total} started.`,
+      };
+    case 'hostTurnEnded':
+      return {
+        ...state,
+        hostTurn: state.hostTurn?.roundId === action.turn.roundId ? undefined : state.hostTurn,
+        hostGamePrompt: state.hostGamePrompt?.roundId === action.turn.roundId ? undefined : state.hostGamePrompt,
+        hostStageMessage: `Turn ended with ${action.turn.turnPoints} pts.`,
+      };
+    case 'hostPromptNext':
+      return { ...state, hostGamePrompt: action.prompt, hostStageError: undefined };
+    case 'hostScoreUpdated':
+      return {
+        ...state,
+        hostStageMessage: action.score.delta
+          ? `${action.score.delta > 0 ? '+' : ''}${action.score.delta} ${action.score.reason ?? 'points'}`
+          : state.hostStageMessage,
+      };
+    case 'hostRoundEventStart':
+      return { ...state, isSendingHostRoundEvent: true, hostStageError: undefined };
+    case 'hostRoundEventSuccess':
+      return { ...state, isSendingHostRoundEvent: false, hostStageMessage: action.message };
+    case 'hostRoundEventFailure':
+      return { ...state, isSendingHostRoundEvent: false, hostStageError: action.error };
     case 'scoreReportStart':
       return { ...state, isLoadingScoreReport: true };
     case 'scoreReportSuccess': {
@@ -555,6 +612,8 @@ function partyReducer(state: PartyState, action: PartyAction): PartyState {
         triviaSelectedChoice: state.triviaQuestion?.roundId === action.roundId ? undefined : state.triviaSelectedChoice,
         triviaSubmittedChoice: state.triviaQuestion?.roundId === action.roundId ? undefined : state.triviaSubmittedChoice,
         triviaError: undefined,
+        hostTurn: state.hostTurn?.roundId === action.roundId ? undefined : state.hostTurn,
+        hostGamePrompt: state.hostGamePrompt?.roundId === action.roundId ? undefined : state.hostGamePrompt,
       };
     case 'triviaQuestion':
       return {
@@ -593,6 +652,7 @@ interface PartyStateProviderProps {
 export function PartyStateProvider({ children }: PartyStateProviderProps) {
   const [state, dispatch] = useReducer(partyReducer, initialState);
   const playerSocketRef = useRef<Socket | undefined>(undefined);
+  const hostSocketRef = useRef<Socket | undefined>(undefined);
 
   const refreshPlayerRounds = useCallback(async (nextJoinCode: string) => {
     dispatch({ type: 'loadRoundsStart' });
@@ -786,6 +846,30 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     }
   }, [state.hostParty]);
 
+  const connectHostSocket = useCallback(
+    (nextJoinCode: string, token: string) => {
+      hostSocketRef.current?.disconnect();
+
+      const socket = connectHostControlSocket({
+        joinCode: nextJoinCode,
+        token,
+        onConnected: () => dispatch({ type: 'hostSocketConnected' }),
+        onDisconnected: () => dispatch({ type: 'hostSocketDisconnected' }),
+        onTurnStarted: (payload) => dispatch({ type: 'hostTurnStarted', turn: payload }),
+        onTurnEnded: (payload) => dispatch({ type: 'hostTurnEnded', turn: payload }),
+        onPrompt: (payload) => dispatch({ type: 'hostPromptNext', prompt: payload }),
+        onScoreUpdated: (payload) => dispatch({ type: 'hostScoreUpdated', score: payload }),
+        onRoundEnded: (payload) => {
+          dispatch({ type: 'roundEnded', roundId: payload.roundId });
+          void refreshHostRoundSetup();
+        },
+        onError: (message) => dispatch({ type: 'hostRoundEventFailure', error: message }),
+      });
+      hostSocketRef.current = socket;
+    },
+    [refreshHostRoundSetup],
+  );
+
   const queueHostRound = useCallback(
     async (request: QueueRoundRequest) => {
       if (!state.hostParty || !state.hostToken) {
@@ -912,6 +996,22 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       }
     },
     [state.hostToken],
+  );
+
+  const sendHostRoundEvent = useCallback(
+    async (roundId: string, type: string, teamId: string, payload?: unknown) => {
+      const socket = hostSocketRef.current;
+      if (!socket?.connected) {
+        dispatch({ type: 'hostRoundEventFailure', error: 'Host controls are reconnecting. Try again in a moment.' });
+        return false;
+      }
+
+      dispatch({ type: 'hostRoundEventStart' });
+      submitRoundEvent(socket, roundId, type, payload, teamId);
+      dispatch({ type: 'hostRoundEventSuccess', message: `${type} sent.` });
+      return true;
+    },
+    [],
   );
 
   const refreshScoreReport = useCallback(async () => {
@@ -1118,6 +1218,21 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
   );
 
   useEffect(() => {
+    if (!state.hostParty || !state.hostToken) {
+      hostSocketRef.current?.disconnect();
+      hostSocketRef.current = undefined;
+      return undefined;
+    }
+
+    connectHostSocket(state.hostParty.joinCode, state.hostToken);
+
+    return () => {
+      hostSocketRef.current?.disconnect();
+      hostSocketRef.current = undefined;
+    };
+  }, [connectHostSocket, state.hostParty, state.hostTeams.length, state.hostToken]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function restoreSession() {
@@ -1152,6 +1267,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     return () => {
       cancelled = true;
       playerSocketRef.current?.disconnect();
+      hostSocketRef.current?.disconnect();
     };
   }, [connectPlayerSocket, refreshPlayerRounds]);
 
@@ -1182,6 +1298,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
       endHostRound,
       skipHostRound,
       writeHostScore,
+      sendHostRoundEvent,
       selectTeam: (teamId) => dispatch({ type: 'selectTeam', teamId }),
       loadPlayerParty,
       checkInSelectedTeam,
@@ -1220,6 +1337,7 @@ export function PartyStateProvider({ children }: PartyStateProviderProps) {
     refreshHostTeams,
     registerHostAccount,
     revealScores,
+    sendHostRoundEvent,
     skipHostRound,
     startHostRound,
     state,

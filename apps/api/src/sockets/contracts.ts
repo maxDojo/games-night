@@ -5,13 +5,20 @@ export const PartyJoinPayloadSchema = z.object({
   playerId: z.string().min(1),
 });
 
+export const HostJoinPayloadSchema = z.object({
+  joinCode: z.string().length(6).regex(/^[A-Z2-9]{6}$/),
+  token: z.string().min(1),
+});
+
 export const RoundEventPayloadSchema = z.object({
   roundId: z.string().min(1),
+  teamId: z.string().min(1).optional(),
   type: z.string().min(1).optional(),
   payload: z.unknown().optional(),
 });
 
 export type PartyJoinPayload = z.infer<typeof PartyJoinPayloadSchema>;
+export type HostJoinPayload = z.infer<typeof HostJoinPayloadSchema>;
 export type RoundEventPayload = z.infer<typeof RoundEventPayloadSchema>;
 
 export interface SocketErrorPayload {
@@ -149,6 +156,7 @@ export interface TurnEndedPayload {
 
 export interface ClientToServerEvents {
   'party:join': (payload: PartyJoinPayload) => void;
+  'host:join': (payload: HostJoinPayload) => void;
   'round:event': (payload: RoundEventPayload) => void;
   'round:answer': (payload: Omit<RoundEventPayload, 'type'>) => void;
 }
@@ -173,4 +181,7 @@ export type ServerToClientPayload<E extends ServerToClientEventName> = Parameter
 
 export interface InterServerEvents {}
 
-export interface SocketData {}
+export interface SocketData {
+  hostId?: string;
+  hostPartyId?: string;
+}

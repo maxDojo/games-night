@@ -17,14 +17,15 @@ import { CharadesConfigSchema } from './config.js';
 //   round:event { type: 'correct' }   → +basePointsPerCorrect, next phrase
 //   round:event { type: 'skip' }      → -skipPenalty (up to maxSkipsPerTurn), next phrase
 //
-// Privacy: the phrase is emitted ONLY to the acting team's room (`team:<id>`)
-// via the team-scoped socket subscription set up in party:join. The party-wide
+// Privacy: the phrase is emitted ONLY to the host room (`host:<partyId>`).
+// The host can hand their phone to the acting player; player devices never
+// receive the phrase. The party-wide
 // `turn:started` event tells everyone *which* team is acting + when the timer
 // ends, but not the phrase itself.
 //
 // Lifecycle:
 //   start() → first turn
-//     emit turn:started (party room) + prompt:next (team room)
+//     emit turn:started (party room) + prompt:next (host room)
 //     accept correct/skip events from the acting team
 //     timer fires (secondsPerTurn) OR phrases exhausted → turn:ended
 //     wait secondsBetweenTurns
@@ -182,7 +183,7 @@ export class CharadesRoundRunner implements RoundRunner {
     }
     this.turn.currentPrompt = phrase;
 
-    this.deps.emit(`team:${this.turn.team.id}`, 'prompt:next', {
+    this.deps.emit(`host:${this.partyId}`, 'prompt:next', {
       kind: 'charades-phrase',
       roundId: this.roundId,
       promptId: phrase.id,
