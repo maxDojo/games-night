@@ -259,6 +259,7 @@ Keep milestones and task lists separated by project. The current shipped work is
     - Lifecycle rules: settings that affect joining/check-in should be editable only before or during `LOBBY` unless a future host override flow explicitly supports mid-night changes.
     - Done: add a host settings screen shell reachable from the host lobby with grouped sections, clear disabled states, and no hidden destructive changes.
     - Done: add the first host-only party settings update endpoint with server-side validation for party name and capacity; recurring, location, display, and theme settings remain future slices.
+    - Done: wire the mobile host settings screen to edit party name, max teams, and max players per team through the settings endpoint.
   - Done: add big-screen join-code display planning as a future display/cast/web surface with large code, QR code later, room identity, current status, and no secret prompts.
     - Product shape: host can open a display-safe view for TVs/projectors showing the active party name/theme, join code, join status, team names/colors, and current public round/status.
     - Privacy rule: display mode must never show host-only Charades/Taboo prompts, forbidden words, hidden score totals before reveal, private player data, auth controls, or moderation controls.
