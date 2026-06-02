@@ -5,7 +5,6 @@ import { LogIn, UserPlus } from 'lucide-react-native';
 
 import { Screen } from '../../components/layout/Screen';
 import { ActionButton } from '../../components/ui/ActionButton';
-import { InfoBanner } from '../../components/ui/InfoBanner';
 import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
 
@@ -40,20 +39,29 @@ export function HostAuthScreen() {
   };
 
   return (
-    <Screen eyebrow="HOST ACCESS" title={isRegistering ? 'Create host' : 'Host login'}>
-      <InfoBanner
-        icon={isRegistering ? UserPlus : LogIn}
-        title="Run the room"
-        subtitle="Host accounts protect party creation, queues, scoring, and reveal controls."
-        color={theme.palette.info}
-      />
+    <Screen eyebrow="HOST ACCESS" immersive title={isRegistering ? 'Create host' : 'Host login'}>
+      <View style={styles.luminousHeroPanel}>
+        <View style={styles.luminousHeroOrb}>
+          {isRegistering ? (
+            <UserPlus color={theme.palette.accent} size={28} />
+          ) : (
+            <LogIn color={theme.palette.accent} size={28} />
+          )}
+        </View>
+        <Text style={styles.luminousHeroMeta}>Host suite</Text>
+        <Text style={styles.luminousHeroTitle}>Run the room</Text>
+        <Text style={styles.centeredBodyText}>
+          Host accounts protect party creation, queues, scoring, and reveal controls.
+        </Text>
+      </View>
 
       <View style={styles.twoColumn}>
         <ActionButton label="Login" icon={LogIn} onPress={() => setMode('login')} primary={!isRegistering} />
         <ActionButton label="Register" icon={UserPlus} onPress={() => setMode('register')} primary={isRegistering} />
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
+        <View style={styles.glowStrip} />
         {isRegistering ? (
           <View style={styles.inputGroup}>
             <Text style={styles.metaLabelAccent}>DISPLAY NAME</Text>
@@ -104,13 +112,15 @@ export function HostAuthScreen() {
 
       {hostAuthError ? <Text style={styles.errorText}>{hostAuthError}</Text> : null}
 
-      <ActionButton
-        label={isHostAuthenticating ? 'Signing in...' : isRegistering ? 'Create host' : 'Login'}
-        icon={isRegistering ? UserPlus : LogIn}
-        onPress={submit}
-        disabled={!canSubmit || isHostAuthenticating}
-        danger
-      />
+      <View style={styles.bottomCtaWrap}>
+        <ActionButton
+          label={isHostAuthenticating ? 'Signing in...' : isRegistering ? 'Create host' : 'Login'}
+          icon={isRegistering ? UserPlus : LogIn}
+          onPress={submit}
+          disabled={!canSubmit || isHostAuthenticating}
+          danger
+        />
+      </View>
     </Screen>
   );
 }

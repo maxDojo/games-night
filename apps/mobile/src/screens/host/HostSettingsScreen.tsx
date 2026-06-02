@@ -5,7 +5,6 @@ import type { LucideIcon } from 'lucide-react-native';
 
 import { Screen } from '../../components/layout/Screen';
 import { ActionButton } from '../../components/ui/ActionButton';
-import { InfoBanner } from '../../components/ui/InfoBanner';
 import { Pill } from '../../components/ui/Badges';
 import { Stat } from '../../components/ui/Stat';
 import { usePartyState } from '../../state/PartyState';
@@ -92,16 +91,18 @@ export function HostSettingsScreen() {
       roomStatus={status}
       title={hostParty ? `${hostParty.name} settings` : 'Party settings'}
     >
-      <InfoBanner
-        icon={Settings}
-        title={hostParty ? hostParty.joinCode : 'Create a party first'}
-        subtitle={
-          hostParty
+      <View style={styles.luminousHeroPanel}>
+        <View style={styles.luminousHeroOrb}>
+          <Settings color={hostParty ? theme.palette.accent : theme.palette.danger} size={28} />
+        </View>
+        <Text style={styles.luminousHeroMeta}>{hostParty ? hostParty.joinCode : 'Create a party first'}</Text>
+        <Text style={styles.luminousHeroTitle}>Game settings</Text>
+        <Text style={styles.centeredBodyText}>
+          {hostParty
             ? 'Edit setup-safe settings here. Mid-night controls stay locked.'
-            : 'Create or select a party before editing settings.'
-        }
-        color={hostParty ? theme.palette.info : theme.palette.danger}
-      />
+            : 'Create or select a party before editing settings.'}
+        </Text>
+      </View>
 
       <View style={[styles.roomCard, styles.roomCardSpotlight]}>
         <View style={styles.glowStrip} />
@@ -140,7 +141,7 @@ export function HostSettingsScreen() {
         </View>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.cardLuminous]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>CAPACITY</Text>
           <Users color={theme.palette.info} size={18} />
@@ -217,13 +218,15 @@ export function HostSettingsScreen() {
 
       {hostSettingsError ? <Text style={styles.errorText}>{hostSettingsError}</Text> : null}
       {hostSettingsMessage ? <Text style={styles.positiveText}>{hostSettingsMessage}</Text> : null}
-      <ActionButton
-        label={isUpdatingHostSettings ? 'Saving...' : 'Save settings'}
-        icon={Save}
-        onPress={handleSave}
-        disabled={!hostParty || !hasChanges || invalid || isUpdatingHostSettings}
-        primary
-      />
+      <View style={styles.bottomCtaWrap}>
+        <ActionButton
+          label={isUpdatingHostSettings ? 'Saving...' : 'Save settings'}
+          icon={Save}
+          onPress={handleSave}
+          disabled={!hostParty || !hasChanges || invalid || isUpdatingHostSettings}
+          primary
+        />
+      </View>
     </Screen>
   );
 }
@@ -239,7 +242,7 @@ function SettingsSection({ detail, icon: Icon, lockedReason, title }: SettingsSe
   const { styles, theme } = useAppStyles();
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, styles.cardLuminous]}>
       <View style={styles.rowBetween}>
         <View style={styles.flex}>
           <Text style={styles.metaLabelAccent}>{title.toUpperCase()}</Text>

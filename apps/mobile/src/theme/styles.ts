@@ -168,6 +168,9 @@ export function createStyles(theme: ThemeProfile) {
     heroCopy: {
       gap: 8,
     },
+    heroCopyCentered: {
+      alignItems: 'center',
+    },
     heroTitle: {
       color: p.foreground,
       fontSize: 41,

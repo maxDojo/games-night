@@ -8,7 +8,6 @@ import { HostNightActionsCard } from '../../components/host/HostNightActionsCard
 import { Screen } from '../../components/layout/Screen';
 import { ScoreDeltaToast } from '../../components/motion';
 import { ActionButton } from '../../components/ui/ActionButton';
-import { InfoBanner } from '../../components/ui/InfoBanner';
 import { Pill } from '../../components/ui/Badges';
 import { Stat } from '../../components/ui/Stat';
 import { usePartyState } from '../../state/PartyState';
@@ -82,13 +81,18 @@ export function HostLobbyScreen() {
     >
       {hostParty ? null : (
         <>
-          <InfoBanner
-            icon={Sparkles}
-            title="Create tonight's room"
-            subtitle="Party creation is live. Theme images and uploads stay for a later slice."
-            color={theme.palette.info}
-          />
-          <View style={styles.card}>
+          <View style={styles.luminousHeroPanel}>
+            <View style={styles.luminousHeroOrb}>
+              <Sparkles color={theme.palette.accent} size={28} />
+            </View>
+            <Text style={styles.luminousHeroMeta}>Create tonight's room</Text>
+            <Text style={styles.luminousHeroTitle}>Open the lobby</Text>
+            <Text style={styles.centeredBodyText}>
+              Party creation is live. Theme images and uploads stay for a later slice.
+            </Text>
+          </View>
+          <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
+            <View style={styles.glowStrip} />
             <View style={styles.inputGroup}>
               <Text style={styles.metaLabelAccent}>PARTY NAME</Text>
               <TextInput
@@ -133,20 +137,22 @@ export function HostLobbyScreen() {
             </View>
           </View>
           {hostPartyError ? <Text style={styles.errorText}>{hostPartyError}</Text> : null}
-          <ActionButton
-            label={isCreatingHostParty ? 'Creating...' : 'Create party'}
-            icon={Plus}
-            onPress={handleCreateParty}
-            disabled={
-              isCreatingHostParty ||
-              !partyName.trim() ||
-              Number(maxTeams) < 2 ||
-              Number(maxTeams) > 8 ||
-              Number(maxPerTeam) < 1 ||
-              Number(maxPerTeam) > 10
-            }
-            primary
-          />
+          <View style={styles.bottomCtaWrap}>
+            <ActionButton
+              label={isCreatingHostParty ? 'Creating...' : 'Create party'}
+              icon={Plus}
+              onPress={handleCreateParty}
+              disabled={
+                isCreatingHostParty ||
+                !partyName.trim() ||
+                Number(maxTeams) < 2 ||
+                Number(maxTeams) > 8 ||
+                Number(maxPerTeam) < 1 ||
+                Number(maxPerTeam) > 10
+              }
+              primary
+            />
+          </View>
         </>
       )}
       <View style={[styles.roomCard, styles.roomCardSpotlight]}>
