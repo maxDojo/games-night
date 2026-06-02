@@ -11,6 +11,7 @@ export interface ThemeProfile {
   palette: ThemePalette;
   shape: ThemeShape;
   opacity: ThemeOpacity;
+  effect: ThemeEffect;
 }
 
 export interface ThemePalette {
@@ -47,6 +48,17 @@ export interface ThemeShape {
 export interface ThemeOpacity {
   disabled: number;
   scrim: string;
+}
+
+export interface ThemeEffect {
+  shadowColor: string;
+  shadowOpacity: number;
+  shadowRadius: number;
+  elevation: number;
+  accentShadowColor: string;
+  accentShadowOpacity: number;
+  accentShadowRadius: number;
+  accentElevation: number;
 }
 
 export const arcadeTheme: ThemeProfile = {
@@ -86,6 +98,16 @@ export const arcadeTheme: ThemeProfile = {
     disabled: 0.55,
     scrim: '#0D0A19AA',
   },
+  effect: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 3,
+    accentShadowColor: '#FFCB45',
+    accentShadowOpacity: 0.18,
+    accentShadowRadius: 10,
+    accentElevation: 4,
+  },
 };
 
 export const luminousTheme: ThemeProfile = {
@@ -124,6 +146,16 @@ export const luminousTheme: ThemeProfile = {
   opacity: {
     disabled: 0.5,
     scrim: '#120724B8',
+  },
+  effect: {
+    shadowColor: '#05020C',
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 5,
+    accentShadowColor: '#00E6D2',
+    accentShadowOpacity: 0.32,
+    accentShadowRadius: 18,
+    accentElevation: 7,
   },
 };
 

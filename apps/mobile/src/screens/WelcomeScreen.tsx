@@ -30,7 +30,7 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
         <View style={styles.tokenRow}>
           <Token label="Quiz" icon={Brain} color={theme.palette.accent} />
           <Token label="Act" icon={Drama} color={theme.palette.info} />
-          <Token label="Taboo" icon={BadgeAlert} color="#FF7A3D" />
+          <Token label="Taboo" icon={BadgeAlert} color={theme.palette.warning} />
         </View>
       </View>
 
