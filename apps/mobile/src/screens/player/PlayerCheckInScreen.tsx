@@ -80,7 +80,11 @@ export function PlayerCheckInScreen() {
 
   return (
     <Screen
+      avatarLabel={showTeams ? playerNickname || nickname || partyName : undefined}
       eyebrow={showTeams ? locationBanner.eyebrow : 'PLAYER CHECK-IN'}
+      immersive
+      roomCode={showTeams ? joinCode : undefined}
+      roomStatus={showTeams ? partyStatus ?? 'LOBBY' : undefined}
       title={showTeams ? 'Choose your side' : 'Join the room'}
     >
       <Text style={styles.bodyText}>

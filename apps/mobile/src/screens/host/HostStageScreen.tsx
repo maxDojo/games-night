@@ -22,6 +22,7 @@ export function HostStageScreen() {
     hostStageMessage,
     hostTeams,
     hostTurn,
+    hostUser,
     isControllingHostRound,
     isHostSocketConnected,
     isLoadingHostRounds,
@@ -58,7 +59,14 @@ export function HostStageScreen() {
   const waitingForHostSocket = promptRoundNeedsHostSocket && !isHostSocketConnected;
 
   return (
-    <Screen eyebrow="ROUND CONTROL / HOST ONLY" title={activeRound?.label ?? nextRound?.label ?? 'Stage control'}>
+    <Screen
+      avatarLabel={hostUser?.displayName}
+      eyebrow="ROUND CONTROL / HOST ONLY"
+      immersive
+      roomCode={hostParty?.joinCode}
+      roomStatus={activeRound ? 'LIVE' : hostParty?.status ?? 'DRAFT'}
+      title={activeRound?.label ?? nextRound?.label ?? 'Stage control'}
+    >
       <InfoBanner
         icon={activeRound ? Play : Flag}
         title={activeRound ? 'Round is live' : hostParty ? 'Ready for next round' : 'Create a party first'}

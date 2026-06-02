@@ -27,6 +27,7 @@ export function PlayerAnswerScreen() {
     checkedInTeam,
     currentRound,
     isLoadingRounds,
+    joinCode,
     nextRound,
     partyName,
     partyStatus,
@@ -62,7 +63,14 @@ export function PlayerAnswerScreen() {
       : 'No queued round yet. Scores remain sealed.';
 
   return (
-    <Screen eyebrow="PLAYER STATUS" title={statusTitle}>
+    <Screen
+      avatarLabel={playerNickname || checkedInTeam?.name}
+      eyebrow="PLAYER STATUS"
+      immersive
+      roomCode={joinCode}
+      roomStatus={formatPartyStatus(partyStatus)}
+      title={statusTitle}
+    >
       <InfoBanner
         icon={currentRound ? Radio : Clock}
         title={partyName}
