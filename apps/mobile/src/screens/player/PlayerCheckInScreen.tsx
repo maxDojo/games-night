@@ -87,9 +87,16 @@ export function PlayerCheckInScreen() {
       roomStatus={showTeams ? partyStatus ?? 'LOBBY' : undefined}
       title={showTeams ? 'Choose your side' : 'Join the room'}
     >
-      <Text style={styles.bodyText}>
-        Enter the code from the host, then pick a team before it fills up. Scores stay sealed until the host reveal.
-      </Text>
+      <View style={styles.luminousHeroPanel}>
+        <View style={styles.glowStrip} />
+        <Text style={styles.luminousHeroMeta}>{showTeams ? 'ROOM FOUND' : 'ENTER HOST CODE'}</Text>
+        <Text style={styles.luminousHeroTitle}>{showTeams ? partyName : 'Find tonight\'s room'}</Text>
+        <Text style={styles.centeredBodyText}>
+          {showTeams
+            ? 'Pick an open team and check in. Scores stay sealed until the host reveal.'
+            : 'Enter the code from the host to join the active party.'}
+        </Text>
+      </View>
 
       <View style={[styles.card, styles.roomEntryCard]}>
         <View style={styles.glowStrip} />
@@ -160,6 +167,10 @@ export function PlayerCheckInScreen() {
               value={nickname}
             />
           </View>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Available Teams</Text>
+            <Text style={styles.positiveText}>{teams.length} squads</Text>
+          </View>
           <View style={styles.stack}>
             {teams.map((team) => (
               <TeamCard
@@ -172,21 +183,23 @@ export function PlayerCheckInScreen() {
               />
             ))}
           </View>
-          <ActionButton
-            label={
-              isCheckingIn
-                ? 'Checking in...'
-                : !canCheckIn
-                  ? 'Check-in closed'
-                : selectedTeam
-                  ? `Check in to ${selectedTeam.name}`
-                  : 'Choose an open team'
-            }
-            icon={BadgeCheck}
-            onPress={handleCheckIn}
-            disabled={!canCheckIn || !selectedTeam || !nickname.trim() || !locationGateSatisfied || isCheckingIn}
-            danger
-          />
+          <View style={styles.bottomCtaWrap}>
+            <ActionButton
+              label={
+                isCheckingIn
+                  ? 'Checking in...'
+                  : !canCheckIn
+                    ? 'Check-in closed'
+                  : selectedTeam
+                    ? `Check in to ${selectedTeam.name}`
+                    : 'Choose an open team'
+              }
+              icon={BadgeCheck}
+              onPress={handleCheckIn}
+              disabled={!canCheckIn || !selectedTeam || !nickname.trim() || !locationGateSatisfied || isCheckingIn}
+              danger
+            />
+          </View>
         </>
       ) : null}
     </Screen>

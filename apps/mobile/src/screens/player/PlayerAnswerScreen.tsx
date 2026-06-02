@@ -78,27 +78,9 @@ export function PlayerAnswerScreen() {
         color={currentRound ? theme.palette.success : theme.palette.info}
       />
 
-      <View style={[styles.card, styles.cardLuminous]}>
-        <View style={styles.rowBetween}>
-          <Text style={styles.metaLabelAccent}>YOUR CHECK-IN</Text>
-          <ShieldCheck color={theme.palette.success} size={18} />
-        </View>
-        <Text style={styles.cardTitle}>{checkedInTeam?.name ?? 'Team confirmed'}</Text>
-        <Text style={styles.bodyText}>
-          {playerNickname ? `${playerNickname} is checked in. ` : null}
-          Your device shows party status only. Live team totals are hidden until the host reveals them.
-        </Text>
-      </View>
-
-      <View style={styles.statRow}>
-        <Stat value={formatPartyStatus(partyStatus)} label="room" accent />
-        <Stat value={playerRounds.length.toString()} label="rounds" />
-        <Stat value="sealed" label="scores" danger />
-      </View>
-
       {activeTriviaQuestion ? (
         <>
-          <View style={[styles.questionPanel, styles.questionPanelLuminous]}>
+          <View style={[styles.questionPanel, styles.questionPanelLuminous, styles.answerStagePanel]}>
             <View style={styles.glowStrip} />
             <View style={styles.rowBetween}>
               <Text style={[styles.darkMeta, { color: theme.palette.accent }]}>
@@ -145,6 +127,24 @@ export function PlayerAnswerScreen() {
           ) : null}
         </>
       ) : null}
+
+      <View style={styles.statRow}>
+        <Stat value={formatPartyStatus(partyStatus)} label="room" accent />
+        <Stat value={playerRounds.length.toString()} label="rounds" />
+        <Stat value="sealed" label="scores" danger />
+      </View>
+
+      <View style={[styles.card, styles.cardLuminous]}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.metaLabelAccent}>YOUR CHECK-IN</Text>
+          <ShieldCheck color={theme.palette.success} size={18} />
+        </View>
+        <Text style={styles.cardTitle}>{checkedInTeam?.name ?? 'Team confirmed'}</Text>
+        <Text style={styles.bodyText}>
+          {playerNickname ? `${playerNickname} is checked in. ` : null}
+          Your device shows party status only. Live team totals are hidden until the host reveals them.
+        </Text>
+      </View>
 
       <View style={styles.card}>
         <View style={styles.rowBetween}>
