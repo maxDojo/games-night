@@ -23,6 +23,7 @@ export function PlayerReportScreen() {
     teams,
   } = usePartyState();
   const rankedTeams = [...teams].sort((a, b) => b.points - a.points);
+  const winner = rankedTeams[0];
 
   useEffect(() => {
     void refreshScoreReport();
@@ -38,6 +39,16 @@ export function PlayerReportScreen() {
         roomStatus={partyStatus ?? 'LOBBY'}
         title="Scores stay sealed"
       >
+        <View style={styles.luminousHeroPanel}>
+          <View style={styles.luminousHeroOrb}>
+            <EyeOff color={theme.palette.accent} size={28} />
+          </View>
+          <Text style={styles.luminousHeroMeta}>Reveal locked</Text>
+          <Text style={styles.luminousHeroTitle}>Scores stay sealed</Text>
+          <Text style={styles.centeredBodyText}>
+            The report unlocks when the host opens the final reveal.
+          </Text>
+        </View>
         <InfoBanner
           icon={Lock}
           live={isLoadingScoreReport}
@@ -70,6 +81,18 @@ export function PlayerReportScreen() {
       roomStatus="REVEALED"
       title="Score history"
     >
+      <View style={styles.luminousHeroPanel}>
+        <View style={styles.luminousHeroOrb}>
+          <Text style={styles.luminousHeroOrbText}>{winner?.shortName ?? '1'}</Text>
+        </View>
+        <Text style={styles.luminousHeroMeta}>Final standings</Text>
+        <Text style={styles.luminousHeroTitle}>{winner ? `${winner.name} wins` : 'Reveal complete'}</Text>
+        <Text style={styles.centeredBodyText}>
+          {winner
+            ? `${winner.points.toLocaleString()} points. Review the full score history below.`
+            : 'Review point changes and flag anything that looks wrong.'}
+        </Text>
+      </View>
       <InfoBanner
         icon={ShieldCheck}
         title="Reveal complete"

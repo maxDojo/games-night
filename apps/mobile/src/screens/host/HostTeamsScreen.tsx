@@ -49,9 +49,6 @@ export function HostTeamsScreen() {
       roomStatus={hostParty?.status ?? 'DRAFT'}
       title={hostParty ? `${hostParty.name} teams` : `${theme.displayName} teams`}
     >
-      <Text style={styles.bodyText}>
-        Capacity limits keep teams fair. Players check in without profiles.
-      </Text>
       <InfoBanner
         icon={Users}
         title={hostParty ? hostParty.joinCode : 'Create a party first'}
@@ -63,7 +60,15 @@ export function HostTeamsScreen() {
         color={hostParty ? theme.palette.success : theme.palette.info}
       />
       {hostParty ? (
-        <View style={styles.card}>
+        <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
+          <View style={styles.glowStrip} />
+          <View>
+            <Text style={styles.luminousHeroMeta}>Create New Team</Text>
+            <Text style={styles.cardTitle}>Assign a color glow</Text>
+          </View>
+          <Text style={styles.bodyText}>
+            Capacity limits keep teams fair. Players check in without profiles.
+          </Text>
           <View style={styles.inputGroup}>
             <Text style={styles.metaLabelAccent}>TEAM NAME</Text>
             <TextInput
@@ -107,6 +112,10 @@ export function HostTeamsScreen() {
         </View>
       ) : null}
       {hostTeamError ? <Text style={styles.errorText}>{hostTeamError}</Text> : null}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionTitle}>Existing Teams</Text>
+        <Text style={styles.positiveText}>{totalCheckedIn} checked in</Text>
+      </View>
       <View style={styles.stack}>
         {hostTeams.map((team) => (
           <TeamCard
