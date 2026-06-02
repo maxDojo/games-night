@@ -7,7 +7,6 @@ import { HostGamePicker } from '../../components/host/HostGamePicker';
 import { HostRoundConfigCard } from '../../components/host/HostRoundConfigCard';
 import { Screen } from '../../components/layout/Screen';
 import { ActionButton } from '../../components/ui/ActionButton';
-import { InfoBanner } from '../../components/ui/InfoBanner';
 import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
 import {
@@ -87,16 +86,18 @@ export function HostQueueScreen() {
       roomStatus={hostParty?.status ?? 'DRAFT'}
       title="Build the run"
     >
-      <InfoBanner
-        icon={Save}
-        title={hostParty ? `Plan: ${hostParty.name}` : 'Create a party first'}
-        subtitle={
-          hostParty
+      <View style={styles.luminousHeroPanel}>
+        <View style={styles.luminousHeroOrb}>
+          <Save color={hostParty ? theme.palette.danger : theme.palette.accent} size={28} />
+        </View>
+        <Text style={styles.luminousHeroMeta}>{hostParty ? `Plan: ${hostParty.name}` : 'Create a party first'}</Text>
+        <Text style={styles.luminousHeroTitle}>Build the run</Text>
+        <Text style={styles.centeredBodyText}>
+          {hostParty
             ? 'Queue built-in rounds with server defaults plus host point/timer overrides.'
-            : 'Party creation lives in the host lobby. Round queueing unlocks after that.'
-        }
-        color={hostParty ? theme.palette.danger : theme.palette.info}
-      />
+            : 'Party creation lives in the host lobby. Round queueing unlocks after that.'}
+        </Text>
+      </View>
 
       <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
         <View style={styles.glowStrip} />
@@ -116,20 +117,22 @@ export function HostQueueScreen() {
 
       {hostQueueError ? <Text style={styles.errorText}>{hostQueueError}</Text> : null}
 
-      <View style={styles.twoColumn}>
-        <ActionButton
-          label={isQueueingHostRound ? 'Queueing...' : 'Queue'}
-          icon={Plus}
-          onPress={handleQueueRound}
-          disabled={queueDisabled}
-          primary
-        />
-        <ActionButton
-          label={isLoadingHostRounds ? 'Refreshing...' : 'Refresh'}
-          icon={RefreshCw}
-          onPress={() => void refreshHostRoundSetup()}
-          disabled={!hostParty || isLoadingHostRounds || isLoadingHostGames}
-        />
+      <View style={styles.bottomCtaWrap}>
+        <View style={styles.twoColumn}>
+          <ActionButton
+            label={isQueueingHostRound ? 'Queueing...' : 'Queue'}
+            icon={Plus}
+            onPress={handleQueueRound}
+            disabled={queueDisabled}
+            primary
+          />
+          <ActionButton
+            label={isLoadingHostRounds ? 'Refreshing...' : 'Refresh'}
+            icon={RefreshCw}
+            onPress={() => void refreshHostRoundSetup()}
+            disabled={!hostParty || isLoadingHostRounds || isLoadingHostGames}
+          />
+        </View>
       </View>
 
       <View style={[styles.card, styles.cardLuminous]}>

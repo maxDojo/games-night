@@ -18,16 +18,19 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
   const normalizedJoinCode = joinCode.trim().toUpperCase();
 
   return (
-    <Screen>
-      <View style={[styles.poster, styles.heroShowcase]}>
+    <Screen immersive>
+      <View style={[styles.luminousHeroPanel, styles.heroShowcase]}>
         <View style={styles.heroMarquee}>
           <Text style={styles.heroMarqueeText}>Room entry</Text>
           <Text style={styles.heroMarqueeAccent}>Scores sealed</Text>
         </View>
-        <View style={styles.heroCopy}>
+        <View style={styles.luminousHeroOrb}>
+          <Text style={styles.luminousHeroOrbText}>GN</Text>
+        </View>
+        <View style={[styles.heroCopy, styles.heroCopyCentered]}>
           <Text style={styles.eyebrow}>GAMES NIGHT</Text>
-          <Text style={styles.heroTitle}>Join the room</Text>
-          <Text style={styles.bodyText}>
+          <Text style={styles.luminousHeroTitle}>Join the room</Text>
+          <Text style={styles.centeredBodyText}>
             Enter the host code, pick your team, and keep the scores sealed until the reveal.
           </Text>
         </View>
@@ -63,7 +66,9 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
         />
       </View>
 
-      <ActionButton label="Host login" icon={Crown} onPress={onHost} />
+      <View style={styles.bottomCtaWrap}>
+        <ActionButton label="Host login" icon={Crown} onPress={onHost} />
+      </View>
     </Screen>
   );
 }
