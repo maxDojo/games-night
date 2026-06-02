@@ -24,6 +24,7 @@ export function HostQueueScreen() {
   const {
     hostGames,
     hostParty,
+    hostUser,
     hostQueueError,
     isLoadingHostGames,
     isLoadingHostRounds,
@@ -78,7 +79,14 @@ export function HostQueueScreen() {
   };
 
   return (
-    <Screen eyebrow="QUEUE LAB / TV + PHONES" title="Build the run">
+    <Screen
+      avatarLabel={hostUser?.displayName}
+      eyebrow="QUEUE LAB / TV + PHONES"
+      immersive
+      roomCode={hostParty?.joinCode}
+      roomStatus={hostParty?.status ?? 'DRAFT'}
+      title="Build the run"
+    >
       <InfoBanner
         icon={Save}
         title={hostParty ? `Plan: ${hostParty.name}` : 'Create a party first'}

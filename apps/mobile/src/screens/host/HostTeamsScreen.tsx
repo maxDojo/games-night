@@ -17,6 +17,7 @@ export function HostTeamsScreen() {
     hostParty,
     hostTeamError,
     hostTeams,
+    hostUser,
     isCreatingHostTeam,
     isLoadingHostTeams,
     refreshHostTeams,
@@ -40,7 +41,14 @@ export function HostTeamsScreen() {
   };
 
   return (
-    <Screen eyebrow="TEAM SETUP" title={hostParty ? `${hostParty.name} teams` : `${theme.displayName} teams`}>
+    <Screen
+      avatarLabel={hostUser?.displayName}
+      eyebrow="TEAM SETUP"
+      immersive
+      roomCode={hostParty?.joinCode}
+      roomStatus={hostParty?.status ?? 'DRAFT'}
+      title={hostParty ? `${hostParty.name} teams` : `${theme.displayName} teams`}
+    >
       <Text style={styles.bodyText}>
         Capacity limits keep teams fair. Players check in without profiles.
       </Text>

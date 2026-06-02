@@ -18,6 +18,7 @@ export function HostSettingsScreen() {
     hostSettingsError,
     hostSettingsMessage,
     hostTeams,
+    hostUser,
     isUpdatingHostSettings,
     queuedRounds,
     updateHostPartySettings,
@@ -83,7 +84,14 @@ export function HostSettingsScreen() {
   };
 
   return (
-    <Screen eyebrow="HOST SETTINGS" title={hostParty ? `${hostParty.name} settings` : 'Party settings'}>
+    <Screen
+      avatarLabel={hostUser?.displayName}
+      eyebrow="HOST SETTINGS"
+      immersive
+      roomCode={hostParty?.joinCode}
+      roomStatus={status}
+      title={hostParty ? `${hostParty.name} settings` : 'Party settings'}
+    >
       <InfoBanner
         icon={Settings}
         title={hostParty ? hostParty.joinCode : 'Create a party first'}

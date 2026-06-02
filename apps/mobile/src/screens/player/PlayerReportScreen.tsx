@@ -11,7 +11,17 @@ import { useAppStyles } from '../../theme/useAppStyles';
 
 export function PlayerReportScreen() {
   const { styles, theme } = useAppStyles();
-  const { isLoadingScoreReport, refreshScoreReport, scoreEvents, scoresRevealed, teams } = usePartyState();
+  const {
+    checkedInTeam,
+    isLoadingScoreReport,
+    joinCode,
+    partyStatus,
+    playerNickname,
+    refreshScoreReport,
+    scoreEvents,
+    scoresRevealed,
+    teams,
+  } = usePartyState();
   const rankedTeams = [...teams].sort((a, b) => b.points - a.points);
 
   useEffect(() => {
@@ -20,7 +30,14 @@ export function PlayerReportScreen() {
 
   if (!scoresRevealed) {
     return (
-      <Screen eyebrow="REVEAL LOCKED" title="Scores stay sealed">
+      <Screen
+        avatarLabel={playerNickname || checkedInTeam?.name}
+        eyebrow="REVEAL LOCKED"
+        immersive
+        roomCode={joinCode}
+        roomStatus={partyStatus ?? 'LOBBY'}
+        title="Scores stay sealed"
+      >
         <InfoBanner
           icon={Lock}
           live={isLoadingScoreReport}
@@ -45,7 +62,14 @@ export function PlayerReportScreen() {
   }
 
   return (
-    <Screen eyebrow={`${theme.displayName.toUpperCase()} REPORT`} title="Score history">
+    <Screen
+      avatarLabel={playerNickname || checkedInTeam?.name}
+      eyebrow={`${theme.displayName.toUpperCase()} REPORT`}
+      immersive
+      roomCode={joinCode}
+      roomStatus="REVEALED"
+      title="Score history"
+    >
       <InfoBanner
         icon={ShieldCheck}
         title="Reveal complete"

@@ -72,7 +72,14 @@ export function HostLobbyScreen() {
   }, [awardedBonusIds, bonusAwards, selectedBonusId]);
 
   return (
-    <Screen eyebrow={hostUser ? `HOST: ${hostUser.displayName}` : 'THEMED ROOM'} title={roomName}>
+    <Screen
+      avatarLabel={hostUser?.displayName}
+      eyebrow={hostUser ? `HOST: ${hostUser.displayName}` : 'THEMED ROOM'}
+      immersive
+      roomCode={roomCode}
+      roomStatus={roomStatus}
+      title={roomName}
+    >
       {hostParty ? null : (
         <>
           <InfoBanner
