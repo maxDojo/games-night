@@ -19,7 +19,11 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
 
   return (
     <Screen>
-      <View style={styles.poster}>
+      <View style={[styles.poster, styles.heroShowcase]}>
+        <View style={styles.heroMarquee}>
+          <Text style={styles.heroMarqueeText}>Room entry</Text>
+          <Text style={styles.heroMarqueeAccent}>Scores sealed</Text>
+        </View>
         <View style={styles.heroCopy}>
           <Text style={styles.eyebrow}>GAMES NIGHT</Text>
           <Text style={styles.heroTitle}>Join the room</Text>
@@ -34,7 +38,7 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
         </View>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.roomEntryCard]}>
         <View style={styles.inputGroup}>
           <Text style={styles.metaLabelAccent}>ROOM CODE</Text>
           <TextInput

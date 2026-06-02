@@ -28,7 +28,8 @@ export function PlayerReportScreen() {
           subtitle={isLoadingScoreReport ? 'Checking reveal status.' : 'Live team totals are hidden until the host opens the reveal.'}
           color={theme.palette.accent}
         />
-        <View style={styles.card}>
+        <View style={[styles.card, styles.cardLuminous]}>
+          <View style={styles.glowStrip} />
           <View style={styles.rowBetween}>
             <Text style={styles.metaLabelAccent}>WHY HIDDEN</Text>
             <EyeOff color={theme.palette.info} size={18} />
@@ -51,6 +52,7 @@ export function PlayerReportScreen() {
         subtitle="Review point changes and flag anything that looks wrong."
         color={theme.palette.success}
       />
+      <View style={styles.glowStrip} />
       <View style={styles.podium}>
         {rankedTeams.slice(0, 3).map((team, index) => (
           <PodiumCard

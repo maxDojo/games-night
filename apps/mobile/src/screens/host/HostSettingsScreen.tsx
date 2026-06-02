@@ -95,7 +95,8 @@ export function HostSettingsScreen() {
         color={hostParty ? theme.palette.info : theme.palette.danger}
       />
 
-      <View style={styles.roomCard}>
+      <View style={[styles.roomCard, styles.roomCardSpotlight]}>
+        <View style={styles.glowStrip} />
         <View style={styles.rowBetween}>
           <View>
             <Text style={styles.metaLabelLight}>CURRENT PARTY</Text>
@@ -110,7 +111,7 @@ export function HostSettingsScreen() {
         </View>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.cardLuminous]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>PARTY DETAILS</Text>
           <Settings color={theme.palette.info} size={18} />

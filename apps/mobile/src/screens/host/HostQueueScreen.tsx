@@ -90,7 +90,8 @@ export function HostQueueScreen() {
         color={hostParty ? theme.palette.danger : theme.palette.info}
       />
 
-      <View style={styles.card}>
+      <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
+        <View style={styles.glowStrip} />
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>GAME</Text>
           <Text style={styles.positiveText}>{isLoadingHostGames ? 'Loading' : `${availableGames.length} built-ins`}</Text>
@@ -123,7 +124,7 @@ export function HostQueueScreen() {
         />
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.cardLuminous]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>QUEUED ROUNDS</Text>
           <ClipboardList color={theme.palette.info} size={18} />

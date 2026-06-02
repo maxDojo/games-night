@@ -70,7 +70,7 @@ export function PlayerAnswerScreen() {
         color={currentRound ? theme.palette.success : theme.palette.info}
       />
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.cardLuminous]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>YOUR CHECK-IN</Text>
           <ShieldCheck color={theme.palette.success} size={18} />
@@ -90,9 +90,10 @@ export function PlayerAnswerScreen() {
 
       {activeTriviaQuestion ? (
         <>
-          <View style={styles.questionPanel}>
+          <View style={[styles.questionPanel, styles.questionPanelLuminous]}>
+            <View style={styles.glowStrip} />
             <View style={styles.rowBetween}>
-              <Text style={styles.darkMeta}>
+              <Text style={[styles.darkMeta, { color: theme.palette.accent }]}>
                 {activeTriviaQuestion.questionNumber}/{activeTriviaQuestion.total}
               </Text>
               <Text style={styles.lightMeta}>{answerLocked ? 'locked' : 'pick one'}</Text>
