@@ -142,7 +142,8 @@ export function HostLobbyScreen() {
           />
         </>
       )}
-      <View style={styles.roomCard}>
+      <View style={[styles.roomCard, styles.roomCardSpotlight]}>
+        <View style={styles.glowStrip} />
         <View style={styles.rowBetween}>
           <View>
             <Text style={styles.metaLabelLight}>ROOM CODE</Text>
@@ -160,7 +161,7 @@ export function HostLobbyScreen() {
       {hostParty ? (
         <ActionButton label="Party settings" icon={Settings} onPress={() => router.push('/host/settings')} />
       ) : null}
-      <View style={styles.card}>
+      <View style={[styles.card, styles.cardLuminous]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
           <Text style={styles.positiveText}>{nextRound ? `${nextRound.points} pts` : 'Queue empty'}</Text>

@@ -62,6 +62,37 @@ export function createStyles(theme: ThemeProfile) {
       backgroundColor: p.surfaceAlt,
       ...surfaceLift,
     },
+    heroShowcase: {
+      borderColor: p.accent,
+      backgroundColor: p.surfaceAlt,
+      ...accentLift,
+    },
+    heroMarquee: {
+      minHeight: 42,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderColor: p.line,
+      borderRadius: shape.controlRadius,
+      backgroundColor: p.overlayStrong,
+    },
+    heroMarqueeText: {
+      color: p.foreground,
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 0,
+      textTransform: 'uppercase',
+    },
+    heroMarqueeAccent: {
+      color: p.accent,
+      fontSize: 11,
+      fontWeight: '900',
+      letterSpacing: 0,
+      textTransform: 'uppercase',
+    },
     rowBetween: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -115,6 +146,11 @@ export function createStyles(theme: ThemeProfile) {
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
       ...surfaceLift,
+    },
+    roomEntryCard: {
+      borderColor: p.accent,
+      backgroundColor: p.surfaceAlt,
+      ...accentLift,
     },
     metaLabel: {
       color: p.muted,
@@ -274,6 +310,11 @@ export function createStyles(theme: ThemeProfile) {
       borderRadius: shape.cardRadius,
       backgroundColor: p.info,
       ...accentLift,
+    },
+    questionPanelLuminous: {
+      borderWidth: 1,
+      borderColor: p.accent,
+      backgroundColor: p.surfaceAlt,
     },
     darkMeta: {
       color: p.onInfo,
@@ -454,6 +495,29 @@ export function createStyles(theme: ThemeProfile) {
       backgroundColor: p.danger,
       ...accentLift,
     },
+    roomCardSpotlight: {
+      borderWidth: 1,
+      borderColor: p.accent,
+      backgroundColor: p.surfaceAlt,
+    },
+    spotlightPanel: {
+      gap: 12,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: p.line,
+      borderRadius: shape.cardRadius,
+      backgroundColor: p.surfaceAlt,
+      ...surfaceLift,
+    },
+    spotlightPanelAccent: {
+      borderColor: p.accent,
+      ...accentLift,
+    },
+    glowStrip: {
+      height: 6,
+      borderRadius: 999,
+      backgroundColor: p.accent,
+    },
     metaLabelLight: {
       color: p.subtleText,
       fontSize: 10,
@@ -520,6 +584,10 @@ export function createStyles(theme: ThemeProfile) {
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
       ...surfaceLift,
+    },
+    cardLuminous: {
+      borderColor: p.line,
+      backgroundColor: p.surfaceAlt,
     },
     cardTitle: {
       color: p.foreground,

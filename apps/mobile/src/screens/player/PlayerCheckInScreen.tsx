@@ -87,7 +87,8 @@ export function PlayerCheckInScreen() {
         Enter the code from the host, then pick a team before it fills up. Scores stay sealed until the host reveal.
       </Text>
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.roomEntryCard]}>
+        <View style={styles.glowStrip} />
         <View style={styles.inputGroup}>
           <Text style={styles.metaLabelAccent}>ROOM CODE</Text>
           <TextInput

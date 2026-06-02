@@ -75,10 +75,13 @@ export function HostStageScreen() {
         live={Boolean(activeRound)}
       />
 
-      <View style={styles.statRow}>
-        <Stat value={queuedRounds.length.toString()} label="queued" accent />
-        <Stat value={completedCount.toString()} label="done" />
-        <Stat value={skippedCount.toString()} label="skipped" danger />
+      <View style={[styles.spotlightPanel, activeRound && styles.spotlightPanelAccent]}>
+        <View style={styles.glowStrip} />
+        <View style={styles.statRow}>
+          <Stat value={queuedRounds.length.toString()} label="queued" accent />
+          <Stat value={completedCount.toString()} label="done" />
+          <Stat value={skippedCount.toString()} label="skipped" danger />
+        </View>
       </View>
 
       {activeRound ? <QueuedRoundCard round={activeRound} /> : null}
