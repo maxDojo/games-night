@@ -1,8 +1,11 @@
 import { StyleSheet } from 'react-native';
 
-import type { ThemePalette } from './theme';
+import type { ThemeProfile } from './theme';
 
-export function createStyles(p: ThemePalette) {
+export function createStyles(theme: ThemeProfile) {
+  const p = theme.palette;
+  const shape = theme.shape;
+
   return StyleSheet.create({
     root: {
       flex: 1,
@@ -40,8 +43,8 @@ export function createStyles(p: ThemePalette) {
       gap: 18,
       padding: 22,
       borderWidth: 1,
-      borderColor: '#6B5BD6',
-      borderRadius: 8,
+      borderColor: p.line,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surfaceAlt,
     },
     rowBetween: {
@@ -75,10 +78,10 @@ export function createStyles(p: ThemePalette) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: 4,
-      borderRadius: 8,
+      borderRadius: shape.controlRadius,
     },
     tokenText: {
-      color: p.ink,
+      color: p.onAccent,
       fontSize: 12,
       fontWeight: '900',
       letterSpacing: 0,
@@ -91,7 +94,7 @@ export function createStyles(p: ThemePalette) {
       padding: 14,
       borderWidth: 1,
       borderColor: p.line,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
     },
     metaLabel: {
@@ -124,7 +127,7 @@ export function createStyles(p: ThemePalette) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: 8,
-      borderRadius: 8,
+      borderRadius: shape.controlRadius,
       borderWidth: 1,
       borderColor: p.line,
     },
@@ -144,8 +147,8 @@ export function createStyles(p: ThemePalette) {
       paddingHorizontal: 14,
       borderWidth: 1,
       borderColor: p.line,
-      borderRadius: 8,
-      backgroundColor: p.background,
+      borderRadius: shape.controlRadius,
+      backgroundColor: p.input,
       color: p.foreground,
       fontSize: 18,
       fontWeight: '900',
@@ -164,7 +167,7 @@ export function createStyles(p: ThemePalette) {
       alignItems: 'center',
       gap: 12,
       padding: 14,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
     },
     infoIconWrap: {
       width: 32,
@@ -177,13 +180,13 @@ export function createStyles(p: ThemePalette) {
       flex: 1,
     },
     infoTitle: {
-      color: p.ink,
+      color: p.onInfo,
       fontSize: 15,
       fontWeight: '900',
       letterSpacing: 0,
     },
     infoSubtitle: {
-      color: '#173D38',
+      color: p.onInfo,
       fontSize: 12,
       fontWeight: '800',
       letterSpacing: 0,
@@ -196,7 +199,7 @@ export function createStyles(p: ThemePalette) {
       padding: 14,
       borderWidth: 1,
       borderColor: p.line,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
     },
     teamCardSelected: {
@@ -205,17 +208,17 @@ export function createStyles(p: ThemePalette) {
       borderColor: p.accent,
     },
     disabledCard: {
-      opacity: 0.55,
+      opacity: theme.opacity.disabled,
     },
     teamGlyph: {
       width: 40,
       height: 40,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 8,
+      borderRadius: shape.controlRadius,
     },
     teamGlyphText: {
-      color: p.ink,
+      color: p.onAccent,
       fontSize: 20,
       fontWeight: '900',
       letterSpacing: 0,
@@ -227,7 +230,7 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     teamNameSelected: {
-      color: p.ink,
+      color: p.onAccent,
     },
     teamMeta: {
       color: p.muted,
@@ -236,18 +239,18 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     teamMetaSelected: {
-      color: '#5D4210',
+      color: p.onAccent,
     },
     questionPanel: {
       minHeight: 250,
       justifyContent: 'space-between',
       gap: 16,
       padding: 18,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.info,
     },
     darkMeta: {
-      color: p.ink,
+      color: p.onInfo,
       fontSize: 10,
       fontWeight: '900',
       letterSpacing: 0,
@@ -271,8 +274,8 @@ export function createStyles(p: ThemePalette) {
       alignItems: 'center',
       gap: 8,
       padding: 10,
-      borderRadius: 8,
-      backgroundColor: '#0D0A19AA',
+      borderRadius: shape.controlRadius,
+      backgroundColor: p.overlay,
     },
     lockText: {
       color: p.foreground,
@@ -288,7 +291,7 @@ export function createStyles(p: ThemePalette) {
       padding: 14,
       borderWidth: 1,
       borderColor: p.line,
-      borderRadius: 8,
+      borderRadius: shape.controlRadius,
       backgroundColor: p.surface,
     },
     answerSelected: {
@@ -302,7 +305,7 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     answerKeySelected: {
-      color: p.ink,
+      color: p.onAccent,
     },
     answerLabel: {
       color: p.foreground,
@@ -311,7 +314,7 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     answerLabelSelected: {
-      color: p.ink,
+      color: p.onAccent,
       fontWeight: '900',
     },
     podium: {
@@ -328,7 +331,7 @@ export function createStyles(p: ThemePalette) {
       gap: 4,
       borderWidth: 1,
       borderColor: p.line,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
     },
     podiumWinner: {
@@ -354,7 +357,7 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     podiumTextDark: {
-      color: p.ink,
+      color: p.onAccent,
     },
     sectionTitle: {
       color: p.foreground,
@@ -368,7 +371,7 @@ export function createStyles(p: ThemePalette) {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: 12,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
     },
     scoreLogLabel: {
@@ -389,8 +392,8 @@ export function createStyles(p: ThemePalette) {
       gap: 10,
       paddingHorizontal: 12,
       borderWidth: 1,
-      borderRadius: 8,
-      backgroundColor: p.ink,
+      borderRadius: shape.controlRadius,
+      backgroundColor: p.overlayStrong,
     },
     scoreToastDot: {
       width: 8,
@@ -415,11 +418,11 @@ export function createStyles(p: ThemePalette) {
       justifyContent: 'space-between',
       gap: 14,
       padding: 18,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.danger,
     },
     metaLabelLight: {
-      color: '#FFE4F2',
+      color: p.subtleText,
       fontSize: 10,
       fontWeight: '900',
       letterSpacing: 0,
@@ -436,8 +439,8 @@ export function createStyles(p: ThemePalette) {
       gap: 7,
       paddingHorizontal: 9,
       paddingVertical: 7,
-      borderRadius: 8,
-      backgroundColor: '#0D0A19AA',
+      borderRadius: shape.pillRadius,
+      backgroundColor: p.overlay,
     },
     pillDot: {
       width: 8,
@@ -460,7 +463,7 @@ export function createStyles(p: ThemePalette) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: 2,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
     },
     statValue: {
@@ -480,7 +483,7 @@ export function createStyles(p: ThemePalette) {
       padding: 14,
       borderWidth: 1,
       borderColor: p.line,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
     },
     cardTitle: {
@@ -509,7 +512,7 @@ export function createStyles(p: ThemePalette) {
       padding: 12,
       borderWidth: 1,
       borderColor: p.line,
-      borderRadius: 8,
+      borderRadius: shape.controlRadius,
       backgroundColor: p.surface,
     },
     roundSelected: {
@@ -523,7 +526,7 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     roundTextSelected: {
-      color: p.ink,
+      color: p.onAccent,
     },
     roundTitle: {
       color: p.foreground,
@@ -547,8 +550,8 @@ export function createStyles(p: ThemePalette) {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 8,
-      backgroundColor: p.ink,
+      borderRadius: shape.controlRadius,
+      backgroundColor: p.overlayStrong,
     },
     smallButtonText: {
       color: p.foreground,
@@ -563,7 +566,7 @@ export function createStyles(p: ThemePalette) {
       gap: 3,
       borderWidth: 1,
       borderColor: p.danger,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.surfaceAlt,
     },
     timerText: {
@@ -573,7 +576,7 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     timerSubtext: {
-      color: '#F7CBE1',
+      color: p.subtleText,
       fontSize: 12,
       fontWeight: '800',
       letterSpacing: 0,
@@ -583,11 +586,11 @@ export function createStyles(p: ThemePalette) {
       justifyContent: 'space-between',
       gap: 10,
       padding: 16,
-      borderRadius: 8,
+      borderRadius: shape.cardRadius,
       backgroundColor: p.accent,
     },
     secretWord: {
-      color: p.ink,
+      color: p.onAccent,
       fontSize: 30,
       fontWeight: '900',
       letterSpacing: 0,
@@ -596,8 +599,8 @@ export function createStyles(p: ThemePalette) {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 8,
-      backgroundColor: p.ink,
+      borderRadius: shape.controlRadius,
+      backgroundColor: p.overlayStrong,
     },
     forbiddenText: {
       color: p.accent,
@@ -621,7 +624,7 @@ export function createStyles(p: ThemePalette) {
       borderWidth: 1,
       borderColor: p.line,
       borderRadius: 36,
-      backgroundColor: '#17123A',
+      backgroundColor: p.nav,
     },
     navItem: {
       flex: 1,
@@ -631,7 +634,7 @@ export function createStyles(p: ThemePalette) {
       borderRadius: 26,
     },
     navItemActive: {
-      backgroundColor: p.accent,
+      backgroundColor: p.navActive,
     },
     navLabel: {
       color: p.muted,
@@ -640,7 +643,7 @@ export function createStyles(p: ThemePalette) {
       letterSpacing: 0,
     },
     navLabelActive: {
-      color: p.ink,
+      color: p.onAccent,
       fontWeight: '900',
     },
   });

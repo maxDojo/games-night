@@ -18,7 +18,7 @@ export function PodiumCard({ rank, name, points, color, winner }: PodiumCardProp
   return (
     <MotionView variant={winner ? 'pop' : 'fade-up'} style={[styles.podiumCard, winner && styles.podiumWinner]}>
       {winner ? (
-        <Crown color={theme.palette.ink} size={22} />
+        <Crown color={theme.palette.onAccent} size={22} />
       ) : (
         <Text style={[styles.podiumRank, { color }]}>{rank}</Text>
       )}

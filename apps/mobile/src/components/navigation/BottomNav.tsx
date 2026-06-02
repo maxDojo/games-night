@@ -26,7 +26,7 @@ export function BottomNav<T extends string>({ items, active, onChange }: BottomN
                 onPress={() => onChange(item.route)}
                 pressedScale={0.94}
               >
-                <Icon color={isActive ? theme.palette.ink : theme.palette.muted} size={18} />
+                <Icon color={isActive ? theme.palette.onAccent : theme.palette.muted} size={18} />
                 <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{item.label}</Text>
               </AnimatedPressable>
             </MotionView>

@@ -19,7 +19,15 @@ export function SmallButton({ label, primary, danger }: SmallButtonProps) {
         danger && { backgroundColor: theme.palette.danger },
       ]}
     >
-      <Text style={[styles.smallButtonText, primary && { color: theme.palette.ink }]}>{label}</Text>
+      <Text
+        style={[
+          styles.smallButtonText,
+          primary && { color: theme.palette.onAccent },
+          danger && { color: theme.palette.onDanger },
+        ]}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
