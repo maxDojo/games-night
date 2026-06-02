@@ -5,6 +5,20 @@ import type { ThemeProfile } from './theme';
 export function createStyles(theme: ThemeProfile) {
   const p = theme.palette;
   const shape = theme.shape;
+  const surfaceLift = {
+    shadowColor: theme.effect.shadowColor,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: theme.effect.shadowOpacity,
+    shadowRadius: theme.effect.shadowRadius,
+    elevation: theme.effect.elevation,
+  };
+  const accentLift = {
+    shadowColor: theme.effect.accentShadowColor,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: theme.effect.accentShadowOpacity,
+    shadowRadius: theme.effect.accentShadowRadius,
+    elevation: theme.effect.accentElevation,
+  };
 
   return StyleSheet.create({
     root: {
@@ -46,6 +60,7 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surfaceAlt,
+      ...surfaceLift,
     },
     rowBetween: {
       flexDirection: 'row',
@@ -79,6 +94,9 @@ export function createStyles(theme: ThemeProfile) {
       justifyContent: 'center',
       gap: 4,
       borderRadius: shape.controlRadius,
+      borderWidth: 1,
+      borderColor: p.line,
+      ...accentLift,
     },
     tokenText: {
       color: p.onAccent,
@@ -96,6 +114,7 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     metaLabel: {
       color: p.muted,
@@ -130,6 +149,7 @@ export function createStyles(theme: ThemeProfile) {
       borderRadius: shape.controlRadius,
       borderWidth: 1,
       borderColor: p.line,
+      ...surfaceLift,
     },
     actionButtonText: {
       fontSize: 15,
@@ -168,6 +188,9 @@ export function createStyles(theme: ThemeProfile) {
       gap: 12,
       padding: 14,
       borderRadius: shape.cardRadius,
+      borderWidth: 1,
+      borderColor: p.line,
+      ...accentLift,
     },
     infoIconWrap: {
       width: 32,
@@ -201,11 +224,13 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     teamCardSelected: {
       minHeight: 86,
       backgroundColor: p.accent,
       borderColor: p.accent,
+      ...accentLift,
     },
     disabledCard: {
       opacity: theme.opacity.disabled,
@@ -248,6 +273,7 @@ export function createStyles(theme: ThemeProfile) {
       padding: 18,
       borderRadius: shape.cardRadius,
       backgroundColor: p.info,
+      ...accentLift,
     },
     darkMeta: {
       color: p.onInfo,
@@ -293,10 +319,12 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: shape.controlRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     answerSelected: {
       backgroundColor: p.accent,
       borderColor: p.accent,
+      ...accentLift,
     },
     answerKey: {
       color: p.danger,
@@ -333,11 +361,13 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     podiumWinner: {
       minHeight: 176,
       backgroundColor: p.accent,
       borderColor: p.accent,
+      ...accentLift,
     },
     podiumRank: {
       fontSize: 24,
@@ -373,6 +403,7 @@ export function createStyles(theme: ThemeProfile) {
       padding: 12,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     scoreLogLabel: {
       color: p.foreground,
@@ -394,6 +425,7 @@ export function createStyles(theme: ThemeProfile) {
       borderWidth: 1,
       borderRadius: shape.controlRadius,
       backgroundColor: p.overlayStrong,
+      ...surfaceLift,
     },
     scoreToastDot: {
       width: 8,
@@ -420,6 +452,7 @@ export function createStyles(theme: ThemeProfile) {
       padding: 18,
       borderRadius: shape.cardRadius,
       backgroundColor: p.danger,
+      ...accentLift,
     },
     metaLabelLight: {
       color: p.subtleText,
@@ -465,6 +498,7 @@ export function createStyles(theme: ThemeProfile) {
       gap: 2,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     statValue: {
       color: p.foreground,
@@ -485,6 +519,7 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     cardTitle: {
       color: p.foreground,
@@ -514,10 +549,12 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: shape.controlRadius,
       backgroundColor: p.surface,
+      ...surfaceLift,
     },
     roundSelected: {
       backgroundColor: p.accent,
       borderColor: p.accent,
+      ...accentLift,
     },
     roundNumber: {
       color: p.info,
@@ -568,6 +605,7 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.danger,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surfaceAlt,
+      ...surfaceLift,
     },
     timerText: {
       color: p.foreground,
@@ -588,6 +626,7 @@ export function createStyles(theme: ThemeProfile) {
       padding: 16,
       borderRadius: shape.cardRadius,
       backgroundColor: p.accent,
+      ...accentLift,
     },
     secretWord: {
       color: p.onAccent,
@@ -625,6 +664,7 @@ export function createStyles(theme: ThemeProfile) {
       borderColor: p.line,
       borderRadius: 36,
       backgroundColor: p.nav,
+      ...surfaceLift,
     },
     navItem: {
       flex: 1,
@@ -635,6 +675,7 @@ export function createStyles(theme: ThemeProfile) {
     },
     navItemActive: {
       backgroundColor: p.navActive,
+      ...accentLift,
     },
     navLabel: {
       color: p.muted,
