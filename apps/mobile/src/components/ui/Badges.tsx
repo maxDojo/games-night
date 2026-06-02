@@ -20,7 +20,7 @@ export function Token({ label, icon: Icon, color }: { label: string; icon: Lucid
 
   return (
     <View style={[styles.token, { backgroundColor: color }]}>
-      <Icon color={theme.palette.ink} size={22} />
+      <Icon color={theme.palette.onAccent} size={22} />
       <Text style={styles.tokenText}>{label}</Text>
     </View>
   );

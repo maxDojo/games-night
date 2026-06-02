@@ -23,7 +23,7 @@ export function ActionButton({ label, icon: Icon, onPress, primary, danger, succ
       : success
         ? theme.palette.success
         : theme.palette.surface;
-  const color = primary || success ? theme.palette.ink : theme.palette.foreground;
+  const color = primary || success ? theme.palette.onAccent : danger ? theme.palette.onDanger : theme.palette.foreground;
 
   return (
     <AnimatedPressable
