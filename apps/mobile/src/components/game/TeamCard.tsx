@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 import { Check } from 'lucide-react-native';
 
-import { AnimatedPressable, MotionView } from '../motion';
+import { AnimatedPressable, GlowPulse, MotionView } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 import type { TeamSummary } from '../../types/product';
 
@@ -33,19 +33,31 @@ export function TeamCard({ team, selected, showPoints = true, disabled, onPress 
 
   if (onPress) {
     return (
-      <AnimatedPressable
-        disabled={disabled}
-        onPress={onPress}
-        style={[styles.teamCard, selected && styles.teamCardSelected, disabled && styles.disabledCard]}
+      <GlowPulse
+        active={selected}
+        borderRadius={theme.shape.cardRadius}
+        color={team.color}
       >
-        {content}
-      </AnimatedPressable>
+        <AnimatedPressable
+          disabled={disabled}
+          onPress={onPress}
+          style={[styles.teamCard, selected && styles.teamCardSelected, disabled && styles.disabledCard]}
+        >
+          {content}
+        </AnimatedPressable>
+      </GlowPulse>
     );
   }
 
   return (
-    <MotionView style={[styles.teamCard, selected && styles.teamCardSelected, disabled && styles.disabledCard]}>
-      {content}
-    </MotionView>
+    <GlowPulse
+      active={selected}
+      borderRadius={theme.shape.cardRadius}
+      color={team.color}
+    >
+      <MotionView style={[styles.teamCard, selected && styles.teamCardSelected, disabled && styles.disabledCard]}>
+        {content}
+      </MotionView>
+    </GlowPulse>
   );
 }

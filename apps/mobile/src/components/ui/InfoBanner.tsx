@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
-import { LivePulse, MotionView } from '../motion';
+import { GlowPulse, LivePulse, MotionView } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 interface InfoBannerProps {
@@ -16,15 +16,21 @@ export function InfoBanner({ icon: Icon, live, title, subtitle, color }: InfoBan
   const { styles, theme } = useAppStyles();
 
   return (
-    <MotionView variant="pop" style={[styles.infoBanner, { backgroundColor: color }]}>
-      <View style={styles.infoIconWrap}>
-        <Icon color={theme.palette.onInfo} size={24} />
-        {live ? <LivePulse color={theme.palette.onInfo} size={7} /> : null}
-      </View>
-      <View style={styles.flex}>
-        <Text style={styles.infoTitle}>{title}</Text>
-        <Text style={styles.infoSubtitle}>{subtitle}</Text>
-      </View>
-    </MotionView>
+    <GlowPulse
+      active={live}
+      borderRadius={theme.shape.cardRadius}
+      color={color}
+    >
+      <MotionView variant="pop" style={[styles.infoBanner, { backgroundColor: color }]}>
+        <View style={styles.infoIconWrap}>
+          <Icon color={theme.palette.onInfo} size={24} />
+          {live ? <LivePulse color={theme.palette.onInfo} size={7} /> : null}
+        </View>
+        <View style={styles.flex}>
+          <Text style={styles.infoTitle}>{title}</Text>
+          <Text style={styles.infoSubtitle}>{subtitle}</Text>
+        </View>
+      </MotionView>
+    </GlowPulse>
   );
 }
