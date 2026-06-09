@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ScrollView, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { MotionView } from '../motion';
 import { RoomTopBar } from './RoomTopBar';
@@ -16,24 +17,31 @@ interface ScreenProps {
 }
 
 export function Screen({ avatarLabel, eyebrow, immersive = false, roomCode, roomStatus, title, children }: ScreenProps) {
-  const { styles } = useAppStyles();
+  const { styles, theme } = useAppStyles();
   const showRoomBar = Boolean(roomCode || roomStatus || avatarLabel);
 
   return (
-    <ScrollView
+    <LinearGradient
+      colors={[theme.palette.background, theme.palette.surface, theme.palette.background]}
+      end={{ x: 1, y: 1 }}
+      start={{ x: 0, y: 0 }}
       style={styles.screen}
-      contentContainerStyle={[styles.screenContent, immersive && styles.screenContentImmersive]}
     >
-      {showRoomBar ? <RoomTopBar avatarLabel={avatarLabel} roomCode={roomCode} status={roomStatus} /> : null}
-      {eyebrow || title ? (
-        <MotionView style={[styles.header, immersive && styles.headerImmersive]}>
-          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-          {title ? <Text style={styles.title}>{title}</Text> : null}
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={[styles.screenContent, immersive && styles.screenContentImmersive]}
+      >
+        {showRoomBar ? <RoomTopBar avatarLabel={avatarLabel} roomCode={roomCode} status={roomStatus} /> : null}
+        {eyebrow || title ? (
+          <MotionView style={[styles.header, immersive && styles.headerImmersive]}>
+            {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
+            {title ? <Text style={styles.title}>{title}</Text> : null}
+          </MotionView>
+        ) : null}
+        <MotionView delay={70} style={styles.stack}>
+          {children}
         </MotionView>
-      ) : null}
-      <MotionView delay={70} style={styles.stack}>
-        {children}
-      </MotionView>
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }

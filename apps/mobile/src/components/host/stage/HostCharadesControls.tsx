@@ -21,7 +21,7 @@ export function HostCharadesControls({ disabled, onEvent, prompt, teams, turn }:
     <View style={styles.secretCard}>
       <View style={styles.rowBetween}>
         <Text style={styles.darkMeta}>CHARADES PROMPT</Text>
-        <EyeOff color={theme.palette.onAccent} size={18} />
+        <EyeOff color={theme.palette.accent} size={18} />
       </View>
       <View>
         <Text style={styles.secretWord}>{prompt?.phrase ?? 'Waiting for phrase'}</Text>

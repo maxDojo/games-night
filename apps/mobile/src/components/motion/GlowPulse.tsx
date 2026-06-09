@@ -24,7 +24,7 @@ export function GlowPulse({ active = true, borderRadius = 18, children, color, s
     }
 
     if (reducedMotion) {
-      progress.setValue(0.45);
+      progress.setValue(0.38);
       return;
     }
 
@@ -33,13 +33,13 @@ export function GlowPulse({ active = true, borderRadius = 18, children, color, s
       Animated.sequence([
         Animated.timing(progress, {
           toValue: 1,
-          duration: 1300,
+          duration: 1800,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
         Animated.timing(progress, {
           toValue: 0,
-          duration: 1300,
+          duration: 1800,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
@@ -52,29 +52,16 @@ export function GlowPulse({ active = true, borderRadius = 18, children, color, s
 
   const opacity = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.12, 0.6],
-  });
-  const scale = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.035],
+    outputRange: [0.01, 0.1],
   });
 
   return (
     <View style={[styles.wrap, style]}>
+      {children}
       <Animated.View
         pointerEvents="none"
-        style={[
-          styles.halo,
-          {
-            borderColor: color,
-            borderRadius,
-            opacity,
-            shadowColor: color,
-            transform: [{ scale }],
-          },
-        ]}
+        style={[styles.wash, { backgroundColor: color, borderRadius, opacity }]}
       />
-      {children}
     </View>
   );
 }
@@ -83,12 +70,7 @@ const styles = StyleSheet.create({
   wrap: {
     position: 'relative',
   },
-  halo: {
+  wash: {
     ...StyleSheet.absoluteFillObject,
-    borderWidth: 2,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 14,
-    elevation: 7,
   },
 });

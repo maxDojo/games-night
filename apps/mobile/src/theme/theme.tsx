@@ -24,6 +24,7 @@ export interface ThemePalette {
   line: string;
   accent: string;
   accentAlt: string;
+  action: string;
   danger: string;
   success: string;
   info: string;
@@ -31,6 +32,7 @@ export interface ThemePalette {
   overlay: string;
   overlayStrong: string;
   onAccent: string;
+  onAction: string;
   onInfo: string;
   onDanger: string;
   nav: string;
@@ -75,6 +77,7 @@ export const arcadeTheme: ThemeProfile = {
     line: '#4A3C8C',
     accent: '#FFCB45',
     accentAlt: '#FF4FA3',
+    action: '#FFCB45',
     danger: '#FF4FA3',
     success: '#91F25C',
     info: '#3DF5D8',
@@ -82,6 +85,7 @@ export const arcadeTheme: ThemeProfile = {
     overlay: '#0D0A19AA',
     overlayStrong: '#0D0A19DD',
     onAccent: '#0D0A19',
+    onAction: '#0D0A19',
     onInfo: '#173D38',
     onDanger: '#FFF7D6',
     nav: '#17123A',
@@ -113,46 +117,48 @@ export const arcadeTheme: ThemeProfile = {
 export const luminousTheme: ThemeProfile = {
   name: 'luminous',
   displayName: 'Luminous',
-  accentColor: '#00E6D2',
+  accentColor: '#05D7C1',
   palette: {
-    background: '#17082F',
-    ink: '#090413',
-    surface: '#241040',
-    surfaceAlt: '#32165F',
-    foreground: '#FFF8F2',
-    muted: '#C9B8E6',
-    line: '#5C3C91',
-    accent: '#00E6D2',
-    accentAlt: '#FF6B9F',
-    danger: '#FF4D7D',
-    success: '#36F2A4',
-    info: '#56B6FF',
-    warning: '#FF9E57',
-    overlay: '#120724B8',
-    overlayStrong: '#090413DD',
+    background: '#170B25',
+    ink: '#100818',
+    surface: '#251630',
+    surfaceAlt: '#36243E',
+    foreground: '#F8EAE2',
+    muted: '#BCA8C2',
+    line: '#553249',
+    accent: '#05D7C1',
+    accentAlt: '#FD5B46',
+    action: '#FD5462',
+    danger: '#89010F',
+    success: '#10A195',
+    info: '#9A73D9',
+    warning: '#FD7A10',
+    overlay: '#170B25CC',
+    overlayStrong: '#100818EB',
     onAccent: '#071D21',
-    onInfo: '#081728',
-    onDanger: '#FFF8F2',
-    nav: '#1D0C36',
-    navActive: '#00E6D2',
-    input: '#130724',
-    subtleText: '#F6C5DE',
+    onAction: '#FFF7F0',
+    onInfo: '#FFF7F0',
+    onDanger: '#FFF7F0',
+    nav: '#1A1129',
+    navActive: '#05D7C1',
+    input: '#1F142B',
+    subtleText: '#FEB37C',
   },
   shape: {
-    cardRadius: 18,
-    controlRadius: 16,
+    cardRadius: 16,
+    controlRadius: 13,
     pillRadius: 999,
   },
   opacity: {
     disabled: 0.5,
-    scrim: '#120724B8',
+    scrim: '#170B25CC',
   },
   effect: {
     shadowColor: '#05020C',
     shadowOpacity: 0.35,
     shadowRadius: 16,
     elevation: 5,
-    accentShadowColor: '#00E6D2',
+    accentShadowColor: '#05D7C1',
     accentShadowOpacity: 0.32,
     accentShadowRadius: 18,
     accentElevation: 7,

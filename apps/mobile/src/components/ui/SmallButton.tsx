@@ -15,14 +15,14 @@ export function SmallButton({ label, primary, danger }: SmallButtonProps) {
     <View
       style={[
         styles.smallButton,
-        primary && { backgroundColor: theme.palette.accent },
+        primary && { backgroundColor: theme.palette.action },
         danger && { backgroundColor: theme.palette.danger },
       ]}
     >
       <Text
         style={[
           styles.smallButtonText,
-          primary && { color: theme.palette.onAccent },
+          primary && { color: theme.palette.onAction },
           danger && { color: theme.palette.onDanger },
         ]}
       >

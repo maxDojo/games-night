@@ -21,10 +21,10 @@ export function InfoBanner({ icon: Icon, live, title, subtitle, color }: InfoBan
       borderRadius={theme.shape.cardRadius}
       color={color}
     >
-      <MotionView variant="pop" style={[styles.infoBanner, { backgroundColor: color }]}>
-        <View style={styles.infoIconWrap}>
-          <Icon color={theme.palette.onInfo} size={24} />
-          {live ? <LivePulse color={theme.palette.onInfo} size={7} /> : null}
+      <MotionView variant="pop" style={[styles.infoBanner, { borderColor: color }]}>
+        <View style={[styles.infoIconWrap, { backgroundColor: `${color}24`, borderRadius: theme.shape.controlRadius }]}>
+          <Icon color={color} size={22} />
+          {live ? <LivePulse color={color} size={7} /> : null}
         </View>
         <View style={styles.flex}>
           <Text style={styles.infoTitle}>{title}</Text>

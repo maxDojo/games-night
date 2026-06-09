@@ -81,25 +81,21 @@ export function PlayerCheckInScreen() {
   return (
     <Screen
       avatarLabel={showTeams ? playerNickname || nickname || partyName : undefined}
-      eyebrow={showTeams ? locationBanner.eyebrow : 'PLAYER CHECK-IN'}
       immersive
       roomCode={showTeams ? joinCode : undefined}
       roomStatus={showTeams ? partyStatus ?? 'LOBBY' : undefined}
-      title={showTeams ? 'Choose your side' : 'Join the room'}
     >
-      <View style={styles.luminousHeroPanel}>
-        <View style={styles.glowStrip} />
-        <Text style={styles.luminousHeroMeta}>{showTeams ? 'ROOM FOUND' : 'ENTER HOST CODE'}</Text>
-        <Text style={styles.luminousHeroTitle}>{showTeams ? partyName : 'Find tonight\'s room'}</Text>
-        <Text style={styles.centeredBodyText}>
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>{showTeams ? locationBanner.eyebrow : 'PLAYER CHECK-IN'}</Text>
+        <Text style={styles.screenTitle}>{showTeams ? 'Choose Your Side' : 'Join the Room'}</Text>
+        <Text style={styles.screenSubtitle}>
           {showTeams
             ? 'Pick an open team and check in. Scores stay sealed until the host reveal.'
             : 'Enter the code from the host to join the active party.'}
         </Text>
       </View>
 
-      <View style={[styles.card, styles.roomEntryCard]}>
-        <View style={styles.glowStrip} />
+      <View style={[styles.card, styles.cardAction]}>
         <View style={styles.inputGroup}>
           <Text style={styles.metaLabelAccent}>ROOM CODE</Text>
           <TextInput
@@ -168,7 +164,7 @@ export function PlayerCheckInScreen() {
             />
           </View>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Available Teams</Text>
+            <Text style={styles.sectionTitle}>Choose a team</Text>
             <Text style={styles.positiveText}>{teams.length} squads</Text>
           </View>
           <View style={styles.stack}>
@@ -232,42 +228,42 @@ function getLocationBanner(
         eyebrow: 'VENUE CHECK',
         icon: LocateFixed,
         subtitle: message ?? 'Venue-only check-in is required for this room.',
-        color: '#FFCB45',
+        color: '#FD7A10',
       };
     case 'checking':
       return {
         eyebrow: 'CHECKING VENUE',
         icon: LocateFixed,
         subtitle: message ?? 'Checking whether this device is at the venue.',
-        color: '#FFCB45',
+        color: '#FD7A10',
       };
     case 'failed':
       return {
         eyebrow: 'HOST OVERRIDE',
         icon: MapPinOff,
         subtitle: message ?? 'Venue check failed. Ask the host to override.',
-        color: '#FF5C8A',
+        color: '#FD5462',
       };
     case 'overridden':
       return {
         eyebrow: 'OVERRIDE NOTED',
         icon: ShieldAlert,
         subtitle: message ?? `Host override noted / ${weekLabel}`,
-        color: '#3DF5D8',
+        color: '#05D7C1',
       };
     case 'verified':
       return {
         eyebrow: 'VENUE VERIFIED',
         icon: MapPinCheck,
         subtitle: message ?? `Venue verified / ${weekLabel}`,
-        color: '#3DF5D8',
+        color: '#05D7C1',
       };
     default:
       return {
         eyebrow: 'ROOM FOUND',
         icon: Ticket,
         subtitle: `Venue check not required / ${weekLabel}`,
-        color: '#65B8FF',
+        color: '#9A73D9',
       };
   }
 }

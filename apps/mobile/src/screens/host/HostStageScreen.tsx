@@ -8,6 +8,7 @@ import { HostManualScoreCard } from '../../components/host/stage/HostManualScore
 import { HostRoundLifecycleControls } from '../../components/host/stage/HostRoundLifecycleControls';
 import { Screen } from '../../components/layout/Screen';
 import { GlowPulse } from '../../components/motion';
+import { GradientPanel } from '../../components/ui/GradientPanel';
 import { Stat } from '../../components/ui/Stat';
 import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
@@ -61,28 +62,35 @@ export function HostStageScreen() {
   return (
     <Screen
       avatarLabel={hostUser?.displayName}
-      eyebrow="ROUND CONTROL / HOST ONLY"
       immersive
       roomCode={hostParty?.joinCode}
       roomStatus={activeRound ? 'LIVE' : hostParty?.status ?? 'DRAFT'}
-      title={activeRound?.label ?? nextRound?.label ?? 'Stage control'}
     >
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>HOST STAGE / PRIVATE CONTROLS</Text>
+        <Text style={styles.screenTitle}>{activeRound?.label ?? nextRound?.label ?? 'Stage Control'}</Text>
+        <Text style={styles.screenSubtitle}>
+          Prompts stay on this host device. Players only receive actions intended for them.
+        </Text>
+      </View>
       <GlowPulse
         active={Boolean(activeRound)}
         borderRadius={theme.shape.cardRadius}
         color={theme.palette.success}
       >
-        <View style={styles.stageControlPanel}>
-          <View style={styles.glowStrip} />
+        <GradientPanel
+          colors={[theme.palette.warning, theme.palette.action, theme.palette.danger]}
+          style={styles.stageGradientPanel}
+        >
           <View style={styles.rowBetween}>
-            <Text style={styles.luminousHeroMeta}>{activeRound ? 'Round is live' : 'Ready state'}</Text>
+            <Text style={styles.gradientPanelMeta}>{activeRound ? 'ROUND IS LIVE' : 'READY STATE'}</Text>
             {activeRound ? (
               <Play color={theme.palette.success} size={18} />
             ) : (
               <Flag color={theme.palette.info} size={18} />
             )}
           </View>
-          <Text style={styles.stageTitle}>
+          <Text style={styles.gradientPanelTitle}>
             {activeRound
               ? 'End the active round or write a manual score.'
               : waitingForHostSocket
@@ -96,7 +104,7 @@ export function HostStageScreen() {
             <Stat value={completedCount.toString()} label="done" />
             <Stat value={skippedCount.toString()} label="skipped" danger />
           </View>
-        </View>
+        </GradientPanel>
       </GlowPulse>
 
       {activeRound ? <QueuedRoundCard round={activeRound} /> : null}

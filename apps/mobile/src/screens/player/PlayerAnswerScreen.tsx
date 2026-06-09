@@ -66,12 +66,15 @@ export function PlayerAnswerScreen() {
   return (
     <Screen
       avatarLabel={playerNickname || checkedInTeam?.name}
-      eyebrow="PLAYER STATUS"
       immersive
       roomCode={joinCode}
       roomStatus={formatPartyStatus(partyStatus)}
-      title={statusTitle}
     >
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>{activeTriviaQuestion ? 'LIVE TRIVIA' : 'PLAYER STATUS'}</Text>
+        <Text style={styles.screenTitle}>{statusTitle}</Text>
+        <Text style={styles.screenSubtitle}>{statusSubtitle}</Text>
+      </View>
       <InfoBanner
         icon={currentRound ? Radio : Clock}
         title={partyName}
@@ -141,7 +144,7 @@ export function PlayerAnswerScreen() {
         <Stat value="sealed" label="scores" danger />
       </View>
 
-      <View style={[styles.card, styles.cardLuminous]}>
+      <View style={[styles.card, styles.cardAccent]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>YOUR CHECK-IN</Text>
           <ShieldCheck color={theme.palette.success} size={18} />
@@ -153,7 +156,7 @@ export function PlayerAnswerScreen() {
         </Text>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.cardLuminous]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>ROUND STATUS</Text>
           <EyeOff color={theme.palette.danger} size={18} />

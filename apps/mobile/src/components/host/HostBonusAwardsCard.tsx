@@ -63,7 +63,7 @@ export function HostBonusAwardsCard({
                 <Text style={[styles.scoreLogLabel, selected && styles.roundTextSelected]}>{bonus.label}</Text>
                 <Text style={[styles.teamMeta, selected && styles.teamMetaSelected]}>{bonus.reason}</Text>
               </View>
-              <Text style={[styles.scoreLogDelta, { color: selected ? theme.palette.onAccent : theme.palette.success }]}>
+              <Text style={[styles.scoreLogDelta, { color: selected ? theme.palette.accent : theme.palette.success }]}>
                 {awarded ? 'Awarded' : `+${bonus.points}`}
               </Text>
             </AnimatedPressable>

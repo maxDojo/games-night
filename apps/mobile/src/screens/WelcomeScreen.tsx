@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { BadgeAlert, Brain, Crown, Drama, Search } from 'lucide-react-native';
+import { Brain, Crown, Drama, Search, Sparkles, Trophy } from 'lucide-react-native';
 
 import { Screen } from '../components/layout/Screen';
+import { GradientPanel } from '../components/ui/GradientPanel';
 import { ActionButton } from '../components/ui/ActionButton';
-import { Token } from '../components/ui/Badges';
 import { useAppStyles } from '../theme/useAppStyles';
 
 interface WelcomeScreenProps {
@@ -19,31 +19,31 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
 
   return (
     <Screen immersive>
-      <View style={[styles.luminousHeroPanel, styles.heroShowcase]}>
-        <View style={styles.heroMarquee}>
-          <Text style={styles.heroMarqueeText}>Room entry</Text>
-          <Text style={styles.heroMarqueeAccent}>Scores sealed</Text>
-        </View>
-        <View style={styles.luminousHeroOrb}>
-          <Text style={styles.luminousHeroOrbText}>GN</Text>
-        </View>
-        <View style={[styles.heroCopy, styles.heroCopyCentered]}>
-          <Text style={styles.eyebrow}>GAMES NIGHT</Text>
-          <Text style={styles.luminousHeroTitle}>Join the room</Text>
-          <Text style={styles.centeredBodyText}>
-            Enter the host code, pick your team, and keep the scores sealed until the reveal.
-          </Text>
-        </View>
-        <View style={styles.tokenRow}>
-          <Token label="Quiz" icon={Brain} color={theme.palette.accent} />
-          <Token label="Act" icon={Drama} color={theme.palette.info} />
-          <Token label="Taboo" icon={BadgeAlert} color={theme.palette.warning} />
-        </View>
+      <View style={styles.welcomeBrand}>
+        <Sparkles color={theme.palette.accent} size={24} />
+        <Text style={styles.welcomeBrandTitle}>
+          GAMES <Text style={styles.welcomeBrandAccent}>NIGHT</Text>
+        </Text>
+        <Text style={styles.centeredBodyText}>The room is live. Enter the code from your host.</Text>
       </View>
 
-      <View style={[styles.card, styles.roomEntryCard]}>
+      <GradientPanel
+        colors={[theme.palette.surfaceAlt, '#3D203D', theme.palette.surface]}
+        style={[styles.gradientPanel, styles.roomEntryCard]}
+      >
+        <Text style={styles.gradientPanelMeta}>JOIN THE ROOM</Text>
+        <Text style={styles.gradientPanelTitle}>Enter party code</Text>
+        <View style={styles.codeSlots}>
+          {Array.from({ length: 6 }, (_, index) => (
+            <View
+              key={index}
+              style={[styles.codeSlot, normalizedJoinCode[index] && styles.codeSlotFilled]}
+            >
+              <Text style={styles.codeSlotText}>{normalizedJoinCode[index] ?? ''}</Text>
+            </View>
+          ))}
+        </View>
         <View style={styles.inputGroup}>
-          <Text style={styles.metaLabelAccent}>ROOM CODE</Text>
           <TextInput
             autoCapitalize="characters"
             autoCorrect={false}
@@ -64,11 +64,24 @@ export function WelcomeScreen({ onHost, onPlayer }: WelcomeScreenProps) {
           disabled={normalizedJoinCode.length !== 6}
           primary
         />
+      </GradientPanel>
+
+      <View style={styles.featureStrip}>
+        <View style={styles.featureTile}>
+          <Brain color={theme.palette.warning} size={20} />
+          <Text style={styles.featureTileText}>Trivia</Text>
+        </View>
+        <View style={styles.featureTile}>
+          <Drama color={theme.palette.info} size={20} />
+          <Text style={styles.featureTileText}>Party games</Text>
+        </View>
+        <View style={styles.featureTile}>
+          <Trophy color={theme.palette.accent} size={20} />
+          <Text style={styles.featureTileText}>Big reveal</Text>
+        </View>
       </View>
 
-      <View style={styles.bottomCtaWrap}>
-        <ActionButton label="Host login" icon={Crown} onPress={onHost} />
-      </View>
+      <ActionButton label="Enter as host" icon={Crown} onPress={onHost} />
     </Screen>
   );
 }

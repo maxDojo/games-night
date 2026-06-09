@@ -12,7 +12,7 @@
 
 Backend API for a **multi-team party games night app**. A host on a phone creates a Party (gets a short join-code), 2-8 teams of up to 10 players each join, and they play rounds of **Trivia / Charades / Taboo / custom games**. Real-time over Socket.IO. Unified **"Party Points"** scoring keeps different game types comparable on one leaderboard.
 
-The current repo is an **API-first pnpm monorepo** with a rebuilt Expo mobile app shell. The backend lives in `apps/api`; the mobile app lives in `apps/mobile` and currently covers the agreed host/player shell, local session persistence, API contract wiring, and placeholder screens for the next mobile milestones. `apps/web` may exist as an empty placeholder, but no web app is currently shipped.
+The current repo is an **API-first pnpm monorepo** with an API-backed Expo mobile app. The backend lives in `apps/api`; the mobile app lives in `apps/mobile` and currently covers player join/check-in/Trivia/report flows plus host auth, party setup, teams, queueing, scoring, reveal, and built-in game controls. `apps/web` may exist as an empty placeholder, but no web app is currently shipped.
 
 ---
 
@@ -134,7 +134,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 #### Mobile milestones
 
-- Selected visual direction: arcade-first, saturated, playful. Current design reference: `/Users/adodojo/Documents/Games_night_mob.pen`.
+- Selected visual direction: the Google Stitch **Luminous / Action Pop** concept at `https://stitch.withgoogle.com/projects/8790484564827048746`: compact dark-plum layouts, warm cream text, orange-to-pink primary gradients, teal live/selected states, thin luminous outlines, and slow ambient glow/fade motion rather than animated border tracing. The theme must stay tokenized so future visual themes can replace it without rewriting screens.
 
 | Milestone | What | Status |
 | --------- | ---- | ------ |
@@ -241,6 +241,18 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add host-only Charades phrase display with correct and skip controls.
   - Done: add host-only Taboo card/forbidden-word display with correct, skip, and forbidden-word penalty controls.
   - Follow-up: run the M3 flow on a device/emulator with a seeded Charades/Taboo round before treating prompt timing and host handoff ergonomics as final.
+- **Mobile visual system refresh** - in progress
+  - Done: derive a tokenized Luminous palette, typography hierarchy, compact room chrome, gradient actions, outlined panels, glow states, and reduced-motion-aware animation from the Stitch reference.
+  - Done: keep the redesign inside shared theme/components rather than hardcoding screen-specific colors.
+  - Done: redesign all current host/player screens to match the Stitch layout density and screen hierarchy while preserving existing API behavior.
+  - Done: verify representative welcome, player check-in, host lobby, queue, and stage states on Android; retain targeted device checks for active prompts and revealed report data when those states are available.
+  - Stitch-derived future placeholders to preserve in plans without presenting them as working behavior:
+    - Guest-player creation and richer host player/team moderation.
+    - Public shared-screen/live mode with large join code and safe public round state.
+    - Player performance summaries such as accuracy, reaction time, and streaks after reveal.
+    - Score-history drill-down, replay/play-again, and exit-to-lobby actions.
+    - Richer queue sorting/reordering and team roster states.
+    - Profile/avatar imagery and party artwork within the existing safe theming model.
 - **Mobile M3.5 UX cleanup + party management planning** - planned
   - Done: redesign the landing screen around an editable join-code input and primary player join action, with host entry as a less prominent secondary action.
   - Done: remove premature room branding such as `Greg's House` from the unauthenticated/unjoined home state; show party/host theming only after context exists.
@@ -279,7 +291,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 ### What's in flight
 
-No active in-repo feature work is assumed from this file. The next direction should come from the user unless a task is already explicit in the current conversation.
+- Mobile visual-system refresh on `staging/mobile-stitch-redesign`, ready for a dedicated PR after the earlier glow/motion PR was merged.
 
 ---
 
@@ -405,7 +417,7 @@ No active in-repo feature work is assumed from this file. The next direction sho
 
 ## 7. Known limitations (intentional for MVP)
 
-1. **Mobile app is shell-only** - `apps/mobile` exists, but it is not yet connected to live API flows beyond the typed client/socket helpers. Treat real host/player workflows as upcoming M1+ work.
+1. **Mobile coverage is incomplete, not shell-only** - core M1-M3 flows are API-backed, but persistent periods, custom games, venue enforcement, full score correction/dispute history, host party switching, shared-screen mode, uploads, and several Stitch-derived placeholders remain planned.
 2. **No mid-round engine persistence** - server restart kills the in-memory runner. Host force-ends to recover.
 3. **No prompt dedup across rounds in the same party** - the same trivia question / charades phrase / taboo card could appear twice in one night.
 4. **Prompt/card pools can overlap when seed content is small** - phrase/card pools are shared across teams unless future logic reserves used prompts.
@@ -469,7 +481,7 @@ pnpm dev:mobile
 | `docs/mobile-integration.md`                   | Mobile-facing API integration notes                                             |
 | `apps/mobile/README.md`                        | Mobile shell scope and local run notes                                          |
 | `apps/mobile/app/`                             | Expo Router routes, route layouts, redirects, and route-owned actions           |
-| `apps/mobile/src/screens/`                     | Host/player placeholder screen composition                                      |
+| `apps/mobile/src/screens/`                     | API-backed host/player screen composition and explicit future placeholders       |
 | `apps/mobile/src/components/`                  | Reusable mobile layout, navigation, game, and UI primitives                     |
 | `apps/mobile/src/api/client.ts`                | Mobile API config, generated OpenAPI type usage, and Socket.IO client helper    |
 | `apps/mobile/src/storage/sessionStore.ts`      | Secure local session persistence for host/player context                        |

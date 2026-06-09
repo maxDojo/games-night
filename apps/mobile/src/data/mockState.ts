@@ -24,7 +24,7 @@ export const teams: TeamSummary[] = [
     checkedIn: 8,
     capacity: 8,
     points: 1340,
-    color: '#FFCB45',
+    color: '#FD7A10',
     isSelected: true,
   },
   {
@@ -34,7 +34,7 @@ export const teams: TeamSummary[] = [
     checkedIn: 6,
     capacity: 8,
     points: 1110,
-    color: '#FF4FA3',
+    color: '#FD5462',
   },
   {
     id: 'team-quiz-queens',
@@ -43,7 +43,7 @@ export const teams: TeamSummary[] = [
     checkedIn: 5,
     capacity: 8,
     points: 980,
-    color: '#3DF5D8',
+    color: '#05D7C1',
   },
 ];
 

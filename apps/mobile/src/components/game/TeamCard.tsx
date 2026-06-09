@@ -27,7 +27,7 @@ export function TeamCard({ team, selected, showPoints = true, disabled, onPress 
         <Text style={[styles.teamName, selected && styles.teamNameSelected]}>{team.name}</Text>
         <Text style={[styles.teamMeta, selected && styles.teamMetaSelected]}>{meta}</Text>
       </View>
-      {selected ? <Check color={theme.palette.onAccent} size={21} /> : null}
+      {selected ? <Check color={team.color} size={21} /> : null}
     </>
   );
 
