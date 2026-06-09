@@ -134,7 +134,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 #### Mobile milestones
 
-- Selected visual direction: the Google Stitch **Luminous / Action Pop** concept at `https://stitch.withgoogle.com/projects/8790484564827048746`: compact dark-plum layouts, warm cream text, orange-to-pink primary gradients, teal live/selected states, thin luminous outlines, and functional glow/motion. The theme must stay tokenized so future visual themes can replace it without rewriting screens.
+- Selected visual direction: the Google Stitch **Luminous / Action Pop** concept at `https://stitch.withgoogle.com/projects/8790484564827048746`: compact dark-plum layouts, warm cream text, orange-to-pink primary gradients, teal live/selected states, thin luminous outlines, and slow ambient glow/fade motion rather than animated border tracing. The theme must stay tokenized so future visual themes can replace it without rewriting screens.
 
 | Milestone | What | Status |
 | --------- | ---- | ------ |
