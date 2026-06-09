@@ -24,6 +24,7 @@ export interface ThemePalette {
   line: string;
   accent: string;
   accentAlt: string;
+  action: string;
   danger: string;
   success: string;
   info: string;
@@ -31,6 +32,7 @@ export interface ThemePalette {
   overlay: string;
   overlayStrong: string;
   onAccent: string;
+  onAction: string;
   onInfo: string;
   onDanger: string;
   nav: string;
@@ -75,6 +77,7 @@ export const arcadeTheme: ThemeProfile = {
     line: '#4A3C8C',
     accent: '#FFCB45',
     accentAlt: '#FF4FA3',
+    action: '#FFCB45',
     danger: '#FF4FA3',
     success: '#91F25C',
     info: '#3DF5D8',
@@ -82,6 +85,7 @@ export const arcadeTheme: ThemeProfile = {
     overlay: '#0D0A19AA',
     overlayStrong: '#0D0A19DD',
     onAccent: '#0D0A19',
+    onAction: '#0D0A19',
     onInfo: '#173D38',
     onDanger: '#FFF7D6',
     nav: '#17123A',
@@ -113,30 +117,32 @@ export const arcadeTheme: ThemeProfile = {
 export const luminousTheme: ThemeProfile = {
   name: 'luminous',
   displayName: 'Luminous',
-  accentColor: '#00E6D2',
+  accentColor: '#1EDDD2',
   palette: {
-    background: '#17082F',
-    ink: '#090413',
-    surface: '#241040',
-    surfaceAlt: '#32165F',
-    foreground: '#FFF8F2',
-    muted: '#C9B8E6',
-    line: '#5C3C91',
-    accent: '#00E6D2',
-    accentAlt: '#FF6B9F',
-    danger: '#FF4D7D',
-    success: '#36F2A4',
-    info: '#56B6FF',
-    warning: '#FF9E57',
-    overlay: '#120724B8',
-    overlayStrong: '#090413DD',
+    background: '#180B2E',
+    ink: '#090312',
+    surface: '#291640',
+    surfaceAlt: '#3A2059',
+    foreground: '#FFF7F0',
+    muted: '#D0B9DB',
+    line: '#704C82',
+    accent: '#1EDDD2',
+    accentAlt: '#FF7A73',
+    action: '#FF5D86',
+    danger: '#A9083E',
+    success: '#25D7A2',
+    info: '#9B82FF',
+    warning: '#FFB44A',
+    overlay: '#160A2AC2',
+    overlayStrong: '#090312E8',
     onAccent: '#071D21',
-    onInfo: '#081728',
+    onAction: '#FFF8F2',
+    onInfo: '#FFF8F2',
     onDanger: '#FFF8F2',
-    nav: '#1D0C36',
-    navActive: '#00E6D2',
-    input: '#130724',
-    subtleText: '#F6C5DE',
+    nav: '#211037',
+    navActive: '#1EDDD2',
+    input: '#211035',
+    subtleText: '#FFD0C8',
   },
   shape: {
     cardRadius: 18,
@@ -145,14 +151,14 @@ export const luminousTheme: ThemeProfile = {
   },
   opacity: {
     disabled: 0.5,
-    scrim: '#120724B8',
+    scrim: '#160A2AC2',
   },
   effect: {
     shadowColor: '#05020C',
     shadowOpacity: 0.35,
     shadowRadius: 16,
     elevation: 5,
-    accentShadowColor: '#00E6D2',
+    accentShadowColor: '#1EDDD2',
     accentShadowOpacity: 0.32,
     accentShadowRadius: 18,
     accentElevation: 7,

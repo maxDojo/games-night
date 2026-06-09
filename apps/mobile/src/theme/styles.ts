@@ -129,7 +129,7 @@ export function createStyles(theme: ThemeProfile) {
       ...surfaceLift,
     },
     heroShowcase: {
-      borderColor: p.accent,
+      borderColor: p.accentAlt,
       backgroundColor: p.surfaceAlt,
       ...accentLift,
     },
@@ -153,7 +153,7 @@ export function createStyles(theme: ThemeProfile) {
       textTransform: 'uppercase',
     },
     heroMarqueeAccent: {
-      color: p.accent,
+      color: p.warning,
       fontSize: 11,
       fontWeight: '900',
       letterSpacing: 0,
@@ -197,13 +197,13 @@ export function createStyles(theme: ThemeProfile) {
       gap: 12,
       padding: 20,
       borderWidth: 1,
-      borderColor: p.accent,
+      borderColor: p.line,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surfaceAlt,
       ...accentLift,
     },
     luminousHeroTitle: {
-      color: p.foreground,
+      color: p.accentAlt,
       fontSize: 31,
       fontWeight: '900',
       lineHeight: 35,
@@ -268,7 +268,7 @@ export function createStyles(theme: ThemeProfile) {
       ...surfaceLift,
     },
     roomEntryCard: {
-      borderColor: p.accent,
+      borderColor: p.action,
       backgroundColor: p.surfaceAlt,
       ...accentLift,
     },
@@ -310,6 +310,13 @@ export function createStyles(theme: ThemeProfile) {
       borderWidth: 1,
       borderColor: p.line,
       ...surfaceLift,
+    },
+    actionButtonPrimary: {
+      borderColor: p.action,
+      shadowColor: p.action,
+      shadowOpacity: 0.42,
+      shadowRadius: 16,
+      elevation: 7,
     },
     actionButtonText: {
       fontSize: 15,
@@ -437,7 +444,7 @@ export function createStyles(theme: ThemeProfile) {
     },
     questionPanelLuminous: {
       borderWidth: 1,
-      borderColor: p.accent,
+      borderColor: p.accentAlt,
       backgroundColor: p.surfaceAlt,
     },
     answerStagePanel: {
@@ -536,7 +543,7 @@ export function createStyles(theme: ThemeProfile) {
     },
     podiumWinner: {
       minHeight: 176,
-      backgroundColor: p.accent,
+      backgroundColor: p.surfaceAlt,
       borderColor: p.accent,
       ...accentLift,
     },
@@ -558,7 +565,7 @@ export function createStyles(theme: ThemeProfile) {
       letterSpacing: 0,
     },
     podiumTextDark: {
-      color: p.onAccent,
+      color: p.foreground,
     },
     sectionTitle: {
       color: p.foreground,
@@ -630,7 +637,7 @@ export function createStyles(theme: ThemeProfile) {
       gap: 14,
       padding: 18,
       borderRadius: shape.cardRadius,
-      backgroundColor: p.danger,
+      backgroundColor: p.accentAlt,
       ...accentLift,
     },
     roomCardSpotlight: {
@@ -655,7 +662,7 @@ export function createStyles(theme: ThemeProfile) {
       gap: 14,
       padding: 16,
       borderWidth: 1,
-      borderColor: p.accent,
+      borderColor: p.warning,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surfaceAlt,
       ...accentLift,
@@ -670,7 +677,7 @@ export function createStyles(theme: ThemeProfile) {
     glowStrip: {
       height: 6,
       borderRadius: 999,
-      backgroundColor: p.accent,
+      backgroundColor: p.accentAlt,
     },
     metaLabelLight: {
       color: p.subtleText,
@@ -824,13 +831,13 @@ export function createStyles(theme: ThemeProfile) {
       justifyContent: 'center',
       gap: 3,
       borderWidth: 1,
-      borderColor: p.danger,
+      borderColor: p.warning,
       borderRadius: shape.cardRadius,
       backgroundColor: p.surfaceAlt,
       ...surfaceLift,
     },
     timerText: {
-      color: p.foreground,
+      color: p.warning,
       fontSize: 44,
       fontWeight: '900',
       letterSpacing: 0,

@@ -17,18 +17,29 @@ interface ActionButtonProps {
 export function ActionButton({ label, icon: Icon, onPress, primary, danger, success, disabled }: ActionButtonProps) {
   const { styles, theme } = useAppStyles();
   const backgroundColor = primary
-    ? theme.palette.accent
+    ? theme.palette.action
     : danger
       ? theme.palette.danger
       : success
         ? theme.palette.success
         : theme.palette.surface;
-  const color = primary || success ? theme.palette.onAccent : danger ? theme.palette.onDanger : theme.palette.foreground;
+  const color = primary
+    ? theme.palette.onAction
+    : success
+      ? theme.palette.onAccent
+      : danger
+        ? theme.palette.onDanger
+        : theme.palette.foreground;
 
   return (
     <AnimatedPressable
       disabled={disabled}
-      style={[styles.actionButton, { backgroundColor }, disabled && styles.disabledCard]}
+      style={[
+        styles.actionButton,
+        { backgroundColor },
+        primary && styles.actionButtonPrimary,
+        disabled && styles.disabledCard,
+      ]}
       onPress={onPress}
     >
       <Icon color={color} size={18} />
