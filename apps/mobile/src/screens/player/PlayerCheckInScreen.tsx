@@ -81,25 +81,21 @@ export function PlayerCheckInScreen() {
   return (
     <Screen
       avatarLabel={showTeams ? playerNickname || nickname || partyName : undefined}
-      eyebrow={showTeams ? locationBanner.eyebrow : 'PLAYER CHECK-IN'}
       immersive
       roomCode={showTeams ? joinCode : undefined}
       roomStatus={showTeams ? partyStatus ?? 'LOBBY' : undefined}
-      title={showTeams ? 'Choose your side' : 'Join the room'}
     >
-      <View style={styles.luminousHeroPanel}>
-        <View style={styles.glowStrip} />
-        <Text style={styles.luminousHeroMeta}>{showTeams ? 'ROOM FOUND' : 'ENTER HOST CODE'}</Text>
-        <Text style={styles.luminousHeroTitle}>{showTeams ? partyName : 'Find tonight\'s room'}</Text>
-        <Text style={styles.centeredBodyText}>
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>{showTeams ? locationBanner.eyebrow : 'PLAYER CHECK-IN'}</Text>
+        <Text style={styles.screenTitle}>{showTeams ? 'Choose Your Side' : 'Join the Room'}</Text>
+        <Text style={styles.screenSubtitle}>
           {showTeams
             ? 'Pick an open team and check in. Scores stay sealed until the host reveal.'
             : 'Enter the code from the host to join the active party.'}
         </Text>
       </View>
 
-      <View style={[styles.card, styles.roomEntryCard]}>
-        <View style={styles.glowStrip} />
+      <View style={[styles.card, styles.cardAction]}>
         <View style={styles.inputGroup}>
           <Text style={styles.metaLabelAccent}>ROOM CODE</Text>
           <TextInput
@@ -168,7 +164,7 @@ export function PlayerCheckInScreen() {
             />
           </View>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Available Teams</Text>
+            <Text style={styles.sectionTitle}>Choose a team</Text>
             <Text style={styles.positiveText}>{teams.length} squads</Text>
           </View>
           <View style={styles.stack}>

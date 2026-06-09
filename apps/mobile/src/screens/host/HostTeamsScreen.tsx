@@ -43,12 +43,17 @@ export function HostTeamsScreen() {
   return (
     <Screen
       avatarLabel={hostUser?.displayName}
-      eyebrow="TEAM SETUP"
       immersive
       roomCode={hostParty?.joinCode}
       roomStatus={hostParty?.status ?? 'DRAFT'}
-      title={hostParty ? `${hostParty.name} teams` : `${theme.displayName} teams`}
     >
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>TEAM CONTROL</Text>
+        <Text style={styles.screenTitle}>Build the Teams</Text>
+        <Text style={styles.screenSubtitle}>
+          Create distinct squads, watch capacity, and keep similar names easy to tell apart.
+        </Text>
+      </View>
       <InfoBanner
         icon={Users}
         title={hostParty ? hostParty.joinCode : 'Create a party first'}
@@ -60,10 +65,9 @@ export function HostTeamsScreen() {
         color={hostParty ? theme.palette.success : theme.palette.info}
       />
       {hostParty ? (
-        <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
-          <View style={styles.glowStrip} />
+        <View style={[styles.spotlightPanel, styles.cardAccent]}>
           <View>
-            <Text style={styles.luminousHeroMeta}>Create New Team</Text>
+            <Text style={styles.luminousHeroMeta}>CREATE NEW TEAM</Text>
             <Text style={styles.cardTitle}>Assign a color glow</Text>
           </View>
           <Text style={styles.bodyText}>

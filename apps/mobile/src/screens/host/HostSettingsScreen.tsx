@@ -85,19 +85,14 @@ export function HostSettingsScreen() {
   return (
     <Screen
       avatarLabel={hostUser?.displayName}
-      eyebrow="HOST SETTINGS"
       immersive
       roomCode={hostParty?.joinCode}
       roomStatus={status}
-      title={hostParty ? `${hostParty.name} settings` : 'Party settings'}
     >
-      <View style={styles.luminousHeroPanel}>
-        <View style={styles.luminousHeroOrb}>
-          <Settings color={hostParty ? theme.palette.accent : theme.palette.danger} size={28} />
-        </View>
-        <Text style={styles.luminousHeroMeta}>{hostParty ? hostParty.joinCode : 'Create a party first'}</Text>
-        <Text style={styles.luminousHeroTitle}>Game settings</Text>
-        <Text style={styles.centeredBodyText}>
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>HOST SETTINGS</Text>
+        <Text style={styles.screenTitle}>Party Settings</Text>
+        <Text style={styles.screenSubtitle}>
           {hostParty
             ? 'Edit setup-safe settings here. Mid-night controls stay locked.'
             : 'Create or select a party before editing settings.'}
@@ -120,7 +115,7 @@ export function HostSettingsScreen() {
         </View>
       </View>
 
-      <View style={[styles.card, styles.cardLuminous]}>
+      <View style={[styles.card, styles.cardAction]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>PARTY DETAILS</Text>
           <Settings color={theme.palette.info} size={18} />
@@ -141,7 +136,7 @@ export function HostSettingsScreen() {
         </View>
       </View>
 
-      <View style={[styles.card, styles.cardLuminous]}>
+      <View style={[styles.card, styles.cardAccent]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>CAPACITY</Text>
           <Users color={theme.palette.info} size={18} />

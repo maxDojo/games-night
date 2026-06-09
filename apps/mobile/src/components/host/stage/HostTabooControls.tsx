@@ -33,7 +33,7 @@ export function HostTabooControls({
     <View style={styles.secretCard}>
       <View style={styles.rowBetween}>
         <Text style={styles.darkMeta}>TABOO CARD</Text>
-        <AlertTriangle color={theme.palette.onAccent} size={18} />
+        <AlertTriangle color={theme.palette.warning} size={18} />
       </View>
       <View>
         <Text style={styles.secretWord}>{prompt?.word ?? 'Waiting for card'}</Text>

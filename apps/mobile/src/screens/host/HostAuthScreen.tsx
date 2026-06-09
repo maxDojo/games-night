@@ -5,6 +5,7 @@ import { LogIn, UserPlus } from 'lucide-react-native';
 
 import { Screen } from '../../components/layout/Screen';
 import { ActionButton } from '../../components/ui/ActionButton';
+import { GradientPanel } from '../../components/ui/GradientPanel';
 import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
 
@@ -39,8 +40,16 @@ export function HostAuthScreen() {
   };
 
   return (
-    <Screen eyebrow="HOST ACCESS" immersive title={isRegistering ? 'Create host' : 'Host login'}>
-      <View style={styles.luminousHeroPanel}>
+    <Screen immersive>
+      <View style={styles.welcomeBrand}>
+        <Text style={styles.eyebrow}>LUMINOUS HOST SUITE</Text>
+        <Text style={styles.welcomeBrandTitle}>{isRegistering ? 'Create Host' : 'Host Login'}</Text>
+        <Text style={styles.centeredBodyText}>Run the queue, scoring, teams, and final reveal.</Text>
+      </View>
+      <GradientPanel
+        colors={[theme.palette.surfaceAlt, '#3D203D', theme.palette.surface]}
+        style={[styles.gradientPanel, styles.cardAction]}
+      >
         <View style={styles.luminousHeroOrb}>
           {isRegistering ? (
             <UserPlus color={theme.palette.accent} size={28} />
@@ -49,19 +58,18 @@ export function HostAuthScreen() {
           )}
         </View>
         <Text style={styles.luminousHeroMeta}>Host suite</Text>
-        <Text style={styles.luminousHeroTitle}>Run the room</Text>
+        <Text style={styles.gradientPanelTitle}>Run the room</Text>
         <Text style={styles.centeredBodyText}>
           Host accounts protect party creation, queues, scoring, and reveal controls.
         </Text>
-      </View>
+      </GradientPanel>
 
       <View style={styles.twoColumn}>
         <ActionButton label="Login" icon={LogIn} onPress={() => setMode('login')} primary={!isRegistering} />
         <ActionButton label="Register" icon={UserPlus} onPress={() => setMode('register')} primary={isRegistering} />
       </View>
 
-      <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
-        <View style={styles.glowStrip} />
+      <View style={[styles.spotlightPanel, styles.cardAccent]}>
         {isRegistering ? (
           <View style={styles.inputGroup}>
             <Text style={styles.metaLabelAccent}>DISPLAY NAME</Text>
@@ -118,7 +126,7 @@ export function HostAuthScreen() {
           icon={isRegistering ? UserPlus : LogIn}
           onPress={submit}
           disabled={!canSubmit || isHostAuthenticating}
-          danger
+          primary
         />
       </View>
     </Screen>

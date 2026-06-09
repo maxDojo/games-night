@@ -145,8 +145,8 @@ export const luminousTheme: ThemeProfile = {
     subtleText: '#FEB37C',
   },
   shape: {
-    cardRadius: 18,
-    controlRadius: 16,
+    cardRadius: 16,
+    controlRadius: 13,
     pillRadius: 999,
   },
   opacity: {

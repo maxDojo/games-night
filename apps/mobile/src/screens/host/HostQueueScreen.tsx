@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
-import { ClipboardList, Plus, RefreshCw, Save } from 'lucide-react-native';
+import { ClipboardList, Plus, RefreshCw } from 'lucide-react-native';
 
 import { QueuedRoundCard } from '../../components/game/QueuedRoundCard';
 import { HostGamePicker } from '../../components/host/HostGamePicker';
@@ -80,27 +80,21 @@ export function HostQueueScreen() {
   return (
     <Screen
       avatarLabel={hostUser?.displayName}
-      eyebrow="QUEUE LAB / TV + PHONES"
       immersive
       roomCode={hostParty?.joinCode}
       roomStatus={hostParty?.status ?? 'DRAFT'}
-      title="Build the run"
     >
-      <View style={styles.luminousHeroPanel}>
-        <View style={styles.luminousHeroOrb}>
-          <Save color={hostParty ? theme.palette.danger : theme.palette.accent} size={28} />
-        </View>
-        <Text style={styles.luminousHeroMeta}>{hostParty ? `Plan: ${hostParty.name}` : 'Create a party first'}</Text>
-        <Text style={styles.luminousHeroTitle}>Build the run</Text>
-        <Text style={styles.centeredBodyText}>
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>HOST QUEUE</Text>
+        <Text style={styles.screenTitle}>Build the Run</Text>
+        <Text style={styles.screenSubtitle}>
           {hostParty
             ? 'Queue built-in rounds with server defaults plus host point/timer overrides.'
             : 'Party creation lives in the host lobby. Round queueing unlocks after that.'}
         </Text>
       </View>
 
-      <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
-        <View style={styles.glowStrip} />
+      <View style={[styles.spotlightPanel, styles.cardAccent]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>GAME</Text>
           <Text style={styles.positiveText}>{isLoadingHostGames ? 'Loading' : `${availableGames.length} built-ins`}</Text>
@@ -135,7 +129,7 @@ export function HostQueueScreen() {
         </View>
       </View>
 
-      <View style={[styles.card, styles.cardLuminous]}>
+      <View style={[styles.card, styles.cardAction]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>QUEUED ROUNDS</Text>
           <ClipboardList color={theme.palette.info} size={18} />

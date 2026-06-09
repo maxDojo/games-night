@@ -73,15 +73,20 @@ export function HostLobbyScreen() {
   return (
     <Screen
       avatarLabel={hostUser?.displayName}
-      eyebrow={hostUser ? `HOST: ${hostUser.displayName}` : 'THEMED ROOM'}
       immersive
       roomCode={roomCode}
       roomStatus={roomStatus}
-      title={roomName}
     >
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>{hostUser ? `HOST: ${hostUser.displayName}` : 'HOST DASHBOARD'}</Text>
+        <Text style={styles.screenTitle}>{hostParty ? roomName : 'Create Tonight\'s Room'}</Text>
+        <Text style={styles.screenSubtitle}>
+          {hostParty ? 'Control the lobby, awards, and reveal from one place.' : 'Set the room capacity, then open the lobby.'}
+        </Text>
+      </View>
       {hostParty ? null : (
         <>
-          <View style={styles.luminousHeroPanel}>
+          <View style={[styles.luminousHeroPanel, styles.cardAction]}>
             <View style={styles.luminousHeroOrb}>
               <Sparkles color={theme.palette.accent} size={28} />
             </View>
@@ -91,8 +96,7 @@ export function HostLobbyScreen() {
               Party creation is live. Theme images and uploads stay for a later slice.
             </Text>
           </View>
-          <View style={[styles.spotlightPanel, styles.spotlightPanelAccent]}>
-            <View style={styles.glowStrip} />
+          <View style={[styles.spotlightPanel, styles.cardAccent]}>
             <View style={styles.inputGroup}>
               <Text style={styles.metaLabelAccent}>PARTY NAME</Text>
               <TextInput
@@ -174,7 +178,7 @@ export function HostLobbyScreen() {
       {hostParty ? (
         <ActionButton label="Party settings" icon={Settings} onPress={() => router.push('/host/settings')} />
       ) : null}
-      <View style={[styles.card, styles.cardLuminous]}>
+      <View style={[styles.card, styles.cardAccent]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
           <Text style={styles.positiveText}>{nextRound ? `${nextRound.points} pts` : 'Queue empty'}</Text>

@@ -33,13 +33,16 @@ export function PlayerReportScreen() {
     return (
       <Screen
         avatarLabel={playerNickname || checkedInTeam?.name}
-        eyebrow="REVEAL LOCKED"
         immersive
         roomCode={joinCode}
         roomStatus={partyStatus ?? 'LOBBY'}
-        title="Scores stay sealed"
       >
-        <View style={styles.luminousHeroPanel}>
+        <View style={styles.screenTitleBlock}>
+          <Text style={styles.eyebrow}>REVEAL LOCKED</Text>
+          <Text style={styles.screenTitle}>Scores Stay Sealed</Text>
+          <Text style={styles.screenSubtitle}>The final report unlocks when the host opens the reveal.</Text>
+        </View>
+        <View style={[styles.luminousHeroPanel, styles.cardAccent]}>
           <View style={styles.luminousHeroOrb}>
             <EyeOff color={theme.palette.accent} size={28} />
           </View>
@@ -75,13 +78,16 @@ export function PlayerReportScreen() {
   return (
     <Screen
       avatarLabel={playerNickname || checkedInTeam?.name}
-      eyebrow={`${theme.displayName.toUpperCase()} REPORT`}
       immersive
       roomCode={joinCode}
       roomStatus="REVEALED"
-      title="Score history"
     >
-      <View style={styles.luminousHeroPanel}>
+      <View style={styles.screenTitleBlock}>
+        <Text style={styles.eyebrow}>FINAL REPORT</Text>
+        <Text style={styles.screenTitle}>Final Standings</Text>
+        <Text style={styles.screenSubtitle}>The scores are open. Review every award, penalty, and correction.</Text>
+      </View>
+      <View style={[styles.luminousHeroPanel, styles.cardAction]}>
         <View style={styles.luminousHeroOrb}>
           <Text style={styles.luminousHeroOrbText}>{winner?.shortName ?? '1'}</Text>
         </View>

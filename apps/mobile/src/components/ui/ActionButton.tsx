@@ -1,5 +1,6 @@
 import { Text } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { AnimatedPressable } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
@@ -31,19 +32,36 @@ export function ActionButton({ label, icon: Icon, onPress, primary, danger, succ
         ? theme.palette.onDanger
         : theme.palette.foreground;
 
+  const content = (
+    <>
+      <Icon color={color} size={17} />
+      <Text style={[styles.actionButtonText, { color }]}>{label}</Text>
+    </>
+  );
+
   return (
     <AnimatedPressable
       disabled={disabled}
       style={[
         styles.actionButton,
-        { backgroundColor },
+        !primary && { backgroundColor },
         primary && styles.actionButtonPrimary,
         disabled && styles.disabledCard,
       ]}
       onPress={onPress}
     >
-      <Icon color={color} size={18} />
-      <Text style={[styles.actionButtonText, { color }]}>{label}</Text>
+      {primary ? (
+        <LinearGradient
+          colors={[theme.palette.warning, theme.palette.action]}
+          end={{ x: 1, y: 0 }}
+          start={{ x: 0, y: 0 }}
+          style={styles.actionButtonGradient}
+        >
+          {content}
+        </LinearGradient>
+      ) : (
+        content
+      )}
     </AnimatedPressable>
   );
 }
