@@ -143,7 +143,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Done |
 | **Mobile M2.7** Motion system | Shared animation primitives, tactile press feedback, gameplay state motion, and reveal/score feedback | Done |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Done |
-| **Mobile M3.5** UX cleanup + party management planning | First-run join flow, explicit bonus targeting, host party list/settings, and big-screen join-code display planning | Planned |
+| **Mobile M3.5** UX cleanup + party management | First-run join flow, explicit bonus targeting, host party list/settings, and big-screen join-code display planning | In progress |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
 
@@ -241,7 +241,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add host-only Charades phrase display with correct and skip controls.
   - Done: add host-only Taboo card/forbidden-word display with correct, skip, and forbidden-word penalty controls.
   - Follow-up: run the M3 flow on a device/emulator with a seeded Charades/Taboo round before treating prompt timing and host handoff ergonomics as final.
-- **Mobile visual system refresh** - in progress
+- **Mobile visual system refresh** - done
   - Done: derive a tokenized Luminous palette, typography hierarchy, compact room chrome, gradient actions, outlined panels, glow states, and reduced-motion-aware animation from the Stitch reference.
   - Done: keep the redesign inside shared theme/components rather than hardcoding screen-specific colors.
   - Done: redesign all current host/player screens to match the Stitch layout density and screen hierarchy while preserving existing API behavior.
@@ -260,9 +260,11 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add host End Night confirmation flow after bonus targeting. End Night reveals scores, marks the current party finished, preserves score history, and blocks new joins/check-ins or round starts.
   - Done: keep Start Next Week/New Night separate from End Night. The mobile host flow shows it as a disabled future action so End Night never resets or reuses party state implicitly.
   - Done: add host party management planning. Future host flows should support multiple host-created parties, switching between parties, and a clear active/current party indicator.
-    - Planned API shape: add host-owned party listing with status filters, active/current marker, and safe summary fields for party name, join code, status, team/player counts, created/started/finished timestamps, and recurring eligibility.
+    - Done: add host-owned party listing with status filters, active/current marker, and safe summary fields for party name, join code, status, team/player counts, and created/started/finished timestamps.
+    - Done: persist `User.currentPartyId`, make newly created parties current, allow explicit switching among owned non-terminal parties, and clear the pointer when the current night ends.
     - Planned mobile shape: add a party switcher/management surface before or near the host lobby so the host can create a new party, resume an existing one, or inspect finished parties without overwriting local session state.
-    - Active party rule: only one party should be treated as the current joinable party for a host/period unless the host explicitly switches context.
+    - Done: enforce one current party per host. Finished/cancelled parties cannot become current; legacy hosts without a valid pointer fall back to their newest non-terminal party.
+    - Done: restrict player join-code resolution and team check-in to the host's current party so older lobby codes cannot keep accepting players.
     - Recurring-party note: `Next week` / `New night` should only appear when the host enables recurring parties for that specific party or future persistent period; one-off parties should not show the action.
   - Done: clarify join-code lifecycle. Player-entered join codes are accepted only for active `LOBBY` or `IN_PROGRESS` parties, while finished/cancelled/paused codes show clear rejection messages; team check-in remains allowed only in `LOBBY`.
   - Done: add a party settings screen plan for editable host settings such as max teams and players per team, with validation around settings that become unsafe after players check in.
@@ -291,7 +293,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 ### What's in flight
 
-- Mobile visual-system refresh on `staging/mobile-stitch-redesign`, ready for a dedicated PR after the earlier glow/motion PR was merged.
+- Host party-management API foundation on `staging/api-host-party-listing`; the next mobile slice is the party switcher/management surface.
 
 ---
 
@@ -341,7 +343,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 - Mock Prisma via `apps/api/tests/helpers/mockPrisma.ts`. Extend it whenever you use a new model method.
 - Game engines use a **custom manual fake clock** (not `vi.useFakeTimers`) - see `apps/api/tests/games/trivia.test.ts` for the pattern. It gives precise tick control.
 - Route tests usually build the app with mock prisma + `disableSockets: true`, close it in `afterAll`, and reset mocks in `beforeEach`.
-- Current API test suite is 160 tests.
+- Current API test suite is 193 tests.
 
 ### Providers
 
@@ -455,7 +457,7 @@ pnpm prisma:migrate
 pnpm --filter @games-night/api db:seed          # fetches trivia from Open Trivia DB
 # OR for no-network: pnpm db:seed:offline
 pnpm dev:api                                    # http://localhost:3000  /docs  /socket.io
-pnpm test:api                                   # 160 tests
+pnpm test:api                                   # 193 tests
 pnpm test:api:integration                       # skips unless INTEGRATION_TEST_DATABASE_URL is set
 pnpm build:api                                  # TypeScript build
 ```

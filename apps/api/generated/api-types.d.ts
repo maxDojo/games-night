@@ -226,7 +226,63 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List parties owned by the host
+         * @description Returns safe party summaries for the authenticated host. The explicit current party is used when eligible; existing hosts without a saved selection fall back to their newest non-terminal party.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            currentPartyId: string | null;
+                            parties: {
+                                id: string;
+                                joinCode: string;
+                                name: string;
+                                /** @enum {string} */
+                                status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                                maxTeams: number;
+                                maxPerTeam: number;
+                                scoresRevealed: boolean;
+                                createdAt: string;
+                                startedAt: (string) | null;
+                                finishedAt: (string) | null;
+                                isCurrent: boolean;
+                                isJoinable: boolean;
+                                teamCount: number;
+                                playerCount: number;
+                                roundCount: number;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
         put?: never;
         /**
          * Create a new party
@@ -364,9 +420,125 @@ export interface paths {
                         };
                     };
                 };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
             };
         };
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/parties/{joinCode}/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set the host current party
+         * @description Host-only. Selects the party used as the current mobile host context. Finished and cancelled parties remain inspectable but cannot become current.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    joinCode: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            currentPartyId: string;
+                            party: {
+                                id: string;
+                                joinCode: string;
+                                name: string;
+                                /** @enum {string} */
+                                status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                                maxTeams: number;
+                                maxPerTeam: number;
+                                scoresRevealed: boolean;
+                                createdAt: string;
+                                startedAt: (string) | null;
+                                finishedAt: (string) | null;
+                                isCurrent: boolean;
+                                isJoinable: boolean;
+                                teamCount: number;
+                                playerCount: number;
+                                roundCount: number;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;

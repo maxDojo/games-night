@@ -14,11 +14,15 @@ export function makeMockPrisma(): {
     user: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
     },
     party: {
       create: vi.fn(),
       update: vi.fn(),
       findUnique: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
     },
     team: {
       findUnique: vi.fn(),

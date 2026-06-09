@@ -18,6 +18,8 @@ model User {
   email        String   @unique
   displayName  String
   passwordHash String
+  currentPartyId String?
+  currentParty Party? @relation("CurrentParty", fields: [currentPartyId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -25,6 +27,8 @@ model User {
   customGames   CustomGame[]
   partyPlans    PartyPlan[]
   scoreEvents   ScoreEvent[]
+
+  @@index([currentPartyId])
 }
 
 // ---------- Party (a games-night session) ----------
@@ -52,9 +56,10 @@ model Party {
   startedAt   DateTime?
   finishedAt  DateTime?
 
-  teams       Team[]
-  rounds      Round[]
-  scoreEvents ScoreEvent[]
+  teams           Team[]
+  rounds          Round[]
+  scoreEvents     ScoreEvent[]
+  currentForHosts User[] @relation("CurrentParty")
 
   @@index([status])
   @@index([hostId])
