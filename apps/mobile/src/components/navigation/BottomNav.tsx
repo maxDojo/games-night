@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
-import { AnimatedPressable, MotionView } from '../motion';
+import { AnimatedPressable, GlowPulse, MotionView } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 interface BottomNavProps<T extends string> {
@@ -21,14 +21,21 @@ export function BottomNav<T extends string>({ items, active, onChange }: BottomN
           const isActive = item.route === active;
           return (
             <MotionView key={item.route} style={styles.flex} variant="pop" delay={isActive ? 0 : 25}>
-              <AnimatedPressable
-                style={[styles.navItem, isActive && styles.navItemActive]}
-                onPress={() => onChange(item.route)}
-                pressedScale={0.94}
+              <GlowPulse
+                active={isActive}
+                borderRadius={26}
+                color={theme.palette.accent}
+                style={styles.flex}
               >
-                <Icon color={isActive ? theme.palette.onAccent : theme.palette.muted} size={18} />
-                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{item.label}</Text>
-              </AnimatedPressable>
+                <AnimatedPressable
+                  style={[styles.navItem, isActive && styles.navItemActive]}
+                  onPress={() => onChange(item.route)}
+                  pressedScale={0.94}
+                >
+                  <Icon color={isActive ? theme.palette.onAccent : theme.palette.muted} size={18} />
+                  <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{item.label}</Text>
+                </AnimatedPressable>
+              </GlowPulse>
             </MotionView>
           );
         })}

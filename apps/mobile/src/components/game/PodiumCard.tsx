@@ -1,7 +1,7 @@
 import { Text } from 'react-native';
 import { Crown } from 'lucide-react-native';
 
-import { MotionView } from '../motion';
+import { GlowPulse, MotionView } from '../motion';
 import { useAppStyles } from '../../theme/useAppStyles';
 
 interface PodiumCardProps {
@@ -16,14 +16,21 @@ export function PodiumCard({ rank, name, points, color, winner }: PodiumCardProp
   const { styles, theme } = useAppStyles();
 
   return (
-    <MotionView variant={winner ? 'pop' : 'fade-up'} style={[styles.podiumCard, winner && styles.podiumWinner]}>
-      {winner ? (
-        <Crown color={theme.palette.onAccent} size={22} />
-      ) : (
-        <Text style={[styles.podiumRank, { color }]}>{rank}</Text>
-      )}
-      <Text style={[styles.podiumName, winner && styles.podiumTextDark]}>{name}</Text>
-      <Text style={[styles.podiumPoints, winner && styles.podiumTextDark]}>{points}</Text>
-    </MotionView>
+    <GlowPulse
+      active={winner}
+      borderRadius={theme.shape.cardRadius}
+      color={theme.palette.accent}
+      style={styles.flex}
+    >
+      <MotionView variant={winner ? 'pop' : 'fade-up'} style={[styles.podiumCard, winner && styles.podiumWinner]}>
+        {winner ? (
+          <Crown color={theme.palette.onAccent} size={22} />
+        ) : (
+          <Text style={[styles.podiumRank, { color }]}>{rank}</Text>
+        )}
+        <Text style={[styles.podiumName, winner && styles.podiumTextDark]}>{name}</Text>
+        <Text style={[styles.podiumPoints, winner && styles.podiumTextDark]}>{points}</Text>
+      </MotionView>
+    </GlowPulse>
   );
 }

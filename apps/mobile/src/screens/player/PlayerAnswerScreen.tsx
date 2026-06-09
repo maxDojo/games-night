@@ -3,6 +3,7 @@ import { CheckCircle2, Clock, EyeOff, Lock, Radio, ShieldCheck } from 'lucide-re
 
 import { AnswerOption } from '../../components/game/AnswerOption';
 import { Screen } from '../../components/layout/Screen';
+import { GlowPulse } from '../../components/motion';
 import { InfoBanner } from '../../components/ui/InfoBanner';
 import { Stat } from '../../components/ui/Stat';
 import { usePartyState } from '../../state/PartyState';
@@ -80,20 +81,26 @@ export function PlayerAnswerScreen() {
 
       {activeTriviaQuestion ? (
         <>
-          <View style={[styles.questionPanel, styles.questionPanelLuminous, styles.answerStagePanel]}>
-            <View style={styles.glowStrip} />
-            <View style={styles.rowBetween}>
-              <Text style={[styles.darkMeta, { color: theme.palette.accent }]}>
-                {activeTriviaQuestion.questionNumber}/{activeTriviaQuestion.total}
-              </Text>
-              <Text style={styles.lightMeta}>{answerLocked ? 'locked' : 'pick one'}</Text>
+          <GlowPulse
+            active={!answerLocked}
+            borderRadius={theme.shape.cardRadius}
+            color={theme.palette.accent}
+          >
+            <View style={[styles.questionPanel, styles.questionPanelLuminous, styles.answerStagePanel]}>
+              <View style={styles.glowStrip} />
+              <View style={styles.rowBetween}>
+                <Text style={[styles.darkMeta, { color: theme.palette.accent }]}>
+                  {activeTriviaQuestion.questionNumber}/{activeTriviaQuestion.total}
+                </Text>
+                <Text style={styles.lightMeta}>{answerLocked ? 'locked' : 'pick one'}</Text>
+              </View>
+              <Text style={styles.questionText}>{activeTriviaQuestion.question}</Text>
+              <View style={styles.lockNote}>
+                <Lock color={theme.palette.accent} size={15} />
+                <Text style={styles.lockText}>Live scores stay hidden until the host reveal.</Text>
+              </View>
             </View>
-            <Text style={styles.questionText}>{activeTriviaQuestion.question}</Text>
-            <View style={styles.lockNote}>
-              <Lock color={theme.palette.accent} size={15} />
-              <Text style={styles.lockText}>Live scores stay hidden until the host reveal.</Text>
-            </View>
-          </View>
+          </GlowPulse>
 
           <View style={styles.stack}>
             {activeTriviaQuestion.choices.map((choice, index) => (

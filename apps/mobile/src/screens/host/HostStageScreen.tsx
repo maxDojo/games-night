@@ -7,6 +7,7 @@ import { HostGameControls } from '../../components/host/stage/HostGameControls';
 import { HostManualScoreCard } from '../../components/host/stage/HostManualScoreCard';
 import { HostRoundLifecycleControls } from '../../components/host/stage/HostRoundLifecycleControls';
 import { Screen } from '../../components/layout/Screen';
+import { GlowPulse } from '../../components/motion';
 import { Stat } from '../../components/ui/Stat';
 import { usePartyState } from '../../state/PartyState';
 import { useAppStyles } from '../../theme/useAppStyles';
@@ -66,27 +67,37 @@ export function HostStageScreen() {
       roomStatus={activeRound ? 'LIVE' : hostParty?.status ?? 'DRAFT'}
       title={activeRound?.label ?? nextRound?.label ?? 'Stage control'}
     >
-      <View style={styles.stageControlPanel}>
-        <View style={styles.glowStrip} />
-        <View style={styles.rowBetween}>
-          <Text style={styles.luminousHeroMeta}>{activeRound ? 'Round is live' : 'Ready state'}</Text>
-          {activeRound ? <Play color={theme.palette.success} size={18} /> : <Flag color={theme.palette.info} size={18} />}
+      <GlowPulse
+        active={Boolean(activeRound)}
+        borderRadius={theme.shape.cardRadius}
+        color={theme.palette.success}
+      >
+        <View style={styles.stageControlPanel}>
+          <View style={styles.glowStrip} />
+          <View style={styles.rowBetween}>
+            <Text style={styles.luminousHeroMeta}>{activeRound ? 'Round is live' : 'Ready state'}</Text>
+            {activeRound ? (
+              <Play color={theme.palette.success} size={18} />
+            ) : (
+              <Flag color={theme.palette.info} size={18} />
+            )}
+          </View>
+          <Text style={styles.stageTitle}>
+            {activeRound
+              ? 'End the active round or write a manual score.'
+              : waitingForHostSocket
+                ? 'Host-only prompts need this phone online.'
+                : nextRound
+                  ? 'Start or skip the next queued round.'
+                  : 'Queue rounds before using stage controls.'}
+          </Text>
+          <View style={styles.statRow}>
+            <Stat value={queuedRounds.length.toString()} label="queued" accent />
+            <Stat value={completedCount.toString()} label="done" />
+            <Stat value={skippedCount.toString()} label="skipped" danger />
+          </View>
         </View>
-        <Text style={styles.stageTitle}>
-          {activeRound
-            ? 'End the active round or write a manual score.'
-            : waitingForHostSocket
-              ? 'Host-only prompts need this phone online.'
-              : nextRound
-                ? 'Start or skip the next queued round.'
-                : 'Queue rounds before using stage controls.'}
-        </Text>
-        <View style={styles.statRow}>
-          <Stat value={queuedRounds.length.toString()} label="queued" accent />
-          <Stat value={completedCount.toString()} label="done" />
-          <Stat value={skippedCount.toString()} label="skipped" danger />
-        </View>
-      </View>
+      </GlowPulse>
 
       {activeRound ? <QueuedRoundCard round={activeRound} /> : null}
       {!activeRound && nextRound ? <QueuedRoundCard round={nextRound} /> : null}
