@@ -291,7 +291,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 ### What's in flight
 
-- Mobile visual-system refresh on `staging/mobile-luminous-glow-motion`, broadening PR #54 to closely implement the selected Stitch Luminous design.
+- Mobile visual-system refresh on `staging/mobile-stitch-redesign`, ready for a dedicated PR after the earlier glow/motion PR was merged.
 
 ---
 
