@@ -150,4 +150,4 @@ export function HostTeamsScreen() {
   );
 }
 
-const teamColors = ['#FFCB45', '#FF4FA3', '#3DF5D8', '#65B8FF', '#FF7A3D', '#8B6DFF'];
+const teamColors = ['#FD5462', '#05D7C1', '#FEB37C', '#9A73D9', '#FD7A10', '#C53D56'];

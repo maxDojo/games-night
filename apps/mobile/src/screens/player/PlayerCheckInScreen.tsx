@@ -232,42 +232,42 @@ function getLocationBanner(
         eyebrow: 'VENUE CHECK',
         icon: LocateFixed,
         subtitle: message ?? 'Venue-only check-in is required for this room.',
-        color: '#FFCB45',
+        color: '#FD7A10',
       };
     case 'checking':
       return {
         eyebrow: 'CHECKING VENUE',
         icon: LocateFixed,
         subtitle: message ?? 'Checking whether this device is at the venue.',
-        color: '#FFCB45',
+        color: '#FD7A10',
       };
     case 'failed':
       return {
         eyebrow: 'HOST OVERRIDE',
         icon: MapPinOff,
         subtitle: message ?? 'Venue check failed. Ask the host to override.',
-        color: '#FF5C8A',
+        color: '#FD5462',
       };
     case 'overridden':
       return {
         eyebrow: 'OVERRIDE NOTED',
         icon: ShieldAlert,
         subtitle: message ?? `Host override noted / ${weekLabel}`,
-        color: '#3DF5D8',
+        color: '#05D7C1',
       };
     case 'verified':
       return {
         eyebrow: 'VENUE VERIFIED',
         icon: MapPinCheck,
         subtitle: message ?? `Venue verified / ${weekLabel}`,
-        color: '#3DF5D8',
+        color: '#05D7C1',
       };
     default:
       return {
         eyebrow: 'ROOM FOUND',
         icon: Ticket,
         subtitle: `Venue check not required / ${weekLabel}`,
-        color: '#65B8FF',
+        color: '#9A73D9',
       };
   }
 }
