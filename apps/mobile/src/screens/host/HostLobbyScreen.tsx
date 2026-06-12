@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { Plus, Settings, Sparkles } from 'lucide-react-native';
+import { Layers3, Settings } from 'lucide-react-native';
 
 import { HostBonusAwardsCard } from '../../components/host/HostBonusAwardsCard';
 import { HostNightActionsCard } from '../../components/host/HostNightActionsCard';
@@ -19,7 +19,6 @@ export function HostLobbyScreen() {
     awardBonusToTeam,
     awardedBonusIds,
     bonusAwards,
-    createHostParty,
     endNight,
     hostParty,
     hostPartyError,
@@ -27,7 +26,6 @@ export function HostLobbyScreen() {
     hostTeams,
     hostUser,
     isAwardingBonus,
-    isCreatingHostParty,
     isEndingNight,
     isRevealingScores,
     queuedRounds,
@@ -36,12 +34,8 @@ export function HostLobbyScreen() {
     scoresRevealed,
     selectHostTeam,
     selectedHostTeamId,
-    teams,
     totalPlayers,
   } = usePartyState();
-  const [partyName, setPartyName] = useState(hostUser ? `${hostUser.displayName}'s House` : 'Games Night');
-  const [maxTeams, setMaxTeams] = useState('4');
-  const [maxPerTeam, setMaxPerTeam] = useState('8');
   const [selectedBonusId, setSelectedBonusId] = useState<string | undefined>(bonusAwards[0]?.id);
   const nextRound = queuedRounds.find((round) => round.status === 'PENDING') ?? queuedRounds[0];
   const latestBonus = [...awardedBonusIds]
@@ -51,14 +45,10 @@ export function HostLobbyScreen() {
   const roomCode = hostParty?.joinCode ?? '------';
   const roomName = hostParty?.name ?? theme.displayName;
   const roomStatus = hostParty?.status ?? 'DRAFT';
-  const teamCapacity = hostParty ? `${hostParty.maxTeams} x ${hostParty.maxPerTeam}` : `${maxTeams} x ${maxPerTeam}`;
+  const teamCapacity = hostParty ? `${hostParty.maxTeams} x ${hostParty.maxPerTeam}` : '0 x 0';
   const playerCount = hostParty ? 0 : totalPlayers;
   const isNightFinished = roomStatus === 'FINISHED';
   const hasActiveRound = queuedRounds.some((round) => round.status === 'ACTIVE');
-
-  const handleCreateParty = () => {
-    void createHostParty(partyName, Number(maxTeams), Number(maxPerTeam));
-  };
 
   useEffect(() => {
     void refreshHostTeams();
@@ -70,6 +60,34 @@ export function HostLobbyScreen() {
     }
   }, [awardedBonusIds, bonusAwards, selectedBonusId]);
 
+  if (!hostParty) {
+    return (
+      <Screen avatarLabel={hostUser?.displayName} immersive>
+        <View style={styles.screenTitleBlock}>
+          <Text style={styles.eyebrow}>HOST DASHBOARD</Text>
+          <Text style={styles.screenTitle}>Select a room first</Text>
+          <Text style={styles.screenSubtitle}>
+            Party setup and history now live in Rooms so switching nights cannot overwrite local state.
+          </Text>
+        </View>
+        <View style={[styles.luminousHeroPanel, styles.cardAction]}>
+          <Layers3 color={theme.palette.accent} size={30} />
+          <Text style={styles.luminousHeroTitle}>Choose the night</Text>
+          <Text style={styles.centeredBodyText}>
+            Resume an active party or create a separate room before opening host controls.
+          </Text>
+        </View>
+        {hostPartyError ? <Text style={styles.errorText}>{hostPartyError}</Text> : null}
+        <ActionButton
+          icon={Layers3}
+          label="Open rooms"
+          onPress={() => router.replace('/host/parties')}
+          primary
+        />
+      </Screen>
+    );
+  }
+
   return (
     <Screen
       avatarLabel={hostUser?.displayName}
@@ -79,86 +97,11 @@ export function HostLobbyScreen() {
     >
       <View style={styles.screenTitleBlock}>
         <Text style={styles.eyebrow}>{hostUser ? `HOST: ${hostUser.displayName}` : 'HOST DASHBOARD'}</Text>
-        <Text style={styles.screenTitle}>{hostParty ? roomName : 'Create Tonight\'s Room'}</Text>
+        <Text style={styles.screenTitle}>{roomName}</Text>
         <Text style={styles.screenSubtitle}>
-          {hostParty ? 'Control the lobby, awards, and reveal from one place.' : 'Set the room capacity, then open the lobby.'}
+          Control the lobby, awards, and reveal from one place.
         </Text>
       </View>
-      {hostParty ? null : (
-        <>
-          <View style={[styles.luminousHeroPanel, styles.cardAction]}>
-            <View style={styles.luminousHeroOrb}>
-              <Sparkles color={theme.palette.accent} size={28} />
-            </View>
-            <Text style={styles.luminousHeroMeta}>Create tonight's room</Text>
-            <Text style={styles.luminousHeroTitle}>Open the lobby</Text>
-            <Text style={styles.centeredBodyText}>
-              Party creation is live. Theme images and uploads stay for a later slice.
-            </Text>
-          </View>
-          <View style={[styles.spotlightPanel, styles.cardAccent]}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.metaLabelAccent}>PARTY NAME</Text>
-              <TextInput
-                autoCapitalize="words"
-                autoCorrect={false}
-                editable={!isCreatingHostParty}
-                maxLength={80}
-                onChangeText={setPartyName}
-                placeholder="Greg's House"
-                placeholderTextColor={theme.palette.muted}
-                style={styles.textInput}
-                value={partyName}
-              />
-            </View>
-            <View style={styles.twoColumn}>
-              <View style={[styles.inputGroup, styles.flex]}>
-                <Text style={styles.metaLabelAccent}>TEAMS</Text>
-                <TextInput
-                  editable={!isCreatingHostParty}
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  onChangeText={(value) => setMaxTeams(value.replace(/[^2-8]/gu, '').slice(0, 1))}
-                  placeholder="4"
-                  placeholderTextColor={theme.palette.muted}
-                  style={styles.textInput}
-                  value={maxTeams}
-                />
-              </View>
-              <View style={[styles.inputGroup, styles.flex]}>
-                <Text style={styles.metaLabelAccent}>PER TEAM</Text>
-                <TextInput
-                  editable={!isCreatingHostParty}
-                  keyboardType="number-pad"
-                  maxLength={2}
-                  onChangeText={(value) => setMaxPerTeam(value.replace(/\D/gu, '').slice(0, 2))}
-                  placeholder="8"
-                  placeholderTextColor={theme.palette.muted}
-                  style={styles.textInput}
-                  value={maxPerTeam}
-                />
-              </View>
-            </View>
-          </View>
-          {hostPartyError ? <Text style={styles.errorText}>{hostPartyError}</Text> : null}
-          <View style={styles.bottomCtaWrap}>
-            <ActionButton
-              label={isCreatingHostParty ? 'Creating...' : 'Create party'}
-              icon={Plus}
-              onPress={handleCreateParty}
-              disabled={
-                isCreatingHostParty ||
-                !partyName.trim() ||
-                Number(maxTeams) < 2 ||
-                Number(maxTeams) > 8 ||
-                Number(maxPerTeam) < 1 ||
-                Number(maxPerTeam) > 10
-              }
-              primary
-            />
-          </View>
-        </>
-      )}
       <View style={[styles.roomCard, styles.roomCardSpotlight]}>
         <View style={styles.glowStrip} />
         <View style={styles.rowBetween}>
@@ -169,15 +112,16 @@ export function HostLobbyScreen() {
           <Pill label={roomStatus} />
         </View>
         <View style={styles.statRow}>
-          <Stat value={hostParty ? hostParty.maxTeams.toString() : teams.length.toString()} label="teams" />
+          <Stat value={hostParty.maxTeams.toString()} label="teams" />
           <Stat value={playerCount.toString()} label="players" />
           <Stat value={teamCapacity} label="capacity" accent={Boolean(hostParty)} />
         </View>
       </View>
       {hostParty && hostPartyError ? <Text style={styles.errorText}>{hostPartyError}</Text> : null}
-      {hostParty ? (
+      <View style={styles.twoColumn}>
+        <ActionButton label="Switch room" icon={Layers3} onPress={() => router.push('/host/parties')} />
         <ActionButton label="Party settings" icon={Settings} onPress={() => router.push('/host/settings')} />
-      ) : null}
+      </View>
       <View style={[styles.card, styles.cardAccent]}>
         <View style={styles.rowBetween}>
           <Text style={styles.metaLabelAccent}>NEXT ROUND</Text>
