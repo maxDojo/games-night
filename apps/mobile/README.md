@@ -8,6 +8,7 @@ Expo/React Native app shell for the Games Night host and player experience.
 - Arcade-first theme tokens based on the current Pencil direction.
 - API-backed host login/register, secure host token persistence, and host route gating.
 - API-backed host party creation with join code, room status, and basic capacity settings.
+- API-backed host room management with current-party selection, active room switching, and finished-party history summaries.
 - API-backed host team creation/listing with capacity and check-in counts.
 - API-backed player join-code lookup, capacity-aware team selection, optional venue-check placeholder, anonymous player check-in, player-safe party status, Trivia answer submission, and Socket.IO party-room join.
 - Local party state for host bonus awards, score reveal, post-reveal report flows, and live player check-in state.

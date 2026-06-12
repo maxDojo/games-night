@@ -7,14 +7,14 @@ import { usePartyState } from '../../src/state/PartyState';
 import { useAppStyles } from '../../src/theme/useAppStyles';
 import type { HostRoute } from '../../src/types/product';
 
-const hostRoutes: HostRoute[] = ['lobby', 'queue', 'teams', 'stage', 'settings'];
+const hostRoutes: HostRoute[] = ['parties', 'lobby', 'queue', 'teams', 'stage', 'settings'];
 
 export default function HostLayout() {
   const pathname = usePathname();
   const { styles } = useAppStyles();
   const { isHostAuthenticated, isRestoringHostSession } = usePartyState();
   const isAuthRoute = pathname.endsWith('/host/auth');
-  const activeRoute = hostRoutes.find((route) => pathname.endsWith(`/host/${route}`)) ?? 'lobby';
+  const activeRoute = hostRoutes.find((route) => pathname.endsWith(`/host/${route}`)) ?? 'parties';
 
   useEffect(() => {
     if (isRestoringHostSession) {
@@ -27,7 +27,7 @@ export default function HostLayout() {
     }
 
     if (isHostAuthenticated && isAuthRoute) {
-      router.replace('/host/lobby');
+      router.replace('/host/parties');
     }
   }, [isAuthRoute, isHostAuthenticated, isRestoringHostSession]);
 

@@ -35,7 +35,7 @@ export function HostAuthScreen() {
       : await loginHostAccount(email, password);
 
     if (ok) {
-      router.replace('/host/lobby');
+      router.replace('/host/parties');
     }
   };
 

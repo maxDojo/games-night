@@ -143,7 +143,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Mobile M2** Host party control | Host auth/session, create party, create/select teams, queue rounds, configure points, start/end/skip rounds, manual score adjustments, special bonuses, score log/corrections, score reveal | Done |
 | **Mobile M2.7** Motion system | Shared animation primitives, tactile press feedback, gameplay state motion, and reveal/score feedback | Done |
 | **Mobile M3** Host game control screens | Trivia status/control, host-only Charades prompt display, host-only Taboo card/forbidden-word display, correct/skip/taboo/challenge controls | Done |
-| **Mobile M3.5** UX cleanup + party management | First-run join flow, explicit bonus targeting, host party list/settings, and big-screen join-code display planning | In progress |
+| **Mobile M3.5** UX cleanup + party management | First-run join flow, explicit bonus targeting, host party list/settings, and big-screen join-code display planning | Done |
 | **Mobile M4** Persistent teams + period leaderboard | Create/select persistent period, reuse teams across parties, player team check-in, capacity limits, aggregate leaderboard across the period | Planned |
 | **Mobile M5** Custom games + venue display | Create/queue custom games, manual scoring controls, correction history, shared-screen/player-phone trivia display choices | Planned |
 
@@ -262,7 +262,7 @@ Keep milestones and task lists separated by project. The current shipped work is
   - Done: add host party management planning. Future host flows should support multiple host-created parties, switching between parties, and a clear active/current party indicator.
     - Done: add host-owned party listing with status filters, active/current marker, and safe summary fields for party name, join code, status, team/player counts, and created/started/finished timestamps.
     - Done: persist `User.currentPartyId`, make newly created parties current, allow explicit switching among owned non-terminal parties, and clear the pointer when the current night ends.
-    - Planned mobile shape: add a party switcher/management surface before or near the host lobby so the host can create a new party, resume an existing one, or inspect finished parties without overwriting local session state.
+    - Done: add a Rooms screen before the host lobby so the host can create a new party, resume or switch among non-terminal parties, and inspect finished-party summaries without overwriting current room state.
     - Done: enforce one current party per host. Finished/cancelled parties cannot become current; legacy hosts without a valid pointer fall back to their newest non-terminal party.
     - Done: restrict player join-code resolution and team check-in to the host's current party so older lobby codes cannot keep accepting players.
     - Recurring-party note: `Next week` / `New night` should only appear when the host enables recurring parties for that specific party or future persistent period; one-off parties should not show the action.
@@ -293,7 +293,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 ### What's in flight
 
-- Host party-management API foundation on `staging/api-host-party-listing`; the next mobile slice is the party switcher/management surface.
+- Mobile party switcher/management implementation on `staging/mobile-party-switcher`.
 
 ---
 

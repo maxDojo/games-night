@@ -185,6 +185,19 @@ export function createStyles(theme: ThemeProfile) {
       justifyContent: 'space-between',
       gap: 10,
     },
+    partyCardCopy: {
+      flex: 1,
+      gap: 2,
+    },
+    partyHistoryNote: {
+      minHeight: 42,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 9,
+      paddingHorizontal: 10,
+      borderRadius: shape.controlRadius,
+      backgroundColor: p.overlayStrong,
+    },
     heroCopy: {
       gap: 8,
     },

@@ -8,6 +8,11 @@ export type PartyByCodeResponse =
   paths['/v1/parties/{joinCode}']['get']['responses'][200]['content']['application/json'];
 export type CreatePartyResponse =
   paths['/v1/parties']['post']['responses'][201]['content']['application/json'];
+export type HostPartyListResponse =
+  paths['/v1/parties']['get']['responses'][200]['content']['application/json'];
+export type HostPartySummary = HostPartyListResponse['parties'][number];
+export type SetCurrentPartyResponse =
+  paths['/v1/parties/{joinCode}/current']['put']['responses'][200]['content']['application/json'];
 export type AuthResponse =
   paths['/v1/auth/login']['post']['responses'][200]['content']['application/json'];
 export type TeamListResponse =
@@ -277,6 +282,22 @@ export async function createParty(body: CreatePartyRequest, token: string): Prom
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
   });
+}
+
+export async function getHostParties(token: string): Promise<HostPartyListResponse> {
+  return requestJson<HostPartyListResponse>('/parties', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function setCurrentParty(joinCode: string, token: string): Promise<SetCurrentPartyResponse> {
+  return requestJson<SetCurrentPartyResponse>(
+    `/parties/${encodeURIComponent(normalizeJoinCode(joinCode))}/current`,
+    {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
 }
 
 export function normalizeJoinCode(joinCode: string) {
