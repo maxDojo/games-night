@@ -48,6 +48,10 @@ describe('parties routes', () => {
       expect(body.hostId).toBe('host_1'); // pulled from JWT, not body
       expect(body.joinCode).toMatch(/^[A-Z2-9]{6}$/);
       expect(mocks.party.create).toHaveBeenCalledOnce();
+      expect(mocks.user.update).toHaveBeenCalledWith({
+        where: { id: 'host_1' },
+        data: { currentPartyId: 'party_123' },
+      });
     });
 
     it('returns 401 without a token', async () => {
@@ -122,6 +126,115 @@ describe('parties routes', () => {
     });
   });
 
+  describe('GET /v1/parties', () => {
+    const hostPartyFixture = (
+      overrides: Partial<{
+        id: string;
+        joinCode: string;
+        name: string;
+        status: string;
+        createdAt: Date;
+        teams: Array<{ _count: { players: number } }>;
+        teamCount: number;
+        roundCount: number;
+      }> = {},
+    ) => ({
+      id: overrides.id ?? 'party_123',
+      joinCode: overrides.joinCode ?? 'ABC234',
+      name: overrides.name ?? 'Friday Night',
+      status: overrides.status ?? 'LOBBY',
+      maxTeams: 4,
+      maxPerTeam: 8,
+      scoresRevealed: false,
+      createdAt: overrides.createdAt ?? new Date('2026-06-01T18:00:00.000Z'),
+      startedAt: null,
+      finishedAt: null,
+      _count: { teams: overrides.teamCount ?? 2, rounds: overrides.roundCount ?? 3 },
+      teams: overrides.teams ?? [{ _count: { players: 3 } }, { _count: { players: 2 } }],
+    });
+
+    it('returns host-owned summaries with the explicit current party', async () => {
+      mocks.user.findUnique.mockResolvedValue({ currentPartyId: 'party_older' });
+      mocks.party.findMany.mockResolvedValue([
+        hostPartyFixture({ id: 'party_newer', joinCode: 'NEW234', name: 'Newer Lobby' }),
+        hostPartyFixture({
+          id: 'party_older',
+          joinCode: 'OLD234',
+          name: 'Selected Party',
+          status: 'IN_PROGRESS',
+          teamCount: 3,
+          roundCount: 5,
+          teams: [{ _count: { players: 4 } }, { _count: { players: 3 } }, { _count: { players: 2 } }],
+        }),
+      ]);
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/v1/parties',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        currentPartyId: 'party_older',
+        parties: [
+          { id: 'party_newer', isCurrent: false, teamCount: 2, playerCount: 5, roundCount: 3 },
+          { id: 'party_older', isCurrent: true, isJoinable: true, teamCount: 3, playerCount: 9, roundCount: 5 },
+        ],
+      });
+      expect(mocks.party.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { hostId: 'host_1' }, orderBy: { createdAt: 'desc' } }),
+      );
+    });
+
+    it('falls back to the newest non-terminal party for hosts without a saved selection', async () => {
+      mocks.user.findUnique.mockResolvedValue({ currentPartyId: null });
+      mocks.party.findMany.mockResolvedValue([
+        hostPartyFixture({ id: 'finished', joinCode: 'END234', status: 'FINISHED' }),
+        hostPartyFixture({ id: 'paused', joinCode: 'PAU234', status: 'PAUSED' }),
+        hostPartyFixture({ id: 'older', joinCode: 'OLD234', status: 'LOBBY' }),
+      ]);
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/v1/parties',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json().currentPartyId).toBe('paused');
+      expect(res.json().parties.find((party: { id: string }) => party.id === 'paused').isCurrent).toBe(true);
+      expect(res.json().parties.find((party: { id: string }) => party.id === 'finished').isJoinable).toBe(false);
+    });
+
+    it('filters returned summaries without changing the global current party', async () => {
+      mocks.user.findUnique.mockResolvedValue({ currentPartyId: 'active' });
+      mocks.party.findMany.mockResolvedValue([
+        hostPartyFixture({ id: 'active', joinCode: 'ACT234', status: 'IN_PROGRESS' }),
+        hostPartyFixture({ id: 'finished', joinCode: 'END234', status: 'FINISHED' }),
+      ]);
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/v1/parties?status=FINISHED',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        currentPartyId: 'active',
+        parties: [{ id: 'finished', isCurrent: false }],
+      });
+    });
+
+    it('requires host authentication', async () => {
+      const res = await app.inject({ method: 'GET', url: '/v1/parties' });
+
+      expect(res.statusCode).toBe(401);
+      expect(mocks.party.findMany).not.toHaveBeenCalled();
+    });
+  });
+
   describe('GET /v1/parties/:joinCode', () => {
     it('returns the party with teams and players', async () => {
       mocks.party.findUnique.mockResolvedValue({
@@ -137,6 +250,7 @@ describe('parties routes', () => {
         createdAt: new Date(),
         startedAt: null,
         finishedAt: null,
+        host: { currentParty: { id: 'party_123', status: 'LOBBY' } },
         teams: [
           {
             id: 'team_1',
@@ -157,6 +271,58 @@ describe('parties routes', () => {
       expect(body.teams[0].players[0].nickname).toBe('Alice');
     });
 
+    it('rejects a valid code that is no longer the host current party', async () => {
+      mocks.party.findUnique.mockResolvedValue({
+        id: 'party_123',
+        joinCode: 'ABC234',
+        name: 'Old Lobby',
+        status: 'LOBBY',
+        hostId: 'host_1',
+        maxTeams: 8,
+        maxPerTeam: 10,
+        scoresRevealed: false,
+        settings: {},
+        createdAt: new Date(),
+        startedAt: null,
+        finishedAt: null,
+        host: { currentParty: { id: 'party_new', status: 'LOBBY' } },
+        teams: [],
+      });
+
+      const res = await app.inject({ method: 'GET', url: '/v1/parties/ABC234' });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'This is not the host current party' });
+    });
+
+    it.each([
+      ['PAUSED', 'Party is paused'],
+      ['FINISHED', 'Party has ended'],
+      ['CANCELLED', 'Party was cancelled'],
+    ])('rejects %s join codes', async (status, error) => {
+      mocks.party.findUnique.mockResolvedValue({
+        id: 'party_123',
+        joinCode: 'ABC234',
+        name: 'Closed Party',
+        status,
+        hostId: 'host_1',
+        maxTeams: 8,
+        maxPerTeam: 10,
+        scoresRevealed: status === 'FINISHED',
+        settings: {},
+        createdAt: new Date(),
+        startedAt: null,
+        finishedAt: status === 'FINISHED' ? new Date() : null,
+        host: { currentParty: null },
+        teams: [],
+      });
+
+      const res = await app.inject({ method: 'GET', url: '/v1/parties/ABC234' });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error });
+    });
+
     it('returns 404 when the party does not exist', async () => {
       mocks.party.findUnique.mockResolvedValue(null);
       const res = await app.inject({ method: 'GET', url: '/v1/parties/ZZZZZZ' });
@@ -168,6 +334,71 @@ describe('parties routes', () => {
       const res = await app.inject({ method: 'GET', url: '/v1/parties/ABC1XY' });
       expect(res.statusCode).toBe(400);
       expect(mocks.party.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('PUT /v1/parties/:joinCode/current', () => {
+    const selectableParty = (overrides: Partial<{ hostId: string; status: string }> = {}) => ({
+      id: 'party_123',
+      joinCode: 'ABC234',
+      name: 'Friday Night',
+      status: overrides.status ?? 'LOBBY',
+      hostId: overrides.hostId ?? 'host_1',
+      maxTeams: 4,
+      maxPerTeam: 8,
+      scoresRevealed: false,
+      createdAt: new Date('2026-06-01T18:00:00.000Z'),
+      startedAt: null,
+      finishedAt: null,
+      _count: { teams: 2, rounds: 3 },
+      teams: [{ _count: { players: 3 } }, { _count: { players: 2 } }],
+    });
+
+    it('sets an eligible owned party as current', async () => {
+      mocks.party.findUnique.mockResolvedValue(selectableParty({ status: 'PAUSED' }));
+
+      const res = await app.inject({
+        method: 'PUT',
+        url: '/v1/parties/ABC234/current',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        currentPartyId: 'party_123',
+        party: { id: 'party_123', isCurrent: true, isJoinable: false, playerCount: 5 },
+      });
+      expect(mocks.user.update).toHaveBeenCalledWith({
+        where: { id: 'host_1' },
+        data: { currentPartyId: 'party_123' },
+      });
+    });
+
+    it('rejects a party owned by another host', async () => {
+      mocks.party.findUnique.mockResolvedValue(selectableParty({ hostId: 'someone_else' }));
+
+      const res = await app.inject({
+        method: 'PUT',
+        url: '/v1/parties/ABC234/current',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(403);
+      expect(mocks.user.update).not.toHaveBeenCalled();
+    });
+
+    it.each(['FINISHED', 'CANCELLED'])('rejects %s parties', async (status) => {
+      mocks.party.findUnique.mockResolvedValue(selectableParty({ status }));
+
+      const res = await app.inject({
+        method: 'PUT',
+        url: '/v1/parties/ABC234/current',
+        headers: { authorization: `Bearer ${token}` },
+      });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'Finished or cancelled parties cannot be current' });
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
   });
 
@@ -357,6 +588,10 @@ describe('parties routes', () => {
           scoresRevealed: true,
         }),
         select: { id: true, status: true, scoresRevealed: true, finishedAt: true },
+      });
+      expect(mocks.user.updateMany).toHaveBeenCalledWith({
+        where: { id: 'host_1', currentPartyId: 'party_123' },
+        data: { currentPartyId: null },
       });
     });
 

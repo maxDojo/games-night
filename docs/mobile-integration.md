@@ -58,6 +58,18 @@ The mobile app is a hybrid host/player experience:
 
 ## Host Flow
 
+- Restore or switch host party context:
+  - `GET /v1/parties`
+    - Returns host-owned party summaries ordered newest first.
+    - Optional `status` filter accepts `LOBBY`, `IN_PROGRESS`, `PAUSED`, `FINISHED`, or `CANCELLED`.
+    - Each summary includes team/player/round counts, `isJoinable`, and `isCurrent`.
+    - `currentPartyId` remains global even when a status filter hides that party.
+  - `PUT /v1/parties/{joinCode}/current`
+    - Explicitly selects an owned `LOBBY`, `IN_PROGRESS`, or `PAUSED` party.
+    - Finished/cancelled parties remain inspectable but cannot become current.
+  - Creating a party makes it current automatically.
+  - Ending the current party clears the stored pointer. Hosts without a valid stored pointer fall back to their newest non-terminal party.
+  - Player-entered join codes resolve only for the host's current `LOBBY` or `IN_PROGRESS` party. Team check-in also rejects teams from an older lobby.
 - Load game catalog:
   - `GET /v1/games`
   - Use `slug`, `name`, `type`, and `defaultConfig` to build the game picker.

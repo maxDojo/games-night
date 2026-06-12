@@ -23,14 +23,31 @@ describe('players routes', () => {
   afterAll(async () => await app.close());
   beforeEach(() => resetMocks(mocks));
 
-  const teamFixture = (overrides: { playerCount?: number; maxPerTeam?: number; status?: string } = {}) => ({
+  const teamFixture = (
+    overrides: {
+      currentPartyId?: string | null;
+      playerCount?: number;
+      maxPerTeam?: number;
+      status?: string;
+    } = {},
+  ) => ({
     id: 'team_1',
     partyId: 'party_1',
     name: 'Red',
     party: {
       id: 'party_1',
+      hostId: 'host_1',
       maxPerTeam: overrides.maxPerTeam ?? 10,
       status: overrides.status ?? 'LOBBY',
+      host: {
+        currentParty:
+          overrides.currentPartyId === null
+            ? null
+            : {
+                id: overrides.currentPartyId ?? 'party_1',
+                status: 'LOBBY',
+              },
+      },
     },
     _count: { players: overrides.playerCount ?? 0 },
   });
@@ -55,6 +72,30 @@ describe('players routes', () => {
       expect(body.nickname).toBe('Anon');
       expect(body.userId).toBeFalsy();
       expect(body.isCaptain).toBe(true); // first to join → captain
+    });
+
+    it('uses the newest eligible party for legacy hosts without a saved current party', async () => {
+      mocks.team.findUnique.mockResolvedValue(teamFixture({ currentPartyId: null }));
+      mocks.party.findFirst.mockResolvedValue({ id: 'party_1' });
+      mocks.player.create.mockImplementation(async ({ data }) => ({
+        id: 'p_1',
+        joinedAt: new Date(),
+        socketId: null,
+        ...data,
+      }));
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/teams/team_1/players',
+        payload: { nickname: 'Legacy Join' },
+      });
+
+      expect(res.statusCode).toBe(201);
+      expect(mocks.party.findFirst).toHaveBeenCalledWith({
+        where: { hostId: 'host_1', status: { in: ['LOBBY', 'IN_PROGRESS', 'PAUSED'] } },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      });
     });
 
     it('links the player to the user when a token is supplied', async () => {
@@ -86,6 +127,20 @@ describe('players routes', () => {
         payload: { nickname: 'TooLate' },
       });
       expect(res.statusCode).toBe(409);
+      expect(mocks.player.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects a team from an old non-current lobby', async () => {
+      mocks.team.findUnique.mockResolvedValue(teamFixture({ currentPartyId: 'party_2' }));
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/teams/team_1/players',
+        payload: { nickname: 'WrongRoom' },
+      });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'This is not the host current party' });
       expect(mocks.player.create).not.toHaveBeenCalled();
     });
 

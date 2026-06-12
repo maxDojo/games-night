@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { resolveCurrentPartyId } from '../../lib/current-party.js';
 
 // Players can join anonymously (nickname only) OR with a JWT, which links the
 // Player to a User. The host's auth is *not* required to join — players just
@@ -49,7 +50,15 @@ const playersRoutes: FastifyPluginAsyncZod = async (app) => {
       const team = await app.prisma.team.findUnique({
         where: { id: req.params.teamId },
         include: {
-          party: { select: { id: true, maxPerTeam: true, status: true } },
+          party: {
+            select: {
+              id: true,
+              hostId: true,
+              maxPerTeam: true,
+              status: true,
+              host: { select: { currentParty: { select: { id: true, status: true } } } },
+            },
+          },
           _count: { select: { players: true } },
         },
       });
@@ -62,6 +71,13 @@ const playersRoutes: FastifyPluginAsyncZod = async (app) => {
         return reply.code(409).send({ error: 'Party was cancelled' });
       if (team.party.status !== 'LOBBY')
         return reply.code(409).send({ error: 'Party is not accepting new players' });
+      const currentPartyId = await resolveCurrentPartyId(
+        app.prisma,
+        team.party.hostId,
+        team.party.host.currentParty,
+      );
+      if (currentPartyId !== team.party.id)
+        return reply.code(409).send({ error: 'This is not the host current party' });
       if (team._count.players >= team.party.maxPerTeam)
         return reply.code(409).send({ error: `Team is full (max ${team.party.maxPerTeam})` });
 
