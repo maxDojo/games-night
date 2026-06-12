@@ -44,14 +44,18 @@ Backend for Games Night, a multi-team games night app. Hosts live sessions of tr
 ## 3. Domain model
 
 ```
-User ─┬─< Party ──< Team ──< Player
+User ─┬─< Period ──< PeriodTeam
+      │      └─< Party ──< Team ──< Player
+      ├─< Party
       └─< CustomGame ──< Prompt
-                Party ──< Round >── GameDefinition ──< Prompt
-                          Round ──< Score >── Team
+                 Party ──< Round >── GameDefinition ──< Prompt
+                           Round ──< Score >── Team
 ```
 
 See `prisma/schema.prisma` for the full schema. Highlights:
 - `Party.joinCode` is the short, shareable code players use to join.
+- `Period` groups recurring parties, while `PeriodTeam` provides reusable team identity across them.
+- Linked parties copy reusable teams into concrete `Team` rows and retain `periodTeamId` for later aggregation.
 - `Round.config` is the host-resolved config (defaults merged with overrides) so historical rounds remain replayable.
 - `Score.breakdown` (JSON) records *why* a team got their points — for UI transparency and dispute resolution.
 
@@ -140,8 +144,19 @@ Auth
 - `POST /v1/auth/login` — exchange credentials for a JWT
 
 Parties
-- `POST /v1/parties` 🔒 — create party (auth required, host = `req.user.sub`)
+- `GET  /v1/parties` 🔒 — list host parties and the current selection
+- `POST /v1/parties` 🔒 — create a standalone or period-linked party
 - `GET  /v1/parties/:joinCode` — fetch party + teams + players (public)
+- `PUT  /v1/parties/:joinCode/current` 🔒 — select the host's current party
+
+Periods
+- `GET  /v1/periods` 🔒 — list host-owned scoring periods
+- `POST /v1/periods` 🔒 — create a persistent period
+- `GET  /v1/periods/:periodId` 🔒 — fetch settings, reusable teams, and linked parties
+- `PATCH /v1/periods/:periodId` 🔒 — update dates, status, and capacity defaults
+- `POST /v1/periods/:periodId/teams` 🔒 — create a reusable team
+- `PATCH /v1/period-teams/:periodTeamId` 🔒 — update a reusable team
+- `DELETE /v1/period-teams/:periodTeamId` 🔒 — delete an unused reusable team
 
 Teams
 - `GET    /v1/parties/:joinCode/teams` — list teams (public)

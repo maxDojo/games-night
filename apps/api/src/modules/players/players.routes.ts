@@ -78,8 +78,9 @@ const playersRoutes: FastifyPluginAsyncZod = async (app) => {
       );
       if (currentPartyId !== team.party.id)
         return reply.code(409).send({ error: 'This is not the host current party' });
-      if (team._count.players >= team.party.maxPerTeam)
-        return reply.code(409).send({ error: `Team is full (max ${team.party.maxPerTeam})` });
+      const capacity = team.capacity ?? team.party.maxPerTeam;
+      if (team._count.players >= capacity)
+        return reply.code(409).send({ error: `Team is full (max ${capacity})` });
 
       // Auth is optional here — try to verify but don't fail if missing/invalid.
       let userId: string | undefined;

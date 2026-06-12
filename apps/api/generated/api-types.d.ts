@@ -255,6 +255,7 @@ export interface paths {
                                 name: string;
                                 /** @enum {string} */
                                 status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                                periodId?: string | null;
                                 maxTeams: number;
                                 maxPerTeam: number;
                                 scoresRevealed: boolean;
@@ -286,7 +287,7 @@ export interface paths {
         put?: never;
         /**
          * Create a new party
-         * @description Creates a games-night session in LOBBY status. The authenticated user becomes the host.
+         * @description Creates a games-night session in LOBBY status. When periodId is supplied, the active period settings and reusable teams are copied into the new party.
          */
         post: {
             parameters: {
@@ -300,9 +301,8 @@ export interface paths {
                     "application/json": {
                         /** @description Human-readable party name shown in the lobby. */
                         name: string;
-                        /** @default 8 */
+                        periodId?: string;
                         maxTeams?: number;
-                        /** @default 10 */
                         maxPerTeam?: number;
                     };
                 };
@@ -321,6 +321,7 @@ export interface paths {
                             /** @enum {string} */
                             status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
                             hostId: string;
+                            periodId?: string | null;
                             maxTeams: number;
                             maxPerTeam: number;
                             scoresRevealed: boolean;
@@ -333,6 +334,28 @@ export interface paths {
                 };
                 /** @description Default Response */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -385,6 +408,7 @@ export interface paths {
                             /** @enum {string} */
                             status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
                             hostId: string;
+                            periodId?: string | null;
                             maxTeams: number;
                             maxPerTeam: number;
                             scoresRevealed: boolean;
@@ -395,9 +419,11 @@ export interface paths {
                             teams: {
                                 id: string;
                                 partyId: string;
+                                periodTeamId?: string | null;
                                 name: string;
                                 color?: string;
                                 position: number;
+                                capacity?: number | null;
                                 players: {
                                     id: string;
                                     teamId: string;
@@ -478,6 +504,7 @@ export interface paths {
                                 name: string;
                                 /** @enum {string} */
                                 status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                                periodId?: string | null;
                                 maxTeams: number;
                                 maxPerTeam: number;
                                 scoresRevealed: boolean;
@@ -595,6 +622,7 @@ export interface paths {
                             /** @enum {string} */
                             status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
                             hostId: string;
+                            periodId?: string | null;
                             maxTeams: number;
                             maxPerTeam: number;
                             scoresRevealed: boolean;
@@ -744,6 +772,551 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/periods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List persistent periods owned by the host */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            hostId: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "COMPLETED" | "ARCHIVED";
+                            startsAt: (string) | null;
+                            endsAt: (string) | null;
+                            maxTeams: number;
+                            teamCapacity: number;
+                            settings?: unknown;
+                            createdAt: string;
+                            updatedAt: string;
+                            teamCount: number;
+                            partyCount: number;
+                        }[];
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create a persistent scoring period
+         * @description Creates a host-owned period that can group multiple parties and reusable team definitions.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        /** Format: date-time */
+                        startsAt?: string | null;
+                        /** Format: date-time */
+                        endsAt?: string | null;
+                        /** @default 8 */
+                        maxTeams?: number;
+                        /** @default 10 */
+                        teamCapacity?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            hostId: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "COMPLETED" | "ARCHIVED";
+                            startsAt: (string) | null;
+                            endsAt: (string) | null;
+                            maxTeams: number;
+                            teamCapacity: number;
+                            settings?: unknown;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/periods/{periodId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a persistent period */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    periodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            hostId: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "COMPLETED" | "ARCHIVED";
+                            startsAt: (string) | null;
+                            endsAt: (string) | null;
+                            maxTeams: number;
+                            teamCapacity: number;
+                            settings?: unknown;
+                            createdAt: string;
+                            updatedAt: string;
+                            teams: {
+                                id: string;
+                                periodId: string;
+                                name: string;
+                                color: string;
+                                position: number;
+                                capacity: number;
+                                createdAt: string;
+                                updatedAt: string;
+                            }[];
+                            parties: {
+                                id: string;
+                                joinCode: string;
+                                name: string;
+                                /** @enum {string} */
+                                status: "LOBBY" | "IN_PROGRESS" | "PAUSED" | "FINISHED" | "CANCELLED";
+                                scoresRevealed: boolean;
+                                createdAt: string;
+                                startedAt: (string) | null;
+                                finishedAt: (string) | null;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a persistent period */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    periodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        /** @enum {string} */
+                        status?: "ACTIVE" | "COMPLETED" | "ARCHIVED";
+                        /** Format: date-time */
+                        startsAt?: string | null;
+                        /** Format: date-time */
+                        endsAt?: string | null;
+                        maxTeams?: number;
+                        teamCapacity?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            hostId: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "ACTIVE" | "COMPLETED" | "ARCHIVED";
+                            startsAt: (string) | null;
+                            endsAt: (string) | null;
+                            maxTeams: number;
+                            teamCapacity: number;
+                            settings?: unknown;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/v1/periods/{periodId}/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a reusable team in a period */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    periodId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        /** @default #888888 */
+                        color?: string;
+                        capacity?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            periodId: string;
+                            name: string;
+                            color: string;
+                            position: number;
+                            capacity: number;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/period-teams/{periodTeamId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete an unused reusable period team
+         * @description Teams already copied into a party keep their identity link, so a used reusable team cannot be deleted.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    periodTeamId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a reusable period team */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    periodTeamId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        color?: string;
+                        capacity?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            periodId: string;
+                            name: string;
+                            color: string;
+                            position: number;
+                            capacity: number;
+                            createdAt: string;
+                            updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/v1/parties/{joinCode}/teams": {
         parameters: {
             query?: never;
@@ -772,9 +1345,11 @@ export interface paths {
                         "application/json": {
                             id: string;
                             partyId: string;
+                            periodTeamId?: string | null;
                             name: string;
                             color: string;
                             position: number;
+                            capacity?: number | null;
                             players?: {
                                 id: string;
                                 teamId: string;
@@ -818,6 +1393,7 @@ export interface paths {
                         name: string;
                         /** @default #888888 */
                         color?: string;
+                        capacity?: number;
                     };
                 };
             };
@@ -831,9 +1407,11 @@ export interface paths {
                         "application/json": {
                             id: string;
                             partyId: string;
+                            periodTeamId?: string | null;
                             name: string;
                             color: string;
                             position: number;
+                            capacity?: number | null;
                             players?: {
                                 id: string;
                                 teamId: string;
@@ -982,6 +1560,7 @@ export interface paths {
                     "application/json": {
                         name?: string;
                         color?: string;
+                        capacity?: number;
                     };
                 };
             };
@@ -995,9 +1574,11 @@ export interface paths {
                         "application/json": {
                             id: string;
                             partyId: string;
+                            periodTeamId?: string | null;
                             name: string;
                             color: string;
                             position: number;
+                            capacity?: number | null;
                             players?: {
                                 id: string;
                                 teamId: string;

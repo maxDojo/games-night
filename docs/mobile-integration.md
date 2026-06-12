@@ -104,28 +104,42 @@ These are not implemented yet, but mobile navigation and local types should rese
 
 ### Persistent periods / seasons
 
-Planned model:
+Current foundation:
 
 - A host-owned period groups multiple parties under one scoreboard window.
 - Product names can be flexible in UI: season, league, event, weekend, trip, or period.
 - A party can be standalone or linked to one active period.
-- Teams can be party-only or reusable within the period.
+- Period teams are reusable definitions. Creating a linked party copies them into concrete party teams and preserves `periodTeamId` for future cross-party aggregation.
+- Concrete party teams remain the scoring/check-in target, so existing round and score relationships stay party-scoped.
+- Reusable teams have their own capacity. Player check-in enforces that capacity, falling back to the party default for party-only teams.
 
-Planned REST shape:
+Current REST shape:
 
 - `POST /v1/periods`
   - Create a host-owned period.
-  - Body: `{ name, startsAt?, endsAt?, teamCapacity?, locationVerification? }`
+  - Body: `{ name, startsAt?, endsAt?, maxTeams?, teamCapacity? }`
 - `GET /v1/periods`
-  - List host periods.
+  - List host periods with team/party counts.
 - `GET /v1/periods/{periodId}`
-  - Read period settings, teams, linked parties, and aggregate standings summary.
+  - Read period settings, reusable teams, and linked parties.
 - `PATCH /v1/periods/{periodId}`
-  - Update name, dates, team capacity, location verification, or active status.
-- `POST /v1/periods/{periodId}/parties`
-  - Create a party linked to a period.
+  - Update name, dates, capacity defaults, or lifecycle status.
+- `POST /v1/periods/{periodId}/teams`
+  - Create a reusable team definition.
+- `PATCH /v1/period-teams/{periodTeamId}`
+  - Update reusable team name, color, or capacity.
+- `DELETE /v1/period-teams/{periodTeamId}`
+  - Delete only if the reusable team has never been copied into a party.
 - `POST /v1/parties`
-  - Existing party creation should eventually accept optional `periodId`.
+  - Accepts optional `periodId`.
+  - Linked parties inherit period capacity defaults unless explicitly overridden and copy all reusable teams.
+
+Still planned:
+
+- Period-aware anonymous check-in history beyond the concrete party player record.
+- Host move/override controls.
+- Aggregate period leaderboard and score-event queries.
+- Location verification and period theme settings.
 
 Planned mobile behavior:
 
@@ -477,8 +491,8 @@ Mobile guidance:
 - No push notification provider or `DeviceToken` model yet.
 - No OTP/passwordless host auth yet.
 - No rich config-form metadata endpoint yet.
-- No persistent period/season model yet.
-- No team capacity enforcement yet.
+- Persistent period and reusable-team foundations exist; period-aware check-in history and aggregate leaderboards are not implemented yet.
+- Team capacity is enforced for concrete teams; host move/override flows are not implemented yet.
 - Mobile has a placeholder optional location verification path; real device location capture, backend enforcement, and persistent host override are not implemented yet.
 - No custom-game template API yet.
 - Score events exist for bonuses/reveal, but full correction/dispute audit workflows are still planned.

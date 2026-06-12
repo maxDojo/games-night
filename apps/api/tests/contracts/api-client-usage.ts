@@ -92,4 +92,45 @@ const savePlan: SavePlanRequest = {
   ],
 };
 
-void [games, queueTriviaRound, queueTabooRound, savePlan];
+type CreatePeriodRequest = JsonRequestBody<"/v1/periods", "post">;
+type PeriodListResponse = JsonResponse<"/v1/periods", "get", 200>;
+type CreatePartyRequest = JsonRequestBody<"/v1/parties", "post">;
+
+const createPeriod: CreatePeriodRequest = {
+  name: "Summer League",
+  maxTeams: 4,
+  teamCapacity: 8,
+};
+
+const periods: PeriodListResponse = [
+  {
+    id: "period_1",
+    hostId: "host_1",
+    name: "Summer League",
+    status: "ACTIVE",
+    startsAt: null,
+    endsAt: null,
+    maxTeams: 4,
+    teamCapacity: 8,
+    settings: {},
+    createdAt: "2026-06-01T00:00:00.000Z",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+    teamCount: 4,
+    partyCount: 2,
+  },
+];
+
+const createLinkedParty: CreatePartyRequest = {
+  name: "Week Three",
+  periodId: "period_1",
+};
+
+void [
+  games,
+  queueTriviaRound,
+  queueTabooRound,
+  savePlan,
+  createPeriod,
+  periods,
+  createLinkedParty,
+];

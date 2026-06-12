@@ -43,7 +43,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 | **Host planning**                          | Saved party plans and reusable round queues via `PartyPlan` / `PartyPlanItem`         | Done   |
 | **API Client Contract + Mobile Readiness** | REST/socket contract hardening, generated client guardrails, mobile integration notes | Done   |
 | **Operational Polish**                     | CI, coverage, integration checks, deploy readiness, production seams                  | Next   |
-| **Persistent Teams + Mobile Host Controls** | API support for reusable teams/period leaderboards, host-only prompts, point overrides | Planned |
+| **Persistent Teams + Mobile Host Controls** | API support for reusable teams/period leaderboards, host-only prompts, point overrides | In progress |
 | **Custom Games + Score Audit**             | Host-defined games, manual scoring workflows, correction history, dispute support     | Planned |
 | **Venue Controls + Display Modes**         | Optional location verification, team capacity limits, player-phone trivia display     | Planned |
 | **Room Identity + Theming**                | Host/period/party names, cover photos, inherited theme resolution, safe palettes      | Planned |
@@ -74,16 +74,17 @@ Keep milestones and task lists separated by project. The current shipped work is
 - **Persistent Teams + Mobile Host Controls** - planned
   - Done: spec the API/mobile contract direction for persistent periods, capacity-aware teams, check-in, score audit, custom games, venue controls, and trivia display modes in `docs/mobile-integration.md`.
   - Done: change Charades and Taboo private prompt delivery so prompts/forbidden words are host-control-device only, not team-room broadcasts.
-  - Add host-only party end endpoint that reveals scores, marks the party `FINISHED`, blocks further check-ins/round starts, and preserves score history.
-  - Spec the product model for persistent host-owned periods, such as event, season, league, weekend, or trip.
-  - Add a persistent container above `Party` so a host can group multiple parties under one scoring period.
-  - Allow teams to belong either to a single party or to the persistent container.
+  - Done: add host-only party end endpoint that reveals scores, marks the party `FINISHED`, blocks further check-ins/round starts, and preserves score history.
+  - Done: spec the product model for persistent host-owned periods, such as event, season, league, weekend, or trip.
+  - Done: add a persistent `Period` container above `Party` so a host can group multiple parties under one scoring window.
+  - Done: add reusable `PeriodTeam` definitions while keeping concrete party `Team` rows for check-in, rounds, and scoring.
+  - Done: allow linked party creation to inherit period defaults and copy reusable teams with stable `periodTeamId` lineage.
   - Add player team check-in for persistent teams without requiring durable individual identity.
-  - Add host-configurable team capacity limits so full teams cannot keep accumulating extra check-ins.
+  - Done: add host-configurable team capacities and enforce concrete team capacity during player check-in.
   - Add host override flows for moving players or allowing exceptions.
   - Add leaderboard aggregation modes: current party only and persistent period.
   - Review `Round.config` and scoring inputs so the host can set points per round/game from mobile.
-  - Update REST/OpenAPI/socket contracts and mobile integration notes for the new flows.
+  - In progress: update REST/OpenAPI/socket contracts and mobile integration notes for the new flows.
   - Add integration coverage for persistent team check-in and period leaderboard aggregation.
 - **Custom Games + Score Audit** - planned
   - Done: capture the planned mobile/API contract shape in `docs/mobile-integration.md`.
@@ -293,7 +294,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 ### What's in flight
 
-- Mobile party switcher/management implementation on `staging/mobile-party-switcher`.
+- Persistent period and reusable-team API foundation on `staging/api-persistent-period-foundation`.
 
 ---
 
@@ -343,7 +344,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 - Mock Prisma via `apps/api/tests/helpers/mockPrisma.ts`. Extend it whenever you use a new model method.
 - Game engines use a **custom manual fake clock** (not `vi.useFakeTimers`) - see `apps/api/tests/games/trivia.test.ts` for the pattern. It gives precise tick control.
 - Route tests usually build the app with mock prisma + `disableSockets: true`, close it in `afterAll`, and reset mocks in `beforeEach`.
-- Current API test suite is 193 tests.
+- Current API test suite is 208 tests.
 
 ### Providers
 
@@ -419,7 +420,7 @@ Keep milestones and task lists separated by project. The current shipped work is
 
 ## 7. Known limitations (intentional for MVP)
 
-1. **Mobile coverage is incomplete, not shell-only** - core M1-M3 flows are API-backed, but persistent periods, custom games, venue enforcement, full score correction/dispute history, host party switching, shared-screen mode, uploads, and several Stitch-derived placeholders remain planned.
+1. **Mobile coverage is incomplete, not shell-only** - core M1-M3.5 flows are API-backed, but persistent-period mobile flows, custom games, venue enforcement, full score correction/dispute history, shared-screen mode, uploads, and several Stitch-derived placeholders remain planned.
 2. **No mid-round engine persistence** - server restart kills the in-memory runner. Host force-ends to recover.
 3. **No prompt dedup across rounds in the same party** - the same trivia question / charades phrase / taboo card could appear twice in one night.
 4. **Prompt/card pools can overlap when seed content is small** - phrase/card pools are shared across teams unless future logic reserves used prompts.
@@ -457,7 +458,7 @@ pnpm prisma:migrate
 pnpm --filter @games-night/api db:seed          # fetches trivia from Open Trivia DB
 # OR for no-network: pnpm db:seed:offline
 pnpm dev:api                                    # http://localhost:3000  /docs  /socket.io
-pnpm test:api                                   # 193 tests
+pnpm test:api                                   # 208 tests
 pnpm test:api:integration                       # skips unless INTEGRATION_TEST_DATABASE_URL is set
 pnpm build:api                                  # TypeScript build
 ```

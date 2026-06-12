@@ -14,9 +14,11 @@ const PlayerSchema = z.object({
 const TeamSchema = z.object({
   id: z.string(),
   partyId: z.string(),
+  periodTeamId: z.string().nullable().optional(),
   name: z.string(),
   color: z.string(),
   position: z.number(),
+  capacity: z.number().int().nullable().optional(),
   players: z.array(PlayerSchema).optional(),
 });
 
@@ -36,12 +38,14 @@ const CreateTeamBody = z.object({
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, 'color must be a #RRGGBB hex string')
     .default('#888888'),
+  capacity: z.number().int().min(1).max(10).optional(),
 });
 
 const UpdateTeamBody = z
   .object({
     name: z.string().min(1).max(40).optional(),
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+    capacity: z.number().int().min(1).max(10).optional(),
   })
   .refine((b) => Object.keys(b).length > 0, { message: 'At least one field is required' });
 
@@ -104,6 +108,7 @@ const teamsRoutes: FastifyPluginAsyncZod = async (app) => {
           name: req.body.name,
           color: req.body.color,
           position: party._count.teams + 1,
+          capacity: req.body.capacity ?? party.maxPerTeam,
         },
       });
       app.broadcastPartyState(party.id).catch((err) =>

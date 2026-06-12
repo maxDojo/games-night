@@ -59,6 +59,16 @@ function assertOpenApiContract(json: { paths?: Record<string, unknown> }) {
   const paths = json.paths ?? {};
 
   failed += assert(Boolean(paths['/v1/games']), 'OpenAPI includes /v1/games');
+  failed += assert(Boolean(paths['/v1/periods']), 'OpenAPI includes period collection routes');
+  failed += assert(Boolean(paths['/v1/periods/{periodId}']), 'OpenAPI includes period detail routes');
+  failed += assert(
+    Boolean(paths['/v1/periods/{periodId}/teams']),
+    'OpenAPI includes reusable period-team creation',
+  );
+  failed += assert(
+    Boolean(paths['/v1/period-teams/{periodTeamId}']),
+    'OpenAPI includes reusable period-team updates',
+  );
 
   const queueRoundSchema = requestBodySchema(paths, '/v1/parties/{joinCode}/rounds', 'post');
   failed += assertGameConfigAlternatives(queueRoundSchema, 'round queue body');

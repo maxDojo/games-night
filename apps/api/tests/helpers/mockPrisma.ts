@@ -24,6 +24,18 @@ export function makeMockPrisma(): {
       findMany: vi.fn(),
       findFirst: vi.fn(),
     },
+    period: {
+      create: vi.fn(),
+      update: vi.fn(),
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+    },
+    periodTeam: {
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      findUnique: vi.fn(),
+    },
     team: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
