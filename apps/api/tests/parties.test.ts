@@ -93,6 +93,77 @@ describe('parties routes', () => {
       expect(call.data.maxPerTeam).toBe(5);
     });
 
+    it('creates a party from an active period and copies reusable teams', async () => {
+      mocks.period.findUnique.mockResolvedValue({
+        id: 'period_1',
+        hostId: 'host_1',
+        status: 'ACTIVE',
+        maxTeams: 4,
+        teamCapacity: 6,
+        teams: [
+          { id: 'pt_1', name: 'Red', color: '#ff0000', position: 1, capacity: 5 },
+          { id: 'pt_2', name: 'Blue', color: '#0000ff', position: 2, capacity: 6 },
+        ],
+      });
+      mocks.party.create.mockImplementation(async ({ data }) => ({
+        id: 'party_period',
+        status: 'LOBBY',
+        scoresRevealed: false,
+        settings: {},
+        createdAt: new Date(),
+        startedAt: null,
+        finishedAt: null,
+        ...data,
+      }));
+      mocks.team.create.mockImplementation(async ({ data }) => ({ id: `team_${data.position}`, ...data }));
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/parties',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { name: 'Week Two', periodId: 'period_1' },
+      });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.json()).toMatchObject({
+        periodId: 'period_1',
+        maxTeams: 4,
+        maxPerTeam: 6,
+      });
+      expect(mocks.team.create).toHaveBeenCalledTimes(2);
+      expect(mocks.team.create).toHaveBeenNthCalledWith(1, {
+        data: {
+          partyId: 'party_period',
+          periodTeamId: 'pt_1',
+          name: 'Red',
+          color: '#ff0000',
+          position: 1,
+          capacity: 5,
+        },
+      });
+    });
+
+    it('rejects parties linked to another host period', async () => {
+      mocks.period.findUnique.mockResolvedValue({
+        id: 'period_1',
+        hostId: 'other_host',
+        status: 'ACTIVE',
+        maxTeams: 4,
+        teamCapacity: 6,
+        teams: [],
+      });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/parties',
+        headers: { authorization: `Bearer ${token}` },
+        payload: { name: 'Not Mine', periodId: 'period_1' },
+      });
+
+      expect(res.statusCode).toBe(404);
+      expect(mocks.party.create).not.toHaveBeenCalled();
+    });
+
     it('rejects > 8 teams', async () => {
       const res = await app.inject({
         method: 'POST',

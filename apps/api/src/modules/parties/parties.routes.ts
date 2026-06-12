@@ -16,8 +16,9 @@ const makeJoinCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
 const PartyStatusSchema = z.enum(['LOBBY', 'IN_PROGRESS', 'PAUSED', 'FINISHED', 'CANCELLED']);
 const CreatePartyBody = z.object({
   name: z.string().min(1).max(80).describe('Human-readable party name shown in the lobby.'),
-  maxTeams: z.number().int().min(2).max(8).default(8),
-  maxPerTeam: z.number().int().min(1).max(10).default(10),
+  periodId: z.string().min(1).optional(),
+  maxTeams: z.number().int().min(2).max(8).optional(),
+  maxPerTeam: z.number().int().min(1).max(10).optional(),
 });
 
 const UpdatePartySettingsBody = z
@@ -34,6 +35,7 @@ const PartySchema = z.object({
   name: z.string(),
   status: PartyStatusSchema,
   hostId: z.string(),
+  periodId: z.string().nullable().optional(),
   maxTeams: z.number(),
   maxPerTeam: z.number(),
   scoresRevealed: z.boolean(),
@@ -54,9 +56,11 @@ const PlayerSchema = z.object({
 const TeamSchema = z.object({
   id: z.string(),
   partyId: z.string(),
+  periodTeamId: z.string().nullable().optional(),
   name: z.string(),
   color: z.string().optional(),
   position: z.number(),
+  capacity: z.number().nullable().optional(),
   players: z.array(PlayerSchema),
 });
 
@@ -69,6 +73,7 @@ const HostPartySummarySchema = PartySchema.pick({
   joinCode: true,
   name: true,
   status: true,
+  periodId: true,
   maxTeams: true,
   maxPerTeam: true,
   scoresRevealed: true,
@@ -121,19 +126,50 @@ const partiesRoutes: FastifyPluginAsyncZod = async (app) => {
         tags: ['parties'],
         summary: 'Create a new party',
         description:
-          'Creates a games-night session in LOBBY status. The authenticated user becomes the host.',
+          'Creates a games-night session in LOBBY status. When periodId is supplied, the active period settings and reusable teams are copied into the new party.',
         security: [{ bearerAuth: [] }],
         body: CreatePartyBody,
-        response: { 201: PartySchema, 401: NotFoundSchema },
+        response: { 201: PartySchema, 401: NotFoundSchema, 404: NotFoundSchema, 409: NotFoundSchema },
       },
     },
     async (req, reply) => {
-      const { name, maxTeams, maxPerTeam } = req.body;
+      const { name, periodId } = req.body;
       const hostId = req.user.sub;
       const party = await app.prisma.$transaction(async (tx) => {
+        const period = periodId
+          ? await tx.period.findUnique({
+              where: { id: periodId },
+              include: { teams: { orderBy: { position: 'asc' } } },
+            })
+          : null;
+        if (periodId && (!period || period.hostId !== hostId)) {
+          throw app.httpErrors.notFound('Period not found');
+        }
+        if (period && period.status !== 'ACTIVE') {
+          throw app.httpErrors.conflict('Parties can only be created in an active period');
+        }
+
+        const maxTeams = req.body.maxTeams ?? period?.maxTeams ?? 8;
+        const maxPerTeam = req.body.maxPerTeam ?? period?.teamCapacity ?? 10;
+        if (period && period.teams.length > maxTeams) {
+          throw app.httpErrors.conflict(`Period already has ${period.teams.length} reusable teams`);
+        }
+
         const created = await tx.party.create({
-          data: { name, hostId, maxTeams, maxPerTeam, joinCode: makeJoinCode() },
+          data: { name, hostId, periodId: period?.id, maxTeams, maxPerTeam, joinCode: makeJoinCode() },
         });
+        for (const team of period?.teams ?? []) {
+          await tx.team.create({
+            data: {
+              partyId: created.id,
+              periodTeamId: team.id,
+              name: team.name,
+              color: team.color,
+              position: team.position,
+              capacity: team.capacity,
+            },
+          });
+        }
         await tx.user.update({
           where: { id: hostId },
           data: { currentPartyId: created.id },
@@ -173,6 +209,7 @@ const partiesRoutes: FastifyPluginAsyncZod = async (app) => {
             joinCode: true,
             name: true,
             status: true,
+            periodId: true,
             maxTeams: true,
             maxPerTeam: true,
             scoresRevealed: true,
@@ -268,6 +305,7 @@ const partiesRoutes: FastifyPluginAsyncZod = async (app) => {
           joinCode: true,
           name: true,
           status: true,
+          periodId: true,
           hostId: true,
           maxTeams: true,
           maxPerTeam: true,
@@ -441,6 +479,7 @@ function summarizeHostParty<
     joinCode: string;
     name: string;
     status: PartyStatus;
+    periodId?: string | null;
     maxTeams: number;
     maxPerTeam: number;
     scoresRevealed: boolean;
@@ -456,6 +495,7 @@ function summarizeHostParty<
     joinCode: party.joinCode,
     name: party.name,
     status: party.status,
+    periodId: party.periodId ?? null,
     maxTeams: party.maxTeams,
     maxPerTeam: party.maxPerTeam,
     scoresRevealed: party.scoresRevealed,

@@ -31,6 +31,7 @@ import plansRoutes from './modules/plans/plans.routes.js';
 import gamesRoutes from './modules/games/games.routes.js';
 import leaderboardRoutes from './modules/leaderboard/leaderboard.routes.js';
 import scoreEventsRoutes from './modules/score-events/score-events.routes.js';
+import periodsRoutes from './modules/periods/periods.routes.js';
 
 export interface BuildAppOptions {
   /** Inject a (possibly mocked) Prisma client. */
@@ -79,6 +80,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
           { name: 'health', description: 'Liveness & readiness probes' },
           { name: 'auth', description: 'Account registration & JWT issue' },
           { name: 'parties', description: 'Party (games-night session) lifecycle' },
+          { name: 'periods', description: 'Persistent periods and reusable teams' },
           { name: 'teams', description: 'Teams within a party' },
           { name: 'players', description: 'Players within a team' },
           { name: 'games', description: 'Available game definitions and defaults' },
@@ -145,6 +147,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
       await api.register(healthRoutes);
       await api.register(authRoutes);
       await api.register(partiesRoutes);
+      await api.register(periodsRoutes);
       await api.register(teamsRoutes);
       await api.register(playersRoutes);
       await api.register(gamesRoutes);

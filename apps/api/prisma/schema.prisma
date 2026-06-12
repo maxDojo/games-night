@@ -14,16 +14,17 @@ datasource db {
 // ---------- Auth & ownership ----------
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  displayName  String
-  passwordHash String
+  id             String   @id @default(cuid())
+  email          String   @unique
+  displayName    String
+  passwordHash   String
   currentPartyId String?
-  currentParty Party? @relation("CurrentParty", fields: [currentPartyId], references: [id], onDelete: SetNull)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  currentParty   Party?   @relation("CurrentParty", fields: [currentPartyId], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   hostedParties Party[]      @relation("PartyHost")
+  periods       Period[]
   customGames   CustomGame[]
   partyPlans    PartyPlan[]
   scoreEvents   ScoreEvent[]
@@ -41,40 +42,89 @@ enum PartyStatus {
   CANCELLED
 }
 
+enum PeriodStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model Period {
+  id           String       @id @default(cuid())
+  hostId       String
+  host         User         @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  name         String
+  status       PeriodStatus @default(ACTIVE)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  maxTeams     Int          @default(8)
+  teamCapacity Int          @default(10)
+  settings     Json         @default("{}")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  parties Party[]
+  teams   PeriodTeam[]
+
+  @@index([hostId, status])
+}
+
 model Party {
-  id          String      @id @default(cuid())
-  joinCode    String      @unique // short code used by players to join
-  name        String
-  status      PartyStatus @default(LOBBY)
-  hostId      String
-  host        User        @relation("PartyHost", fields: [hostId], references: [id])
-  maxTeams    Int         @default(8)
-  maxPerTeam  Int         @default(10)
-  scoresRevealed Boolean  @default(false)
-  settings    Json        @default("{}") // per-party tunables (timers, point multipliers, etc.)
-  createdAt   DateTime    @default(now())
-  startedAt   DateTime?
-  finishedAt  DateTime?
+  id             String      @id @default(cuid())
+  joinCode       String      @unique // short code used by players to join
+  name           String
+  status         PartyStatus @default(LOBBY)
+  hostId         String
+  host           User        @relation("PartyHost", fields: [hostId], references: [id])
+  periodId       String?
+  period         Period?     @relation(fields: [periodId], references: [id], onDelete: SetNull)
+  maxTeams       Int         @default(8)
+  maxPerTeam     Int         @default(10)
+  scoresRevealed Boolean     @default(false)
+  settings       Json        @default("{}") // per-party tunables (timers, point multipliers, etc.)
+  createdAt      DateTime    @default(now())
+  startedAt      DateTime?
+  finishedAt     DateTime?
 
   teams           Team[]
   rounds          Round[]
   scoreEvents     ScoreEvent[]
-  currentForHosts User[] @relation("CurrentParty")
+  currentForHosts User[]       @relation("CurrentParty")
 
   @@index([status])
   @@index([hostId])
+  @@index([periodId])
 }
 
 // ---------- Teams & Players ----------
 
-model Team {
+model PeriodTeam {
   id        String   @id @default(cuid())
-  partyId   String
-  party     Party    @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  periodId  String
+  period    Period   @relation(fields: [periodId], references: [id], onDelete: Cascade)
   name      String
   color     String   @default("#888888")
-  position  Int      // ordering 1..8 within a party
+  position  Int
+  capacity  Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  partyTeams Team[]
+
+  @@unique([periodId, position])
+  @@index([periodId])
+}
+
+model Team {
+  id           String      @id @default(cuid())
+  partyId      String
+  party        Party       @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  periodTeamId String?
+  periodTeam   PeriodTeam? @relation(fields: [periodTeamId], references: [id], onDelete: SetNull)
+  name         String
+  color        String      @default("#888888")
+  position     Int // ordering 1..8 within a party
+  capacity     Int?
+  createdAt    DateTime    @default(now())
 
   players     Player[]
   scores      Score[]
@@ -82,6 +132,7 @@ model Team {
 
   @@unique([partyId, position])
   @@index([partyId])
+  @@index([periodTeamId])
 }
 
 model Player {

@@ -56,6 +56,7 @@ describe('teams routes', () => {
       expect(body.name).toBe('Red Team');
       expect(body.color).toBe('#ff0000');
       expect(body.position).toBe(1);
+      expect(body.capacity).toBe(10);
     });
 
     it('auto-increments position with existing teams', async () => {

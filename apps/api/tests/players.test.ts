@@ -26,6 +26,7 @@ describe('players routes', () => {
   const teamFixture = (
     overrides: {
       currentPartyId?: string | null;
+      capacity?: number | null;
       playerCount?: number;
       maxPerTeam?: number;
       status?: string;
@@ -34,6 +35,7 @@ describe('players routes', () => {
     id: 'team_1',
     partyId: 'party_1',
     name: 'Red',
+    capacity: overrides.capacity ?? null,
     party: {
       id: 'party_1',
       hostId: 'host_1',
@@ -127,6 +129,20 @@ describe('players routes', () => {
         payload: { nickname: 'TooLate' },
       });
       expect(res.statusCode).toBe(409);
+      expect(mocks.player.create).not.toHaveBeenCalled();
+    });
+
+    it('enforces a reusable team capacity override', async () => {
+      mocks.team.findUnique.mockResolvedValue(teamFixture({ capacity: 4, playerCount: 4, maxPerTeam: 10 }));
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/v1/teams/team_1/players',
+        payload: { nickname: 'Overflow' },
+      });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toEqual({ error: 'Team is full (max 4)' });
       expect(mocks.player.create).not.toHaveBeenCalled();
     });
 
